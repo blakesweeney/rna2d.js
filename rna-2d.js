@@ -30,6 +30,7 @@ var plot2D = function(given) {
     selection.call(function(selection) {
 
       // Simple x and y scales for the brush
+      // TODO Why is this incorrect on large scales?
       var yScale = d3.scale.linear().domain([0, config.height]).range([0, config.height]);
       var xScale = d3.scale.linear().domain([0, config.width]).range([0, config.width])
 
