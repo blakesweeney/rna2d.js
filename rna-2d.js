@@ -83,7 +83,7 @@ var plot2D = function(given) {
               var inside = e[0][0] <= d.x && d.x <= e[1][0]
                 && e[0][1] <= d.y && d.y <= e[1][1];
               if (inside) {
-                matched.push(d);
+                matched.push(d.id);
               };
               return inside;
             });
@@ -118,7 +118,6 @@ var plot2D = function(given) {
       };
     });
   };
-
 
   for(var key in config) {
     plot[key] = accessor(key);
