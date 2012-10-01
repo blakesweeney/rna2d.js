@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <style type='text/css'>
+
+rect.extent {
+  fill: #000;
+  fill-opacity: .125;
+  stroke: #fff;
+}
+
+    </style>
+  </head>
+
+  <body>
+    <script src="./jquery.js"></script>
+    <!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script> -->
+    <script src="jmol/jmol.js"></script>
+    <script src="./jquery.jmolTools.js"></script>
+    <script src='d3.js'></script>
+    <script src='rna-2d.js'></script>
+
+    <div id='rna-2d', style='float:left'>
+      <script type='text/javascript'>
+        var plot = plot2D({width: 100, height: 200});
+        d3.json('16S-luteo.js', function(data) {
+          plot.coordinates(data);
+          d3.select('#rna-2d').call(plot);
+        });
+
+        $('.nucleotide').jmolTools({ });
+
+        $('.nucleotide').bind('click', function() {
+            alert($(this).text());
+        });
+      </script>
+    </div>
+
+    <div id='jmol'>
+      <script type="text/javascript">
+        jmolInitialize("./jmol");
+        jmolSetAppletColor("#ffffff");
+        jmolApplet(400, "javascript appletLoaded()");
+      </script>
+    </div>
+
+  </body>
+</html>
