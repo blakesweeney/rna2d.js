@@ -1,150 +1,139 @@
 var plot2D = function(given) {
 
-  var indexed = {};
   var config = {
-    id: '#rna-2d',
     interaction_class: 'interaction',
     nucleotide_class: 'nucleotide',
-    width: 960,
-    height: 2200,
-    font_size: 14
+    width: 500,
+    height: 1000,
+    font_size: 8,
+    interaction_width: 2,
+    coordinates: {},
+    interactions: {}
   };
 
   for(key in given) {
     config[key] = given[key];
   }
 
-  config.nt = '.' + config.nucleotide_class;
-  config.int = '.' + config.interaction_class;
+  var plot = function(selection) {
+    selection.call(function(selection) {
 
-  var indexedByPosition = function(data) {
-    var indexed = {};
-    for(var i = 0; i < data.length; i++) {
-      var value = data[i];
-      indexed[value['id']] = { 'x': value['x'], 'y': value['y'] }
-    }
-    return indexed;
-  }
+      // Simple x and y scales for the brush
+      var yScale = d3.scale.linear().domain([0, config.height]).range([0, config.height]);
+      var xScale = d3.scale.linear().domain([0, config.width]).range([0, config.width])
 
-  var bbox = function(id) { return document.getElementById(id).getBBox(); };
-  var widthOf  = function(id) { return bbox(id).width; };
-  var heightOf = function(id) { return bbox(id).height; };
+      // Visualization object
+      var vis = selection.append('svg')
+        .attr('width', config.width)
+        .attr('height', config.height);
 
-  var rightSide      = function(id) { return indexed[id]['x'] + widthOf(id); };
-  var leftSide       = function(id) { return indexed[id]['x']; };
-  var verticalCenter = function(id) { return indexed[id]['y'] - heightOf(id)/4; };
+      // Draw each letter
+      vis.selectAll(config.nucleotide)
+        .data(plot.coordinates).enter().append('svg:text')
+        .attr('id', function(data) { return data['id']; })
+        .attr('class', config.nucleotide_class)
+        .attr('data-coord', function(data) { return data['id']; })
+        .attr('x', function(data) { return data['x']; })
+        .attr('y', function(data) { return data['y']; })
+        .attr('font-size', config.font_size)
+        .text(function(data) { return data['sequence']; });
 
-  var interactionOf = function(data) { return data['fr3d']['family'] };
-  var colorOf = function(color) { 
-    if (color) {
-      return d3.rgb(color[0], color[1], color[2]);
-    };
-    return d3.rgb('black');
-  }
+      // Create a brush for selecting
+      var brush = d3.svg.brush()
+        .on('brushstart', brushstart)
+        .on('brush', updateBrush)
+        .on('brushend', brushend)
+        .x(xScale)
+        .y(yScale);
 
-  var vis = d3.select(config.id)
-              .append('svg')
-              .attr('width', config.width)
-              .attr('height', config.height);
+      function brushstart(p) {
+        if (brush.data !== p) {
+          console.log('setting');
+          vis.call(brush.clear());
+          brush.x(x[p.x]).y(y[p.y]).data = p;
+        }
+      }
 
-  var plot = { };
-  var interactions = {}
+      function updateBrush(p) {
+        var e = brush.extent();
+        var matched = [];
+        vis.selectAll('.' + config.nucleotide_class)
+          .attr("checked", function(d) {
+            var inside = e[0][0] <= d.x && d.x <= e[1][0]
+              && e[0][1] <= d.y && d.y <= e[1][1];
+            if (inside) {
+              matched.push(d);
+            };
+            return inside;
+          });
+      };
 
-  plot.coordinates = function(data) {
-    indexed = indexedByPosition(data);
+      function brushend() {
+        if (brush.empty()) {
+          vis.selectAll('.' + config.nucleotide_class)
+            .attr("checked", false);
+        };
+      };
 
-    var make = function(type) {
-      return vis.selectAll(config.nt)
-        .data(data)
-        .enter().append(type)
-        .attr('x', function(data) { return data['x'] })
-        .attr('y', function(data) { return data['y'] })
-        .attr('id', function(data) { return data['id'] })
-        .attr('class', config.nucleotide_class);
-    };
+      // Draw the interactions
+      vis.selectAll(config.int)
+        .data(plot.interactions)
+        .enter().append('svg:line')
+        .attr('x1', function(data, i) { return (data ? plot.utils.rightSide(data.nt1) : null); })
+        .attr('y1', function(data, i) { return (data ? plot.utils.verticalCenter(data.nt1) : null); })
+        .attr('x2', function(data, i) { return (data ? plot.utils.leftSide(data.nt2) : null); })
+        .attr('y2', function(data, i) { return (data ? plot.utils.verticalCenter(data.nt2) : null); })
+        .attr('id', function(data, i) { return (data ? data.nt1 + ',' + data.nt2 : null) })
+        .attr('stroke', 'black')
+        .attr('stroke-width', config.interaction_width)
+        .attr('opacity', 1)
+        .attr('class', function(d) { return (d ? ['interaction', d['fr3d']['family']] : []); });
 
-    make('svg:text')
-      .attr('font-size', config.font_size)
-      .text(function(data) { return data['sequence'] });
-
-    // vis.selectAll(config.nt)
-    //   .append('svg:circle')
-    //   .attr('cx', function(data) { return data['x']; })
-    //   .attr('cy', function(data) { return data['y']; })
-    //   .attr('r', 10);
-
-    return plot;
+      vis.call(brush);
+    });
   };
 
-  plot.filterNucleotides = function(nts) {
+  plot.utils = {
+    element: function(id) { return document.getElementById(id); },
+    bbox: function(id) { return plot.utils.element(id).getBBox(); },
+    widthOf: function(id) { return plot.utils.bbox(id).width; },
+    heightOf: function(id) { return plot.utils.bbox(id).height; },
+    rightSide: function(id) { return indexed[id]['x'] + widthOf(id); },
+    leftSide: function(id) { return indexed[id]['x']; },
+    verticalCenter: function(id) { return indexed[id]['y'] - heightOf(id)/4; }
+    // interactionOf: function(data) { return data['fr3d']['family'] }
   }
 
-  plot.colorNucleotides = function(coloring) {
-    var color = function(data) {
-      return colorOf(coloring[data['id']]);
-    };
-
-    vis.selectAll(config.nt).attr('fill', color);
-    return plot;
-  }
-
-  plot.interactions = function(pairs) {
-
-    interactions = pairs;
-
-    var interactionClass = function(data) {
-      return config.interaction_class + ' ' + interactionOf(data);
-    }
-
-    vis.selectAll(config.int)
-      .data(pairs)
-      .enter().append('svg:line')
-      .attr('x1', function(data, i) { return rightSide(data['nt1']) })
-      .attr('y1', function(data, i) { return verticalCenter(data['nt1']) })
-      .attr('x2', function(data, i) { return leftSide(data['nt2']) })
-      .attr('y2', function(data, i) { return verticalCenter(data['nt2']) })
-      .attr('id', function(data, i) { return data['nt1'] + ',' + data['nt2'] })
-      .attr('stroke', 'black')
-      .attr('opacity', 1)
-      .attr('class', interactionClass);
-
+  // Function to build generic config accessors
+  var accessor = function(name) {
+    return function(value) {
+      if (!arguments.length) {
+        return plot.config[name];
+      };
+      plot[name] = value;
       return plot;
+    };
   };
 
-  plot.filterInteractions = function(type) {
+  plot.coordinates = accessor('coordinates');
+  plot.interactions = accessor('interactions');
+
+  plot.showOnlyInteractions = function(type) {
     var selector = function(data) { return interactionOf(data) == type; };
     if (typeof(type) == 'function') {
       selector = type;
     };
 
-    vis.selectAll(config.int).filter(selector).attr('visibility', 'visibile');
+    vis.selectAll(config.interaction_class)
+      .filter(selector)
+      .attr('visibility', 'visibile');
 
-    vis.selectAll(config.int)
+    vis.selectAll(config.interaction_class)
       .filter(function(data) { return !selector(data) })
       .attr('visibility', 'hidden');
-    return plot;
-  };
-
-  plot.colorInteractions = function(coloring) {
-    var color = function(data) {
-      var interaction = interactionOf(data);
-      return colorOf(coloring[interaction]);
-    };
-
-    vis.selectAll('.interaction').attr('stroke', color);
 
     return plot;
   };
 
   return plot;
 };
-
-var plot = plot2D()
-            .coordinates(DATA)
-            .interactions(PAIRS)
-            .filterInteractions('cWW')
-            .colorInteractions({cWW: [255, 0, 0]})
-            // .colorNucleotides({'1S72_AU_1_A_1_': [255, 0, 0], 
-            //                   '1S72_AU_1_A_2_': [0, 255, 0], 
-            //                   '1S72_AU_1_A_3_': [0, 0, 255], 
-            //                   '1S72_AU_1_A_4_': [0, 0, 0]})
