@@ -1,14 +1,18 @@
 var plot2D = function(given) {
 
+  var selection;
   var config = {
     interaction_class: 'interaction',
     nucleotide_class: 'nucleotide',
+    brush_class: 'brush',
     width: 500,
     height: 1000,
     font_size: 8,
     interaction_width: 2,
     coordinates: {},
-    interactions: {}
+    interactions: {},
+    onBrushClear: Object,
+    onBrushUpdate: Object
   };
 
   for(var key in given) {
@@ -26,13 +30,9 @@ var plot2D = function(given) {
     };
   };
 
-  var plot = function(selection) {
+  var plot = function(select) {
+    selection = select;
     selection.call(function(selection) {
-
-      // Simple x and y scales for the brush
-      // TODO Why is this incorrect on large scales?
-      var yScale = d3.scale.linear().domain([0, config.height]).range([0, config.height]);
-      var xScale = d3.scale.linear().domain([0, config.width]).range([0, config.width])
 
       // Visualization object
       var vis = selection.append('svg')
@@ -44,48 +44,10 @@ var plot2D = function(given) {
         .data(plot.coordinates).enter().append('svg:text')
         .attr('id', function(data) { return data['id']; })
         .attr('class', config.nucleotide_class)
-        .attr('data-coord', function(data) { return data['id']; })
         .attr('x', function(data) { return data['x']; })
         .attr('y', function(data) { return data['y']; })
         .attr('font-size', config.font_size)
         .text(function(data) { return data['sequence']; });
-
-      // Create a brush for selecting
-      var brush = d3.svg.brush()
-        .on('brushstart', brushstart)
-        .on('brush', updateBrush)
-        .on('brushend', brushend)
-        .x(xScale)
-        .y(yScale);
-
-      function brushstart(p) {
-        if (brush.data !== p) {
-          console.log('setting');
-          vis.call(brush.clear());
-          brush.x(x[p.x]).y(y[p.y]).data = p;
-        }
-      }
-
-      function updateBrush(p) {
-        var e = brush.extent();
-        var matched = [];
-        vis.selectAll('.' + config.nucleotide_class)
-          .attr("checked", function(d) {
-            var inside = e[0][0] <= d.x && d.x <= e[1][0]
-              && e[0][1] <= d.y && d.y <= e[1][1];
-            if (inside) {
-              matched.push(d);
-            };
-            return inside;
-          });
-      };
-
-      function brushend() {
-        if (brush.empty()) {
-          vis.selectAll('.' + config.nucleotide_class)
-            .attr("checked", false);
-        };
-      };
 
       // Draw the interactions
       vis.selectAll(config.int)
@@ -101,9 +63,62 @@ var plot2D = function(given) {
         .attr('opacity', 1)
         .attr('class', function(d) { return (d ? ['interaction', d['fr3d']['family']] : []); });
 
-      vis.call(brush);
+
+      // Create a brush for selecting
+      plot.brush = function() {
+        var yScale = d3.scale.linear().domain([0, config.height]).range([0, config.height]);
+        var xScale = d3.scale.linear().domain([0, config.width]).range([0, config.width])
+
+        var brush = d3.svg.brush()
+          .on('brush', updateBrush)
+          .on('brushend', brushend)
+          .x(xScale)
+          .y(yScale);
+
+        function updateBrush(p) {
+          var e = brush.extent();
+          var matched = [];
+          vis.selectAll('.' + config.nucleotide_class)
+            .attr("checked", function(d) {
+              var inside = e[0][0] <= d.x && d.x <= e[1][0]
+                && e[0][1] <= d.y && d.y <= e[1][1];
+              if (inside) {
+                matched.push(d);
+              };
+              return inside;
+            });
+          config.onBrushUpdate(matched);
+        };
+
+        function brushend() {
+          if (brush.empty()) {
+            vis.selectAll('.' + config.nucleotide_class)
+              .attr("checked", false);
+            config.onBrushClear();
+          };
+        };
+
+        return brush;
+      }();
+
+      // Show the brush
+      plot.brush.enable = function() {
+        vis.call(plot.brush)
+          .selectAll('rect')
+          .classed(config.brush_class, true);
+        return plot;
+      };
+
+      // Hide the brush
+      plot.brush.disable = function() {
+        vis.call(plot.brush)
+          .selectAll('rect')
+          .remove();
+        return plot;
+      };
     });
   };
+
 
   for(var key in config) {
     plot[key] = accessor(key);

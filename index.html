@@ -21,8 +21,11 @@ rect.extent {
       <script type='text/javascript'>
         var plot = plot2D({width: 1300, height: 1500});
         d3.json('16S-luteo.js', function(data) {
+          data = data.slice(1, 10);
           plot.coordinates(data);
           d3.select('#rna-2d').call(plot);
+          plot.brush.enable();
+          // plot.brush.disable();
         });
       </script>
     </div>
