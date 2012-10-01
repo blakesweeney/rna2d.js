@@ -11,9 +11,20 @@ var plot2D = function(given) {
     interactions: {}
   };
 
-  for(key in given) {
+  for(var key in given) {
     config[key] = given[key];
   }
+
+  // Function to build generic config accessors
+  var accessor = function(name) {
+    return function(value) {
+      if (!arguments.length) {
+        return config[name];
+      };
+      plot[name] = value;
+      return plot;
+    };
+  };
 
   var plot = function(selection) {
     selection.call(function(selection) {
@@ -93,6 +104,10 @@ var plot2D = function(given) {
     });
   };
 
+  for(var key in config) {
+    plot[key] = accessor(key);
+  }
+
   plot.utils = {
     element: function(id) { return document.getElementById(id); },
     bbox: function(id) { return plot.utils.element(id).getBBox(); },
@@ -101,22 +116,7 @@ var plot2D = function(given) {
     rightSide: function(id) { return indexed[id]['x'] + widthOf(id); },
     leftSide: function(id) { return indexed[id]['x']; },
     verticalCenter: function(id) { return indexed[id]['y'] - heightOf(id)/4; }
-    // interactionOf: function(data) { return data['fr3d']['family'] }
   }
-
-  // Function to build generic config accessors
-  var accessor = function(name) {
-    return function(value) {
-      if (!arguments.length) {
-        return plot.config[name];
-      };
-      plot[name] = value;
-      return plot;
-    };
-  };
-
-  plot.coordinates = accessor('coordinates');
-  plot.interactions = accessor('interactions');
 
   plot.showOnlyInteractions = function(type) {
     var selector = function(data) { return interactionOf(data) == type; };
