@@ -14,14 +14,15 @@ var plot2D = function(given) {
     interaction_class: 'interaction',
     nucleotide_class: 'nucleotide',
     brush_class: 'brush',
+    font_size: 8,
     width: 500,
     height: 1000,
-    font_size: 8,
-    interaction_width: 2,
     coordinates: {},
     interactions: {},
     onBrushClear: Object,
-    onBrushUpdate: Object
+    onBrushUpdate: Object,
+    brush_enabled: true,
+    onInteractionClick: Object
   };
 
   for(var key in given) {
@@ -42,6 +43,13 @@ var plot2D = function(given) {
   var plot = function(selection) {
     selection.call(function(selection) {
 
+      var xCoordMax = d3.max(plot.coordinates, function(d) { return d.x; });
+      var yCoordMax = d3.max(plot.coordinates, function(d) { return d.y; });
+      var xMax = d3.max([config.width, xCoordMax + 10]);
+      var yMax = d3.max([config.height, yCoordMax + 10]);
+      var xScale = d3.scale.linear().domain([0, xMax]).range([0, config.width]);
+      var yScale = d3.scale.linear().domain([0, yMax]).range([0, config.height]);
+
       // Visualization object
       var vis = selection.append('svg')
         .attr('width', config.width)
@@ -52,8 +60,8 @@ var plot2D = function(given) {
         .data(plot.coordinates).enter().append('svg:text')
         .attr('id', function(data) { return data['id']; })
         .attr('class', config.nucleotide_class)
-        .attr('x', function(data) { return data['x']; })
-        .attr('y', function(data) { return data['y']; })
+        .attr('x', function(data) { return xScale(data['x']); })
+        .attr('y', function(data) { return yScale(data['y']); })
         .attr('font-size', config.font_size)
         .text(function(data) { return data['sequence']; });
 
@@ -64,7 +72,12 @@ var plot2D = function(given) {
         var nt1 = plot.utils.element(obj.nt1);
         var nt2 = plot.utils.element(obj.nt2);
         if (nt1 && nt2) {
+          var interaction_vis = 'hidden';
+          if (obj.family == 'cWW') {
+            interaction_vis = 'visible';
+          };
           interactions.push({
+            visibility: interaction_vis,
             family: obj.family,
             id: obj.nt1 + ',' + obj.nt2 + ',' + obj.family,
             'data-nts': obj.nt1 + ',' + obj.nt2,
@@ -86,15 +99,16 @@ var plot2D = function(given) {
         .attr('y1', function(data) { return data.y1; })
         .attr('x2', function(data) { return data.x2; })
         .attr('y2', function(data) { return data.y2; })
-        .attr('stroke', 'black')
-        .attr('stroke-width', 2)
-        .attr('opacity', 1)
-        ;
+        .attr('visibility', function(data) { return data.visibility; })
+        .on('click', function(d) {
+          if (d.visibility == 'visible') {
+            config.onInteractionClick(d);
+          };
+        });
 
       // Create a brush for selecting
       plot.brush = function() {
-        var yScale = d3.scale.linear().domain([0, config.height]).range([0, config.height]);
-        var xScale = d3.scale.linear().domain([0, config.width]).range([0, config.width])
+        var matched = {};
 
         var brush = d3.svg.brush()
           .on('brushstart', startBrush)
@@ -106,28 +120,32 @@ var plot2D = function(given) {
         function startBrush() {
           // Check if click within the bounding box of all nts or interactions.
           // Ugh. Such a pain. Maybe do this later.
+          matched = {};
         };
 
         function updateBrush(p) {
           var e = brush.extent();
-          var matched = [];
           vis.selectAll('.' + config.nucleotide_class)
             .attr("checked", function(d) {
               var inside = e[0][0] <= d.x && d.x <= e[1][0]
                 && e[0][1] <= d.y && d.y <= e[1][1];
               if (inside) {
-                matched.push(d.id);
+                matched[d.id] = d;
+              } else if (matched[d.id]) {
+                delete(matched[d.id]);
               };
               return inside;
             });
-          config.onBrushUpdate(matched);
         };
 
         function endBrush() {
           if (brush.empty()) {
             vis.selectAll('.' + config.nucleotide_class)
               .attr("checked", false);
+            matched = {};
             config.onBrushClear();
+          } else {
+            config.onBrushUpdate(matched);
           };
         };
 
@@ -136,18 +154,39 @@ var plot2D = function(given) {
 
       // Show the brush
       plot.brush.enable = function() {
-        vis.call(plot.brush)
-          .selectAll('.extent')
-          .classed(config.brush_class, true);
+        vis.append('g')
+          .classed(config.brush_class, true)
+          .call(plot.brush);
+        config.brush_enabled = true;
         return plot;
       };
 
       // Hide the brush
       plot.brush.disable = function() {
-        vis.call(plot.brush)
-          .selectAll('rect')
-          .remove();
+        vis.selectAll('.' + config.brush_class).remove();
+        config.brush_enabled = false;
         return plot;
+      };
+
+      // Toggle the brush
+      plot.brush.toggle = function() {
+        if (config.brush_enabled) {
+          return plot.brush.disable();
+        };
+        return plot.brush.enable();
+      };
+
+
+      plot.toggleInteraction = function(family) {
+        vis.selectAll('.' + family)
+          .attr('visibility', function(data) {
+            if (data.visibility == 'visible') {
+              data.visibility = 'hidden';
+            } else {
+              data.visibility = 'visible';
+            };
+            return data.visibility;
+          });
       };
     });
   };
@@ -166,23 +205,6 @@ var plot2D = function(given) {
     verticalCenter: function(id) { return plot.utils.bbox(id).y - plot.utils.heightOf(id)/4; },
     centerOf: function(id) { return plot.utils.bbox(id).x + plot.utils.widthOf(id)/2; }
   }
-
-  plot.showOnlyInteractions = function(type) {
-    var selector = function(data) { return interactionOf(data) == type; };
-    if (typeof(type) == 'function') {
-      selector = type;
-    };
-
-    vis.selectAll(config.interaction_class)
-      .filter(selector)
-      .attr('visibility', 'visibile');
-
-    vis.selectAll(config.interaction_class)
-      .filter(function(data) { return !selector(data) })
-      .attr('visibility', 'hidden');
-
-    return plot;
-  };
 
   return plot;
 };

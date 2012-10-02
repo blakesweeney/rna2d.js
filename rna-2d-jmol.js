@@ -1,5 +1,4 @@
-// Code to integrate this with RNA2D with Jmol tools.
-var jmolShow = function(ids) {
+var jmolSetup = function() {
   var jmolApp = $('#jmolApplet0');
   var jmolDiv = $('#jmol');
   $this = $(this);
@@ -26,7 +25,19 @@ var jmolShow = function(ids) {
   $('#neighborhood').unbind();
   $('#showNtNums').unbind();
 
-  var data_coord = ids.join(',');
+};
+
+// Code to integrate this with RNA2D with Jmol tools.
+var jmolShowSelection = function(matched) {
+  jmolSetup();
+
+  var data_coord = '';
+  if (typeof(matched) == 'Object') {
+    var ids = $.map(matched, function(value, key) { return key; });
+    data_coord = ids.join(',');
+  } else {
+    data_coord = matched;
+  }
   $('#tempJmolToolsObj').remove();
   $('body').append("<input type='radio' id='tempJmolToolsObj' data-coord='" + data_coord + "'>");
   $('#tempJmolToolsObj').hide();
@@ -34,4 +45,9 @@ var jmolShow = function(ids) {
     showNeighborhoodId: 'neighborhood',
     showNumbersId: 'showNtNums',
   }).jmolToggle();
+};
+
+var jmolShowInteraction = function(interaction) {
+  var data = {};
+  jmolShowSelection(interaction['data-nts']);
 };

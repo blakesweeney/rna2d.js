@@ -38,14 +38,14 @@ def sequence_data(data, trans):
     # This should undo those operations to give us a reasonable set of
     # coordinates.
     value = lambda i: (num[i] * trans['scale'][i] + trans['translate'][i])
-    x = value(0)
+    x = value(0) - 60
 
     # Postscripts origin is lower left, so I need to subtract the y coordinate
     # from the size of the paper to get the coordinate in SVG, since SVG origin
     # is in the upper left. I think these pages are A4, so the size is 842.
     # This should be close enough anyway, as the image includes a header we
     # don't want to.
-    y = 800 - value(1)
+    y = 700 - value(1)
 
     # 1.4 is a just a scaling factor. Seems to work well.
     return {

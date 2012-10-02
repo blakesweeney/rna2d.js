@@ -1,28 +1,135 @@
 <!DOCTYPE html>
-<html>
+<html lang='en'>
   <head>
     <meta charset='utf-8'>
     <style type='text/css'>
 
-.brush {
-  fill: #000;
-  fill-opacity: .125;
-  stroke: #B0A2A8;
-}
+      .brush {
+        fill: #000;
+        fill-opacity: .125;
+        stroke: #B0A2A8;
+      }
+
+      .interaction {
+        stroke-width: 1;
+        stroke: black;
+        opacity: 1;
+      }
 
     </style>
+    <link href="bootstrap.min.css" rel='stylesheet'>
+    <link href='bootstrap-toggle-buttons.css' rel='stylesheet'>
+    <script src="jmol/jmol.js"></script>
+    <script src="jquery.min.js"></script>
+    <script src='jquery.toggle.buttons.js'></script>
+    <script src="jquery.jmolTools.js"></script>
+    <script src='d3.js'></script>
+    <script src='rna-2d.js'></script>
+    <script src='rna-2d-jmol.js'></script>
   </head>
 
   <body>
-    <script src='d3.js'></script>
-    <script src='rna-2d.js'></script>
+    
+    <div class='container-fluid'>
+      <div class='row-fluid'>
 
-    <div id='rna-2d', style='float:left'>
+        <!-- Side bar -->
+        <div class='span2'>
+          <h2>Controls</h2>
+          <label for='mode-checkbox'>Interaction Mode</label>
+          <div id='mode-button'>
+            <input id='mode-checkbox' type='checkbox' value='v' checked='checked'>
+          </div>
+
+          <label for='cww-checkbox'>cWW</label>
+          <div id='cww-toggle'>
+            <input id='cww-checkbox' type='checkbox' value='v' checked='checked'>
+          </div>
+
+          <label for='tww-checkbox'>tWW</label>
+          <div id='tww-toggle'>
+            <input id='tww-checkbox' type='checkbox' value='v'>
+          </div>
+
+          <label for='cwh-checkbox'>cWH</label>
+          <div id='cwh-toggle'>
+            <input id='cwh-checkbox' type='checkbox' value='v'>
+          </div>
+
+          <label for='twh-checkbox'>tWH</label>
+          <div id='twh-toggle'>
+            <input id='twh-checkbox' type='checkbox' value='v'>
+          </div>
+
+          <label for='cws-checkbox'>cWS</label>
+          <div id='cws-toggle'>
+            <input id='cws-checkbox' type='checkbox' value='v'>
+          </div>
+
+          <label for='tws-checkbox'>tWS</label>
+          <div id='tws-toggle'>
+            <input id='tws-checkbox' type='checkbox' value='v'>
+          </div>
+
+          <label for='chh-checkbox'>cHH</label>
+          <div id='chh-toggle'>
+            <input id='chh-checkbox' type='checkbox' value='v'>
+          </div>
+
+          <label for='thh-checkbox'>tHH</label>
+          <div id='thh-toggle'>
+            <input id='thh-checkbox' type='checkbox' value='v'>
+          </div>
+
+          <label for='chs-checkbox'>cHS</label>
+          <div id='chs-toggle'>
+            <input id='chs-checkbox' type='checkbox' value='v'>
+          </div>
+
+          <label for='ths-checkbox'>tHS</label>
+          <div id='ths-toggle'>
+            <input id='ths-checkbox' type='checkbox' value='v'>
+          </div>
+
+          <label for='css-checkbox'>cSS</label>
+          <div id='css-toggle'>
+            <input id='css-checkbox' type='checkbox' value='v'>
+          </div>
+
+          <label for='tss-checkbox'>tSS</label>
+          <div id='tss-toggle'>
+            <input id='tss-checkbox' type='checkbox' value='v'>
+          </div>
+        </div>
+
+        <!-- 2D structure -->
+        <div class='span6'>
+          <h2>E. coli Secondary Structure</h2>
+          <div id='rna-2d'></div>
+        </div>
+
+        <div class='span2'>
+          <div id='jmol'>
+            <script type="text/javascript">
+              jmolInitialize("./jmol");
+              jmolSetDocument(0);
+              jmolSetAppletColor("#ffffff");
+            </script>
+          </div>
+        </div>
+      </div>
+
+      <!-- Code to generate 2D structure and toggle buttons -->
       <script type='text/javascript'>
-        var plot = plot2D({width: 1300, height: 1500});
+        var plot = plot2D({
+          width: 630, 
+          height: 1200, 
+          onBrushUpdate: jmolShowSelection,
+          onInteractionClick: jmolShowInteraction
+        });
 
         d3.json('data/16S-ecoli.js', function(data) {
-          data = data.slice(1, 30);
+            // data = data.slice(1, 10);
           plot.coordinates(data);
 
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
@@ -31,8 +138,55 @@
             plot.brush.enable();
           });
         });
-      </script>
-    </div>
 
+        var toggler = function(given) {
+          var conf = {
+            animated: true,
+            transitionspeed: 0.25,
+            width: 110,
+            style: {
+              enabled: 'primary',
+              disabled: 'primary'
+            }
+          };
+          return $.extend({}, conf, given);
+        };
+
+        var family_toggle = function(family) {
+          return toggler({
+            onChange: function($e1, status, e) {
+              plot.toggleInteraction(family);
+            },
+            width: 120,
+            label: {
+              enabled: 'Shown',
+              disabled: 'Hidden'
+            } 
+          })
+       };
+
+        $('#cww-toggle').toggleButtons(family_toggle('cWW'));
+        $('#tww-toggle').toggleButtons(family_toggle('tWW'));
+        $('#cwh-toggle').toggleButtons(family_toggle('cWH'));
+        $('#twh-toggle').toggleButtons(family_toggle('tWH'));
+        $('#cws-toggle').toggleButtons(family_toggle('cWS'));
+        $('#tws-toggle').toggleButtons(family_toggle('tWS'));
+        $('#chh-toggle').toggleButtons(family_toggle('cHH'));
+        $('#thh-toggle').toggleButtons(family_toggle('tHH'));
+        $('#chs-toggle').toggleButtons(family_toggle('cHS'));
+        $('#ths-toggle').toggleButtons(family_toggle('tHS'));
+        $('#css-toggle').toggleButtons(family_toggle('cSS'));
+        $('#tss-toggle').toggleButtons(family_toggle('tSS'));
+
+        $('#mode-button').toggleButtons(toggler({
+          onChange: function($el, status, e) {
+            plot.brush.toggle();
+          },
+          label: {
+            enabled: 'Select',
+            disabled: 'Click'
+          }
+        }));
+      </script>
   </body>
 </html>
