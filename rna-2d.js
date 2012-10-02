@@ -97,10 +97,16 @@ var plot2D = function(given) {
         var xScale = d3.scale.linear().domain([0, config.width]).range([0, config.width])
 
         var brush = d3.svg.brush()
+          .on('brushstart', startBrush)
           .on('brush', updateBrush)
           .on('brushend', endBrush)
           .x(xScale)
           .y(yScale);
+
+        function startBrush() {
+          // Check if click within the bounding box of all nts or interactions.
+          // Ugh. Such a pain. Maybe do this later.
+        };
 
         function updateBrush(p) {
           var e = brush.extent();
