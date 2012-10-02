@@ -1,6 +1,15 @@
 var plot2D = function(given) {
 
-  var selection;
+  // See http://mathworld.wolfram.com/Circle-LineIntersection.html
+  // var circleLineIntersection = function(p1, p2) {
+  //   var dx = p2.x - p1.x;
+  //   var dy = p2.y - p1.y;
+  //   var dr = sqrt(dx^2 - dy^2);
+  //   var D = p1.x * p2.y - p2.x * p1.y;
+  //   var sign = function(v) { return v < 0 ? -1 : 1 };
+  //   var x = D * dy + sign(dy) * dx * 
+  // };
+
   var config = {
     interaction_class: 'interaction',
     nucleotide_class: 'nucleotide',
@@ -30,8 +39,7 @@ var plot2D = function(given) {
     };
   };
 
-  var plot = function(select) {
-    selection = select;
+  var plot = function(selection) {
     selection.call(function(selection) {
 
       // Visualization object
@@ -49,20 +57,39 @@ var plot2D = function(given) {
         .attr('font-size', config.font_size)
         .text(function(data) { return data['sequence']; });
 
-      // Draw the interactions
-      vis.selectAll(config.int)
-        .data(plot.interactions)
-        .enter().append('svg:line')
-        .attr('x1', function(data, i) { return (data ? plot.utils.rightSide(data.nt1) : null); })
-        .attr('y1', function(data, i) { return (data ? plot.utils.verticalCenter(data.nt1) : null); })
-        .attr('x2', function(data, i) { return (data ? plot.utils.leftSide(data.nt2) : null); })
-        .attr('y2', function(data, i) { return (data ? plot.utils.verticalCenter(data.nt2) : null); })
-        .attr('id', function(data, i) { return (data ? data.nt1 + ',' + data.nt2 : null) })
-        .attr('stroke', 'black')
-        .attr('stroke-width', config.interaction_width)
-        .attr('opacity', 1)
-        .attr('class', function(d) { return (d ? ['interaction', d['fr3d']['family']] : []); });
+      // Compute the data to use for interactions
+      var interactions = [];
+      for(var i = 0; i < plot.interactions.length; i++) {
+        var obj = plot.interactions[i];
+        var nt1 = plot.utils.element(obj.nt1);
+        var nt2 = plot.utils.element(obj.nt2);
+        if (nt1 && nt2) {
+          interactions.push({
+            family: obj.family,
+            id: obj.nt1 + ',' + obj.nt2 + ',' + obj.family,
+            'data-nts': obj.nt1 + ',' + obj.nt2,
+            x1: plot.utils.centerOf(obj.nt1),
+            y1: plot.utils.verticalCenter(obj.nt1),
+            x2: plot.utils.centerOf(obj.nt2),
+            y2: plot.utils.verticalCenter(obj.nt2)
+          });
+        };
+      }
 
+      // Draw the interactions
+      vis.selectAll(config.interaction_class)
+        .data(interactions)
+        .enter().append('svg:line')
+        .attr('id', function(data) { return data.id; })
+        .attr('class', function(d) { return 'interaction ' + d.family; })
+        .attr('x1', function(data) { return data.x1; })
+        .attr('y1', function(data) { return data.y1; })
+        .attr('x2', function(data) { return data.x2; })
+        .attr('y2', function(data) { return data.y2; })
+        .attr('stroke', 'black')
+        .attr('stroke-width', 2)
+        .attr('opacity', 1)
+        ;
 
       // Create a brush for selecting
       plot.brush = function() {
@@ -71,7 +98,7 @@ var plot2D = function(given) {
 
         var brush = d3.svg.brush()
           .on('brush', updateBrush)
-          .on('brushend', brushend)
+          .on('brushend', endBrush)
           .x(xScale)
           .y(yScale);
 
@@ -90,7 +117,7 @@ var plot2D = function(given) {
           config.onBrushUpdate(matched);
         };
 
-        function brushend() {
+        function endBrush() {
           if (brush.empty()) {
             vis.selectAll('.' + config.nucleotide_class)
               .attr("checked", false);
@@ -104,7 +131,7 @@ var plot2D = function(given) {
       // Show the brush
       plot.brush.enable = function() {
         vis.call(plot.brush)
-          .selectAll('rect')
+          .selectAll('.extent')
           .classed(config.brush_class, true);
         return plot;
       };
@@ -125,12 +152,13 @@ var plot2D = function(given) {
 
   plot.utils = {
     element: function(id) { return document.getElementById(id); },
-    bbox: function(id) { return plot.utils.element(id).getBBox(); },
+    bbox: function(id) { return plot.utils.element(id).getBBox();},
     widthOf: function(id) { return plot.utils.bbox(id).width; },
     heightOf: function(id) { return plot.utils.bbox(id).height; },
-    rightSide: function(id) { return indexed[id]['x'] + widthOf(id); },
-    leftSide: function(id) { return indexed[id]['x']; },
-    verticalCenter: function(id) { return indexed[id]['y'] - heightOf(id)/4; }
+    rightSide: function(id) { return plot.utils.bbox(id).x + plot.utils.widthOf(id); },
+    leftSide: function(id) { return plot.utils.bbox(id).x; },
+    verticalCenter: function(id) { return plot.utils.bbox(id).y - plot.utils.heightOf(id)/4; },
+    centerOf: function(id) { return plot.utils.bbox(id).x + plot.utils.widthOf(id)/2; }
   }
 
   plot.showOnlyInteractions = function(type) {

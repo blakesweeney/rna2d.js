@@ -4,7 +4,7 @@
     <meta charset='utf-8'>
     <style type='text/css'>
 
-rect.extent {
+.brush {
   fill: #000;
   fill-opacity: .125;
   stroke: #B0A2A8;
@@ -20,10 +20,16 @@ rect.extent {
     <div id='rna-2d', style='float:left'>
       <script type='text/javascript'>
         var plot = plot2D({width: 1300, height: 1500});
-        d3.json('16S-luteo.js', function(data) {
+
+        d3.json('data/16S-ecoli.js', function(data) {
+          data = data.slice(1, 30);
           plot.coordinates(data);
-          d3.select('#rna-2d').call(plot);
-          plot.brush.enable();
+
+          d3.csv('data/16S-ecoli-interactions.csv', function(data) {
+            plot.interactions(data);
+            d3.select('#rna-2d').call(plot);
+            plot.brush.enable();
+          });
         });
       </script>
     </div>

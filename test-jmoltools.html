@@ -26,10 +26,14 @@ rect.extent {
       <script type='text/javascript'>
         var plot = plot2D({width: 100, height: 200, onBrushUpdate: jmolShow});
 
-        d3.json('16S-luteo.js', function(data) {
+        d3.json('data/16S-ecoli.js', function(data) {
           plot.coordinates(data);
-          d3.select('#rna-2d').call(plot);
-          plot.brush.enable();
+
+          d3.csv('http://rna.bgsu.edu/rna3dhub/pdb/2AW7/interactions/fr3d/basepairs/csv', function(data) {
+            plot.interactions(data);
+            d3.select('#rna-2d').call(plot);
+            plot.brush.enable();
+          });
         });
 
       </script>

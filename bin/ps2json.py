@@ -6,16 +6,24 @@ import sys
 import simplejson as json
 
 
-# SEQUENCE_PATTERN = re.compile('^\((\w)\) (-?\d+\.\d+) (-?\d+\.\d+) lwstring$')
+SEQUENCE_PATTERN = re.compile('^\((\w)\) (-?\d+\.\d+) (-?\d+\.\d+) lwstring$')
 # TRANSLATE_PATTERN = re.compile('^(-?\d+\.\d+) (-?\d+\.\d+) translate$')
 # SCALE_PATTERN = re.compile('^(\d+) (\d+) scale$')
 COMMENT = re.compile('%.*$')
 
+START_LINE = '(A) 105.30 -101.00 lwstring'
 
+
+# This is meant to be a rough, very rough way of converting points to pixels,
+# to more or less spread out the leters.
 def point2pixel(number):
     # return number
     return 96.0/72.0 * number
     # return 72.0/96.0 * number
+
+
+def make_id(data, index):
+    return '2AW7_AU_1_A_%s_%s_' % (index, data['sequence'])
 
 
 def to_num(arr):
@@ -33,13 +41,17 @@ def sequence_data(data, trans):
     x = value(0)
 
     # Postscripts origin is lower left, so I need to subtract the y coordinate
-    # from the size of the paper to get the coordinate in SVG. I think these
-    # pages are A4, so the size is 842. This should be close enough anyway
+    # from the size of the paper to get the coordinate in SVG, since SVG origin
+    # is in the upper left. I think these pages are A4, so the size is 842.
+    # This should be close enough anyway, as the image includes a header we
+    # don't want to.
     y = 800 - value(1)
+
+    # 1.4 is a just a scaling factor. Seems to work well.
     return {
-      'x': 1.4 * point2pixel(x),
-      'y': 1.4 * point2pixel(y),
-      'sequence': data[0][1]
+        'x': 1.4 * point2pixel(x),
+        'y': 1.4 * point2pixel(y),
+        'sequence': data[0][1].upper()
     }
 
 
@@ -58,21 +70,23 @@ def update(transform, scale=None, translate=None):
 def parse_postscript(raw):
     data = []
     transform = {'scale': [1, 1], 'translate': [0, 0]}
+    started = False
+    index = 1
     for line in raw:
         line = COMMENT.sub('', line.rstrip())
         command = line.split(' ')
+        if line == START_LINE:
+            started = True
         if command[-1] == 'scale' and len(command) == 3:
             transform = update(transform, scale=command[0:2])
         elif command[-1] == 'translate' and len(command) == 3:
             transform = update(transform, translate=command[0:2])
-        elif command[-1] == 'lwstring' and len(command) == 4 and \
-            len(command[0]) == 3:
-            data.append(sequence_data(command, transform))
-    y_sorted = sorted(data, key=lambda d: d['y'])
-    for index, data in enumerate(y_sorted):
-        id = '2AVY_AU_1_A_%s_%s_' % (index + 5, data['sequence'].upper())
-        data.update({'id': id})
-    return y_sorted
+        elif started and SEQUENCE_PATTERN.match(line):
+            info = sequence_data(command, transform)
+            info.update({'id': make_id(info, index)})
+            data.append(info)
+            index += 1
+    return data
 
 
 def main(filename):
