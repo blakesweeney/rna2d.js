@@ -32,7 +32,7 @@ var jmolShowSelection = function(matched) {
   jmolSetup();
 
   var data_coord = '';
-  if (typeof(matched) == 'Object') {
+  if (typeof(matched) == 'object') {
     var ids = $.map(matched, function(value, key) { return key; });
     data_coord = ids.join(',');
   } else {
