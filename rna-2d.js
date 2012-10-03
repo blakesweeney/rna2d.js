@@ -14,6 +14,7 @@ var plot2D = function(given) {
     interaction_class: 'interaction',
     nucleotide_class: 'nucleotide',
     brush_class: 'brush',
+    box_class: 'nt-box',
     font_size: 8,
     width: 500,
     height: 1000,
@@ -42,6 +43,7 @@ var plot2D = function(given) {
 
   var plot = function(selection) {
     selection.call(function(selection) {
+      var boxes = {};
 
       var xCoordMax = d3.max(plot.coordinates, function(d) { return d.x; });
       var yCoordMax = d3.max(plot.coordinates, function(d) { return d.y; });
@@ -188,6 +190,36 @@ var plot2D = function(given) {
             return data.visibility;
           });
       };
+
+      plot.makeNucleotideBox = function(id, nts) {
+        var up = d3.max(nts, function(d) { return plot.utils.topOf(d) });
+        var down = d3.max(nts, function(d) { return plot.utils.bottomOf(d) });
+        var left = d3.max(nts, function(d) { return plot.utils.leftSide(d); });
+        var right = d3.max(nts, function(d) { return plot.utils.rightSide(d); });
+        vis.append('rect')
+          .attr('id', id)
+          .attr('class', config.box_class)
+          .attr('x', down + 10)
+          .attr('y', left + 10)
+          .attr('width', right - left + 10)
+          .attr('height', up - down + 10)
+          .attr('rx', 20)
+          .attr('ry', 20);
+        boxes[id] = nts;
+        return plot;
+      };
+
+      plot.deleteNucleotideBox = function(id) {
+        delete(boxes[id]);
+        return plot;
+      };
+
+      plot.toggleNucleotideBox = function(id, nts) {
+        if (boxes[id]) {
+          return plot.deleteNucleotideBox(id);
+        }
+        return plot.makeNucleotideBox(id, nts);
+      };
     });
   };
 
@@ -203,7 +235,9 @@ var plot2D = function(given) {
     rightSide: function(id) { return plot.utils.bbox(id).x + plot.utils.widthOf(id); },
     leftSide: function(id) { return plot.utils.bbox(id).x; },
     verticalCenter: function(id) { return plot.utils.bbox(id).y - plot.utils.heightOf(id)/4; },
-    centerOf: function(id) { return plot.utils.bbox(id).x + plot.utils.widthOf(id)/2; }
+    centerOf: function(id) { return plot.utils.bbox(id).x + plot.utils.widthOf(id)/2; },
+    bottomOf: function(id) { return plot.utils.bbox(id).y },
+    topOf: function(id) { return plot.utils.bottomOf(id) + plot.utils.heightOf(id) }
   }
 
   return plot;

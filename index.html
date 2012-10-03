@@ -36,78 +36,126 @@
         <!-- Side bar -->
         <div class='span2'>
           <h2>Controls</h2>
-          <label for='mode-checkbox'>Interaction Mode</label>
-          <div id='mode-button'>
-            <input id='mode-checkbox' type='checkbox' value='v' checked='checked'>
+
+          <h4>Mode</h4>
+          <div id='mode'>
+            <label for='mode-checkbox'>Selection Mode</label>
+            <div id='mode-button'>
+              <input id='mode-checkbox' type='checkbox' value='v' checked='checked'>
+            </div>
           </div>
 
-          <label for='cww-checkbox'>cWW</label>
-          <div id='cww-toggle'>
-            <input id='cww-checkbox' type='checkbox' value='v' checked='checked'>
+          <h4 id='interaction-controls-title'>Interactions</h4>
+          <div id='interaction-controls'>
+            <ul>
+              <li>
+                <label for='cww-checkbox'>cWW</label>
+                <div id='cww-toggle'>
+                  <input id='cww-checkbox' type='checkbox' value='v' checked='checked'>
+                </div>
+              </li>
+
+              <li>
+                <label for='tww-checkbox'>tWW</label>
+                <div id='tww-toggle'>
+                  <input id='tww-checkbox' type='checkbox' value='v'>
+                </div>
+              </li>
+
+              <li>
+                <label for='cwh-checkbox'>cWH</label>
+                <div id='cwh-toggle'>
+                  <input id='cwh-checkbox' type='checkbox' value='v'>
+                </div>
+              </li>
+
+              <li>
+                <label for='twh-checkbox'>tWH</label>
+                <div id='twh-toggle'>
+                  <input id='twh-checkbox' type='checkbox' value='v'>
+                </div>
+              </li>
+
+              <li>
+                <label for='cws-checkbox'>cWS</label>
+                <div id='cws-toggle'>
+                  <input id='cws-checkbox' type='checkbox' value='v'>
+                </div>
+              </li>
+
+              <li>
+                <label for='tws-checkbox'>tWS</label>
+                <div id='tws-toggle'>
+                  <input id='tws-checkbox' type='checkbox' value='v'>
+                </div>
+              </li>
+
+              <li>
+                <label for='chh-checkbox'>cHH</label>
+                <div id='chh-toggle'>
+                  <input id='chh-checkbox' type='checkbox' value='v'>
+                </div>
+              </li>
+
+              <li>
+                <label for='thh-checkbox'>tHH</label>
+                <div id='thh-toggle'>
+                  <input id='thh-checkbox' type='checkbox' value='v'>
+                </div>
+              </li>
+
+              <li>
+                <label for='chs-checkbox'>cHS</label>
+                <div id='chs-toggle'>
+                  <input id='chs-checkbox' type='checkbox' value='v'>
+                </div>
+              </li>
+
+              <li>
+                <label for='ths-checkbox'>tHS</label>
+                <div id='ths-toggle'>
+                  <input id='ths-checkbox' type='checkbox' value='v'>
+                </div>
+              </li>
+
+              <li>
+                <label for='css-checkbox'>cSS</label>
+                <div id='css-toggle'>
+                  <input id='css-checkbox' type='checkbox' value='v'>
+                </div>
+              </li>
+
+              <li>
+                <label for='tss-checkbox'>tSS</label>
+                <div id='tss-toggle'>
+                  <input id='tss-checkbox' type='checkbox' value='v'>
+                </div>
+              </li>
+            </ul>
           </div>
 
-          <label for='tww-checkbox'>tWW</label>
-          <div id='tww-toggle'>
-            <input id='tww-checkbox' type='checkbox' value='v'>
-          </div>
+          <!-- <h4>Motifs</h4> -->
+          <!-- <div id='motif-controls'> -->
+          <!--   <label for='motif-box-checkbox'>Boxes</label> -->
+          <!--   <div id='motif-box-toggle'> -->
+          <!--     <input id='motif-box-checkbox' type='checkbox'> -->
+          <!--   </div> -->
 
-          <label for='cwh-checkbox'>cWH</label>
-          <div id='cwh-toggle'>
-            <input id='cwh-checkbox' type='checkbox' value='v'>
-          </div>
+          <!--   <label for='motif-color-checkbox'>Colors</label> -->
+          <!--   <div id='motif-color-toggle'> -->
+          <!--     <input id='motif-color-checkbox' type='checkbox'> -->
+          <!--   </div> -->
+          <!-- </div> -->
 
-          <label for='twh-checkbox'>tWH</label>
-          <div id='twh-toggle'>
-            <input id='twh-checkbox' type='checkbox' value='v'>
-          </div>
-
-          <label for='cws-checkbox'>cWS</label>
-          <div id='cws-toggle'>
-            <input id='cws-checkbox' type='checkbox' value='v'>
-          </div>
-
-          <label for='tws-checkbox'>tWS</label>
-          <div id='tws-toggle'>
-            <input id='tws-checkbox' type='checkbox' value='v'>
-          </div>
-
-          <label for='chh-checkbox'>cHH</label>
-          <div id='chh-toggle'>
-            <input id='chh-checkbox' type='checkbox' value='v'>
-          </div>
-
-          <label for='thh-checkbox'>tHH</label>
-          <div id='thh-toggle'>
-            <input id='thh-checkbox' type='checkbox' value='v'>
-          </div>
-
-          <label for='chs-checkbox'>cHS</label>
-          <div id='chs-toggle'>
-            <input id='chs-checkbox' type='checkbox' value='v'>
-          </div>
-
-          <label for='ths-checkbox'>tHS</label>
-          <div id='ths-toggle'>
-            <input id='ths-checkbox' type='checkbox' value='v'>
-          </div>
-
-          <label for='css-checkbox'>cSS</label>
-          <div id='css-toggle'>
-            <input id='css-checkbox' type='checkbox' value='v'>
-          </div>
-
-          <label for='tss-checkbox'>tSS</label>
-          <div id='tss-toggle'>
-            <input id='tss-checkbox' type='checkbox' value='v'>
-          </div>
         </div>
 
         <!-- 2D structure -->
         <div class='span6'>
-          <h2>E. coli Secondary Structure</h2>
+          <h2><i>E. coli</i> Secondary Structure</h2>
           <div id='rna-2d'></div>
         </div>
 
+        <!-- Jmol Viewer -->
         <div class='span2'>
           <div id='jmol'>
             <script type="text/javascript">
@@ -115,6 +163,8 @@
               jmolSetDocument(0);
               jmolSetAppletColor("#ffffff");
             </script>
+          </div>
+          <div id='info'>
           </div>
         </div>
       </div>
@@ -127,6 +177,9 @@
           onBrushUpdate: jmolShowSelection,
           onInteractionClick: jmolShowInteraction
         });
+
+        var motifs = {};
+        d3.json('data/16S-ecoli-motifs.js', function(d) { motifs = d; });
 
         d3.json('data/16S-ecoli.js', function(data) {
             // data = data.slice(1, 10);
@@ -163,7 +216,7 @@
               disabled: 'Hidden'
             } 
           })
-       };
+        };
 
         $('#cww-toggle').toggleButtons(family_toggle('cWW'));
         $('#tww-toggle').toggleButtons(family_toggle('tWW'));
@@ -187,6 +240,42 @@
             disabled: 'Click'
           }
         }));
+
+        $('#motif-box-toggle').toggleButtons(toggler({
+          onChange: function($e1, status, e) {
+            for(var id in motifs) {
+              plot.toggleNucleotideBox(id, motifs[id].nucleotides);
+            }
+          },
+          width: 120,
+          label: {
+            enabled: 'Shown',
+            disabled: 'Hidden'
+          }
+        }));
+
+        $('#motif-color-toggle').toggleButtons(toggler({
+          onChange: function($e1, status, e) {
+            var patt = /^HL/;
+            for(var id in motifs) {
+              var color = 'blue';
+              if (patt.test(id)) {
+                color = 'green';
+              }
+              plot.toggleNucleotideColor(id, color);
+            }
+          },
+          width: 120,
+          label: {
+            enabled: 'Shown',
+            disabled: 'Hidden'
+          }
+        }));
+
+        $('#interaction-controls-title').click(function() {
+          $('#interaction-controls').toggle();
+        });
+        $('#interaction-controls').toggle();
       </script>
   </body>
 </html>
