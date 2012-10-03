@@ -23,7 +23,8 @@ var plot2D = function(given) {
     onBrushClear: Object,
     onBrushUpdate: Object,
     brush_enabled: true,
-    onInteractionClick: Object
+    onInteractionClick: Object,
+    includeNear: false
   };
 
   for(var key in given) {
@@ -178,10 +179,37 @@ var plot2D = function(given) {
         return plot.brush.enable();
       };
 
+      plot.toggleNearInteraction = function(family) {
+        plot.toggleInteraction(
+        config.includeNear = !config.includeNear;
+      };
+
+      plot.eachInteraction = function(family, fn) {
+        console.log('.' + family);
+        fn(vis.selectAll('.' + family));
+
+       if (config.includeNear && family.substring(0, 1) != 'n') {
+         fn(vis.selectAll('.n' + family));
+       };
+
+       return plot;
+      }
+
+      plot.showInteraction = function(family) {
+        return plot.eachInteraction(family, function(sel) {
+          sel.attr('visibility', true);
+        });
+      };
+
+      plot.hideInteraction = function(family) {
+        return plot.eachInteraction(family, function(sel) {
+          sel.attr('visibility', false);
+        });
+      };
 
       plot.toggleInteraction = function(family) {
-        vis.selectAll('.' + family)
-          .attr('visibility', function(data) {
+        return plot.eachInteraction(family, function(sel) {
+          sel.attr('visibility', function(data) {
             if (data.visibility == 'visible') {
               data.visibility = 'hidden';
             } else {
@@ -189,6 +217,7 @@ var plot2D = function(given) {
             };
             return data.visibility;
           });
+        });
       };
 
       plot.makeNucleotideBox = function(id, nts) {
