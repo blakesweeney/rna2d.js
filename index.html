@@ -73,15 +73,16 @@
           plot.coordinates(data);
 
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
-            plot.interactions(data);
+            plot.connections(data);
             d3.select('#rna-2d').call(plot);
+            console.log('hi');
             plot.brush.enable();
           });
         });
 
       $('#mode-checkbox').click(function() { plot.brush.toggle(); });
-      $('#cww-checkbox').click(function() { plot.toggleInteraction('cWW'); });
-      $('#near-checkbox').click(function() { plot.includeNear(!plot.includeNear); });
+      $('#cww-checkbox').click(function() { plot.interactions.toggle('cWW'); });
+      // $('#near-checkbox').click(function() { plot.includeNear(!plot.includeNear); });
 
       </script>
   </body>
