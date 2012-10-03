@@ -1,0 +1,11 @@
+.brush {
+  fill: #000;
+  fill-opacity: .125;
+  stroke: #B0A2A8;
+}
+
+.interaction {
+  stroke-width: 1;
+  stroke: black;
+  opacity: 1;
+}
