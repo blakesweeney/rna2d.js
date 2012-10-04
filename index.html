@@ -32,12 +32,12 @@
         </div>
       </div>
 
-      <div id='near-controls'>
-        <label for='cww-checkbox'>Nears</label>
-        <div id='near-toggle'>
-          <input id='near-checkbox' type='checkbox' value='v'>
-        </div>
-      </div>
+      <!-- <div id='near-controls'> -->
+      <!--   <label for='cww-checkbox'>Nears</label> -->
+      <!--   <div id='near-toggle'> -->
+      <!--     <input id='near-checkbox' type='checkbox' value='v'> -->
+      <!--   </div> -->
+      <!-- </div> -->
 
         <!-- 2D structure -->
         <div class='span6'>
@@ -75,14 +75,12 @@
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
             plot.connections(data);
             d3.select('#rna-2d').call(plot);
-            console.log('hi');
             plot.brush.enable();
           });
         });
 
       $('#mode-checkbox').click(function() { plot.brush.toggle(); });
       $('#cww-checkbox').click(function() { plot.interactions.toggle('cWW'); });
-      // $('#near-checkbox').click(function() { plot.includeNear(!plot.includeNear); });
 
       </script>
   </body>
