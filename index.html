@@ -3,12 +3,9 @@
   <head>
     <meta charset='utf-8'>
     <link href='static/css/main.css' rel='stylesheet'>
-    <link href='static/css/bootstrap.min.css' rel='stylesheet'>
-    <link href='static/css/bootstrap-toggle-buttons.css' rel='stylesheet'>
 
     <script src='static/jmol/jmol.js'></script>
     <script src='static/js/jquery.min.js'></script>
-    <script src='static/js/jquery.toggle.buttons.js'></script>
     <script src='static/js/jquery.jmolTools.js'></script>
     <script src='static/js/d3.js'></script>
 
@@ -17,125 +14,30 @@
   </head>
 
   <body>
-    
-    <div class='container-fluid'>
-      <div class='row-fluid'>
 
-        <!-- Side bar -->
-        <div class='span2'>
-          <h2>Controls</h2>
+      <!-- Side bar -->
+      <div>
 
-          <h4>Mode</h4>
-          <div id='mode'>
-            <label for='mode-checkbox'>Selection Mode</label>
-            <div id='mode-button'>
-              <input id='mode-checkbox' type='checkbox' value='v' checked='checked'>
-            </div>
-          </div>
-
-          <h4 id='interaction-controls-title'>Interactions</h4>
-          <div id='interaction-controls'>
-            <ul>
-              <li>
-                <label for='cww-checkbox'>cWW</label>
-                <div id='cww-toggle'>
-                  <input id='cww-checkbox' type='checkbox' value='v' checked='checked'>
-                </div>
-              </li>
-
-              <li>
-                <label for='tww-checkbox'>tWW</label>
-                <div id='tww-toggle'>
-                  <input id='tww-checkbox' type='checkbox' value='v'>
-                </div>
-              </li>
-
-              <li>
-                <label for='cwh-checkbox'>cWH</label>
-                <div id='cwh-toggle'>
-                  <input id='cwh-checkbox' type='checkbox' value='v'>
-                </div>
-              </li>
-
-              <li>
-                <label for='twh-checkbox'>tWH</label>
-                <div id='twh-toggle'>
-                  <input id='twh-checkbox' type='checkbox' value='v'>
-                </div>
-              </li>
-
-              <li>
-                <label for='cws-checkbox'>cWS</label>
-                <div id='cws-toggle'>
-                  <input id='cws-checkbox' type='checkbox' value='v'>
-                </div>
-              </li>
-
-              <li>
-                <label for='tws-checkbox'>tWS</label>
-                <div id='tws-toggle'>
-                  <input id='tws-checkbox' type='checkbox' value='v'>
-                </div>
-              </li>
-
-              <li>
-                <label for='chh-checkbox'>cHH</label>
-                <div id='chh-toggle'>
-                  <input id='chh-checkbox' type='checkbox' value='v'>
-                </div>
-              </li>
-
-              <li>
-                <label for='thh-checkbox'>tHH</label>
-                <div id='thh-toggle'>
-                  <input id='thh-checkbox' type='checkbox' value='v'>
-                </div>
-              </li>
-
-              <li>
-                <label for='chs-checkbox'>cHS</label>
-                <div id='chs-toggle'>
-                  <input id='chs-checkbox' type='checkbox' value='v'>
-                </div>
-              </li>
-
-              <li>
-                <label for='ths-checkbox'>tHS</label>
-                <div id='ths-toggle'>
-                  <input id='ths-checkbox' type='checkbox' value='v'>
-                </div>
-              </li>
-
-              <li>
-                <label for='css-checkbox'>cSS</label>
-                <div id='css-toggle'>
-                  <input id='css-checkbox' type='checkbox' value='v'>
-                </div>
-              </li>
-
-              <li>
-                <label for='tss-checkbox'>tSS</label>
-                <div id='tss-toggle'>
-                  <input id='tss-checkbox' type='checkbox' value='v'>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          <!-- <h4>Motifs</h4> -->
-          <!-- <div id='motif-controls'> -->
-          <!--   <label for='motif-box-checkbox'>Boxes</label> -->
-          <!--   <div id='motif-box-toggle'> -->
-          <!--     <input id='motif-box-checkbox' type='checkbox'> -->
-          <!--   </div> -->
-
-          <!--   <label for='motif-color-checkbox'>Colors</label> -->
-          <!--   <div id='motif-color-toggle'> -->
-          <!--     <input id='motif-color-checkbox' type='checkbox'> -->
-          <!--   </div> -->
-          <!-- </div> -->
-
+      <div id='mode'>
+        <label for='mode-checkbox'>Selection Mode</label>
+        <div id='mode-button'>
+          <input id='mode-checkbox' type='checkbox' value='v' checked='checked'>
         </div>
+      </div>
+
+      <div id='interaction-controls'>
+        <label for='cww-checkbox'>cWW</label>
+        <div id='cww-toggle'>
+          <input id='cww-checkbox' type='checkbox' value='v' checked='checked'>
+        </div>
+      </div>
+
+      <!-- <div id='near-controls'> -->
+      <!--   <label for='cww-checkbox'>Nears</label> -->
+      <!--   <div id='near-toggle'> -->
+      <!--     <input id='near-checkbox' type='checkbox' value='v'> -->
+      <!--   </div> -->
+      <!-- </div> -->
 
         <!-- 2D structure -->
         <div class='span6'>
@@ -147,7 +49,7 @@
         <div class='span2'>
           <div id='jmol'>
             <script type="text/javascript">
-              jmolInitialize("./jmol");
+              jmolInitialize("./static/jmol");
               jmolSetDocument(0);
               jmolSetAppletColor("#ffffff");
             </script>
@@ -166,104 +68,20 @@
           onInteractionClick: jmolShowInteraction
         });
 
-        var motifs = {};
-        d3.json('data/16S-ecoli-motifs.js', function(d) { motifs = d; });
-
         d3.json('data/16S-ecoli.js', function(data) {
             // data = data.slice(1, 10);
           plot.coordinates(data);
 
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
-            plot.interactions(data);
+            plot.connections(data);
             d3.select('#rna-2d').call(plot);
             plot.brush.enable();
           });
         });
 
-        var toggler = function(given) {
-          var conf = {
-            animated: true,
-            transitionspeed: 0.25,
-            width: 110,
-            style: {
-              enabled: 'primary',
-              disabled: 'primary'
-            }
-          };
-          return $.extend({}, conf, given);
-        };
+      $('#mode-checkbox').click(function() { plot.brush.toggle(); });
+      $('#cww-checkbox').click(function() { plot.interactions.toggle('cWW'); });
 
-        var family_toggle = function(family) {
-          return toggler({
-            onChange: function($e1, status, e) {
-              plot.toggleInteraction(family);
-            },
-            width: 120,
-            label: {
-              enabled: 'Shown',
-              disabled: 'Hidden'
-            } 
-          })
-        };
-
-        $('#cww-toggle').toggleButtons(family_toggle('cWW'));
-        $('#tww-toggle').toggleButtons(family_toggle('tWW'));
-        $('#cwh-toggle').toggleButtons(family_toggle('cWH'));
-        $('#twh-toggle').toggleButtons(family_toggle('tWH'));
-        $('#cws-toggle').toggleButtons(family_toggle('cWS'));
-        $('#tws-toggle').toggleButtons(family_toggle('tWS'));
-        $('#chh-toggle').toggleButtons(family_toggle('cHH'));
-        $('#thh-toggle').toggleButtons(family_toggle('tHH'));
-        $('#chs-toggle').toggleButtons(family_toggle('cHS'));
-        $('#ths-toggle').toggleButtons(family_toggle('tHS'));
-        $('#css-toggle').toggleButtons(family_toggle('cSS'));
-        $('#tss-toggle').toggleButtons(family_toggle('tSS'));
-
-        $('#mode-button').toggleButtons(toggler({
-          onChange: function($el, status, e) {
-            plot.brush.toggle();
-          },
-          label: {
-            enabled: 'Select',
-            disabled: 'Click'
-          }
-        }));
-
-        $('#motif-box-toggle').toggleButtons(toggler({
-          onChange: function($e1, status, e) {
-            for(var id in motifs) {
-              plot.toggleNucleotideBox(id, motifs[id].nucleotides);
-            }
-          },
-          width: 120,
-          label: {
-            enabled: 'Shown',
-            disabled: 'Hidden'
-          }
-        }));
-
-        $('#motif-color-toggle').toggleButtons(toggler({
-          onChange: function($e1, status, e) {
-            var patt = /^HL/;
-            for(var id in motifs) {
-              var color = 'blue';
-              if (patt.test(id)) {
-                color = 'green';
-              }
-              plot.toggleNucleotideColor(id, color);
-            }
-          },
-          width: 120,
-          label: {
-            enabled: 'Shown',
-            disabled: 'Hidden'
-          }
-        }));
-
-        $('#interaction-controls-title').click(function() {
-          $('#interaction-controls').toggle();
-        });
-        $('#interaction-controls').toggle();
       </script>
   </body>
 </html>
