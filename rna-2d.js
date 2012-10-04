@@ -12,8 +12,11 @@ var plot2D = function(given) {
     connections: {},
     onBrushClear: Object,
     onBrushUpdate: Object,
-    brush_enabled: true,
+    brushEnabled: true,
     onInteractionClick: Object,
+    defaultViewableInteractions: function(obj) { return obj.family == 'cWW' },
+    almostFlat: 0.04,
+    ntRadius: 4,
   };
 
   for(var key in given) {
@@ -29,6 +32,33 @@ var plot2D = function(given) {
       var yMax = d3.max([config.height, yCoordMax + 10]);
       var xScale = d3.scale.linear().domain([0, xMax]).range([0, config.width]);
       var yScale = d3.scale.linear().domain([0, yMax]).range([0, config.height]);
+
+      //
+      var almostFlat = 0.04;
+      var intersectPoint = function(x1, y1, x2, y2, r) {
+        var x = x2 - x1;
+        var y = y2 - y1;
+
+        //Special case nearly level lines.
+        if (x < almostFlat) {
+          if (y1 > y2) {
+            return { x: x1, y: y1 - r };
+          }
+          return { x: x1, y: y1 + r };
+        };
+        if (y < almostFlat) {
+          if (x1 > x2) {
+            return { x : x1 - r, y: y1 };
+          }
+          return { x: x1 + r, y: y1 };
+        }
+        var d = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+        var a = x * r / (d + r);
+        var b = Math.sqrt(Math.pow(r, 2) - Math.pow(a, 2));
+
+        // Undo the shifts
+        return { x: a + x1, y: b + y1 };
+      };
 
       // Visualization object
       var vis = selection.append('svg')
@@ -53,18 +83,24 @@ var plot2D = function(given) {
         var nt2 = plot.utils.element(obj.nt2);
         if (nt1 && nt2) {
           var interaction_vis = 'hidden';
-          if (obj.family == 'cWW') {
+          if (config.defaultViewableInteractions(obj)) {
             interaction_vis = 'visible';
           };
+          var x1 = xScale(plot.utils.centerOf(obj.nt1));
+          var y1 = yScale(plot.utils.verticalCenter(obj.nt1));
+          var x2 = xScale(plot.utils.centerOf(obj.nt2));
+          var y2 = yScale(plot.utils.verticalCenter(obj.nt2));
+          var p1 = intersectPoint(x1, y1, x2, y2, config.ntRadius);
+          var p2 = intersectPoint(x2, y2, x1, y1, config.ntRadius);
           interactions.push({
             visibility: interaction_vis,
             family: obj.family,
             id: obj.nt1 + ',' + obj.nt2 + ',' + obj.family,
             'data-nts': obj.nt1 + ',' + obj.nt2,
-            x1: plot.utils.centerOf(obj.nt1),
-            y1: plot.utils.verticalCenter(obj.nt1),
-            x2: plot.utils.centerOf(obj.nt2),
-            y2: plot.utils.verticalCenter(obj.nt2)
+            x1: p1.x,
+            y1: p1.y,
+            x2: p2.x,
+            y2: p2.y
           });
         };
       }
@@ -152,20 +188,20 @@ var plot2D = function(given) {
             vis.append('g')
               .classed(config.brush_class, true)
               .call(brush);
-            config.brush_enabled = true;
+            config.brushEnabled = true;
             return plot;
           },
 
           // Hide the brush
           disable: function() {
             vis.selectAll('.' + config.brush_class).remove();
-            config.brush_enabled = false;
+            config.brushEnabled = false;
             return plot;
           },
 
           // Toggle the brush
           toggle: function() {
-            if (config.brush_enabled) {
+            if (config.brushEnabled) {
               return plot.brush.disable();
             };
             return plot.brush.enable();
@@ -255,12 +291,14 @@ var plot2D = function(given) {
     bbox: function(id) { return plot.utils.element(id).getBBox();},
     widthOf: function(id) { return plot.utils.bbox(id).width; },
     heightOf: function(id) { return plot.utils.bbox(id).height; },
-    rightSide: function(id) { return plot.utils.bbox(id).x + plot.utils.widthOf(id); },
-    leftSide: function(id) { return plot.utils.bbox(id).x; },
-    verticalCenter: function(id) { return plot.utils.bbox(id).y - plot.utils.heightOf(id)/4; },
-    centerOf: function(id) { return plot.utils.bbox(id).x + plot.utils.widthOf(id)/2; },
-    bottomOf: function(id) { return plot.utils.bbox(id).y },
-    topOf: function(id) { return plot.utils.bottomOf(id) + plot.utils.heightOf(id) }
+    // rightSide: function(id) { return plot.utils.bbox(id).x + plot.utils.widthOf(id); },
+    // leftSide: function(id) { return plot.utils.bbox(id).x; },
+    // verticalCenter: function(id) { return plot.utils.bbox(id).y - plot.utils.heightOf(id)/2; },
+    // centerOf: function(id) { return plot.utils.bbox(id).x + plot.utils.widthOf(id)/2; },
+    verticalCenter: function(id) { return plot.utils.element(id).__data__.y - plot.utils.heightOf(id)/4; },
+    centerOf: function(id) { return plot.utils.element(id).__data__.x + plot.utils.widthOf(id)/2; },
+    // bottomOf: function(id) { return plot.utils.bbox(id).y },
+    // topOf: function(id) { return plot.utils.bottomOf(id) + plot.utils.heightOf(id) }
   }
 
   return plot;
