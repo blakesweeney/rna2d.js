@@ -63,13 +63,14 @@
       <script type='text/javascript'>
         var plot = plot2D({
           width: 630, 
-          height: 1200, 
+          height: 795,
           onBrushUpdate: jmolShowSelection,
           onInteractionClick: jmolShowInteraction
         });
 
         d3.json('data/16S-ecoli.js', function(data) {
-            // data = data.slice(1, 10);
+            // data = data.slice(250, 275);
+            // data = [data[1], data[23]]
           plot.coordinates(data);
 
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
