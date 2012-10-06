@@ -1,3 +1,9 @@
+.rna2d-plot {
+  fill: #fff;
+  fill-opacity: .7;
+  stroke: #aaa;
+}
+
 .brush {
   fill: #000;
   fill-opacity: .125;

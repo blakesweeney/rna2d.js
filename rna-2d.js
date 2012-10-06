@@ -17,7 +17,9 @@ var plot2D = function(given) {
     defaultViewableInteractions: function(obj) { return obj.family == 'cWW' },
     almostFlat: 0.004,
     ntRadius: 1,
-    plotBuffer: 10
+    plotBuffer: 10,
+    addFrame: true,
+    frameClass: 'rna2d-plot'
   };
 
   for(var key in given) {
@@ -81,6 +83,16 @@ var plot2D = function(given) {
       var vis = selection.append('svg')
         .attr('width', config.width)
         .attr('height', config.height);
+
+      // Draw a frame around the plot
+      if (config.addFrame) {
+        vis.append('svg:rect')
+          .classed(config.frameClass, true)
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', config.width)
+          .attr('height', config.height - 1);
+      }
 
       // Draw each letter
       vis.selectAll(config.nucleotide)
