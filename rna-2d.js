@@ -17,6 +17,7 @@ var plot2D = function(given) {
     defaultViewableInteractions: function(obj) { return obj.family == 'cWW' },
     almostFlat: 0.004,
     ntRadius: 1,
+    plotBuffer: 10
   };
 
   for(var key in given) {
@@ -28,8 +29,8 @@ var plot2D = function(given) {
 
       var xCoordMax = d3.max(plot.coordinates, function(d) { return d.x; });
       var yCoordMax = d3.max(plot.coordinates, function(d) { return d.y; });
-      var xMax = d3.max([config.width, xCoordMax + 10]);
-      var yMax = d3.max([config.height, yCoordMax + 10]);
+      var xMax = d3.max([config.width, xCoordMax + config.plotBuffer]);
+      var yMax = d3.max([config.height, yCoordMax + config.plotBuffer]);
       var xScale = d3.scale.linear().domain([0, xMax]).range([0, config.width]);
       var yScale = d3.scale.linear().domain([0, yMax]).range([0, config.height]);
 
@@ -300,7 +301,7 @@ var plot2D = function(given) {
     plot[key] = accessor(key);
   }
 
-  plot.utils = funtion() {
+  plot.utils = function() {
     var element = function(id) { return document.getElementById(id); };
     return {
       element: element
