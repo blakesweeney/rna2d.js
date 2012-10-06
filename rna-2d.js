@@ -15,8 +15,8 @@ var plot2D = function(given) {
     brushEnabled: true,
     onInteractionClick: Object,
     defaultViewableInteractions: function(obj) { return obj.family == 'cWW' },
-    almostFlat: 0.04,
-    ntRadius: 4,
+    almostFlat: 0.004,
+    ntRadius: 1,
   };
 
   for(var key in given) {
@@ -33,31 +33,47 @@ var plot2D = function(given) {
       var xScale = d3.scale.linear().domain([0, xMax]).range([0, config.width]);
       var yScale = d3.scale.linear().domain([0, yMax]).range([0, config.height]);
 
-      //
-      var almostFlat = 0.04;
-      var intersectPoint = function(x1, y1, x2, y2, r) {
-        var x = x2 - x1;
-        var y = y2 - y1;
+      // We need to track if we are drawing across the letter in which case we
+      // need to use the width + raidus, otherwise we just need to use the
+      // radius.
+      // The bounding box is the upper left of the objects.
+      var intersectPoint = function(obj1, obj2, r, i) {
+        var bbox1 = obj1.getBBox();
+        var bbox2 = obj2.getBBox();
+        var x1 = bbox1.x;
+        var y1 = bbox1.y
+        var x2 = bbox2.x;
+        var y2 = bbox2.y
+        var dx = x2 - x1;
+        var dy = y2 - y1;
+        var sign = function(v) { return (v < 0 ? -1 : 1); };
+        var centerOf = function(bbox) { return { x: bbox.x + bbox.width/2, y: bbox.y + bbox.height/2 }; };
+        var dist = function(x, y) { return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)); };
 
-        //Special case nearly level lines.
-        if (x < almostFlat) {
-          if (y1 > y2) {
-            return { x: x1, y: y1 - r };
+        // Special case lines that are horizontal
+        if (Math.abs(dy) < config.almostFlat) {
+          if (x1 < x2) {
+            return { x: x1 + bbox1.width + r, y: y1 + bbox1.height/2 };
           }
-          return { x: x1, y: y1 + r };
-        };
-        if (y < almostFlat) {
-          if (x1 > x2) {
-            return { x : x1 - r, y: y1 };
-          }
-          return { x: x1 + r, y: y1 };
+          return { x : x1 - r, y: y1 + bbox1.height/2 };
         }
-        var d = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
-        var a = x * r / (d + r);
-        var b = Math.sqrt(Math.pow(r, 2) - Math.pow(a, 2));
 
-        // Undo the shifts
-        return { x: a + x1, y: b + y1 };
+        // Special case lines that are vertical
+        if (Math.abs(dx) < config.almostFlat) {
+          if (y1 > y2) {
+            return { x: x1 + bbox1.width/2, y: y1 + r };
+          }
+          return { x: x1 + bbox1.width/2, y: y1 + bbox1.height + r};
+        };
+        var c = centerOf(bbox1);
+
+        // All other lines
+        r = r * 3;
+        // dist(bbox1.width/2, bbox1.height/2)
+        var d = dist(dx, dy);
+        var a = sign(dx) * Math.abs(dx * r / d);
+        var b = sign(dy) * dist(r, a);
+        return { x: c.x + a, y: c.y + b };
       };
 
       // Visualization object
@@ -86,12 +102,8 @@ var plot2D = function(given) {
           if (config.defaultViewableInteractions(obj)) {
             interaction_vis = 'visible';
           };
-          var x1 = xScale(plot.utils.centerOf(obj.nt1));
-          var y1 = yScale(plot.utils.verticalCenter(obj.nt1));
-          var x2 = xScale(plot.utils.centerOf(obj.nt2));
-          var y2 = yScale(plot.utils.verticalCenter(obj.nt2));
-          var p1 = intersectPoint(x1, y1, x2, y2, config.ntRadius);
-          var p2 = intersectPoint(x2, y2, x1, y1, config.ntRadius);
+          var p1 = intersectPoint(nt1, nt2, config.ntRadius, i);
+          var p2 = intersectPoint(nt2, nt1, config.ntRadius, i);
           interactions.push({
             visibility: interaction_vis,
             family: obj.family,
@@ -102,6 +114,8 @@ var plot2D = function(given) {
             x2: p2.x,
             y2: p2.y
           });
+        } else {
+          // console.log("Could not find both nts in ", obj);
         };
       }
 
@@ -286,20 +300,12 @@ var plot2D = function(given) {
     plot[key] = accessor(key);
   }
 
-  plot.utils = {
-    element: function(id) { return document.getElementById(id); },
-    bbox: function(id) { return plot.utils.element(id).getBBox();},
-    widthOf: function(id) { return plot.utils.bbox(id).width; },
-    heightOf: function(id) { return plot.utils.bbox(id).height; },
-    // rightSide: function(id) { return plot.utils.bbox(id).x + plot.utils.widthOf(id); },
-    // leftSide: function(id) { return plot.utils.bbox(id).x; },
-    // verticalCenter: function(id) { return plot.utils.bbox(id).y - plot.utils.heightOf(id)/2; },
-    // centerOf: function(id) { return plot.utils.bbox(id).x + plot.utils.widthOf(id)/2; },
-    verticalCenter: function(id) { return plot.utils.element(id).__data__.y - plot.utils.heightOf(id)/4; },
-    centerOf: function(id) { return plot.utils.element(id).__data__.x + plot.utils.widthOf(id)/2; },
-    // bottomOf: function(id) { return plot.utils.bbox(id).y },
-    // topOf: function(id) { return plot.utils.bottomOf(id) + plot.utils.heightOf(id) }
-  }
+  plot.utils = funtion() {
+    var element = function(id) { return document.getElementById(id); };
+    return {
+      element: element
+    };
+  }();
 
   return plot;
 };
