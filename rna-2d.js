@@ -39,10 +39,10 @@ var plot2D = function(given) {
     },
     almostFlat: 0.004,
     margin: {
-      left: 20,
-      right: 20,
-      above: 20,
-      below: 20
+      left: 10,
+      right: 10,
+      above: 10,
+      below: 10
     },
     frame: {
       add: true,
@@ -68,7 +68,7 @@ var plot2D = function(given) {
       // need to use the width + raidus, otherwise we just need to use the
       // radius.
       // The bounding box is the upper left of the objects.
-      var intersectPoint = function(obj1, obj2, r, i) {
+      var intersectPoint = function(obj1, obj2, r) {
         var bbox1 = obj1.getBBox();
         var bbox2 = obj2.getBBox();
         var x1 = bbox1.x;
@@ -83,27 +83,32 @@ var plot2D = function(given) {
 
         // Special case lines that are horizontal
         if (Math.abs(dy) < config.almostFlat) {
+          y1 = y1 + bbox1.height/2;
           if (x1 < x2) {
-            return { x: x1 + bbox1.width + r, y: y1 + bbox1.height/2 };
+            return { x: x1 + bbox1.width + r, y: y1 };
           }
-          return { x : x1 - r, y: y1 + bbox1.height/2 };
+          return { x : x1 - r, y: y1 };
         }
 
         // Special case lines that are vertical
         if (Math.abs(dx) < config.almostFlat) {
+          x1 = x1 + bbox1.width/2;
           if (y1 > y2) {
-            return { x: x1 + bbox1.width/2, y: y1 + r };
+            return { x: x1, y: y1 + r };
           }
-          return { x: x1 + bbox1.width/2, y: y1 + bbox1.height + r};
+          return { x: x1, y: y1 + bbox1.height + r};
         };
         var c = centerOf(bbox1);
 
         // All other lines
-        r = r * 3;
-        // dist(bbox1.width/2, bbox1.height/2)
+        r = 1;
+        // r = bbox1.width/2;
         var d = dist(dx, dy);
+        // r = dist(bbox1.width/2, bbox1.height/2);
         var a = sign(dx) * Math.abs(dx * r / d);
         var b = sign(dy) * dist(r, a);
+        // console.log(dx, r, d, a);
+        // return { x: c.x, y: c.y };
         return { x: c.x + a, y: c.y + b };
       };
 
@@ -143,8 +148,8 @@ var plot2D = function(given) {
           if (config.interaction.visible(obj)) {
             interaction_vis = 'visible';
           };
-          var p1 = intersectPoint(nt1, nt2, config.nucleotide.gap, i);
-          var p2 = intersectPoint(nt2, nt1, config.nucleotide.gap, i);
+          var p1 = intersectPoint(nt1, nt2, config.nucleotide.gap);
+          var p2 = intersectPoint(nt2, nt1, config.nucleotide.gap);
           interactions.push({
             visibility: interaction_vis,
             family: obj.family,
@@ -176,6 +181,9 @@ var plot2D = function(given) {
             config.interaction.on.click(d);
           };
         })
+      // TODO need to add a mouseover like event that changes the class of the
+      // interaction and the assoicated NTs. Use mouseenter and mouseleave to do
+      // this
 
       // Apply a function to each thing matching the selection
       plot.each = function(sel, fn) {
