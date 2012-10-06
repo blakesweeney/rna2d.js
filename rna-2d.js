@@ -1,40 +1,68 @@
 var plot2D = function(given) {
 
+  var merge = function(update, old) {
+    for(var key in old) {
+      var val = old[key];
+      if (typeof(val) == 'object') {
+        update[key]  = merge(old[key] || {}, val);
+      } else {
+        update[key] = val;
+      }
+    }
+    return update;
+  };
+
   var config = {
-    interaction_class: 'interaction',
-    nucleotide_class: 'nucleotide',
-    brush_class: 'brush',
-    box_class: 'nt-box',
+    nucleotide: {
+      gap: 1,
+      'class': 'nucleotide'
+    },
     font_size: 8,
     width: 500,
     height: 1000,
     coordinates: {},
     connections: {},
-    onBrushClear: Object,
-    onBrushUpdate: Object,
-    brushEnabled: true,
-    onInteractionClick: Object,
-    defaultViewableInteractions: function(obj) { return obj.family == 'cWW' },
+    brush: {
+      'class': 'brush',
+      enabled: true,
+      on: {
+        clear: Object,
+        update: Object
+      }
+    },
+    interaction: {
+      'class': 'interaction',
+      visible: function(obj) { return obj.family == 'cWW' },
+      on: {
+        click: Object
+      }
+    },
     almostFlat: 0.004,
-    ntRadius: 1,
-    plotBuffer: 10,
-    addFrame: true,
-    frameClass: 'rna2d-plot'
+    margin: {
+      left: 20,
+      right: 20,
+      above: 20,
+      below: 20
+    },
+    frame: {
+      add: true,
+      'class': 'frame'
+    }
   };
 
-  for(var key in given) {
-    config[key] = given[key];
-  }
+  config = merge(config, given);
 
   var plot = function(selection) {
     selection.call(function(selection) {
 
       var xCoordMax = d3.max(plot.coordinates, function(d) { return d.x; });
       var yCoordMax = d3.max(plot.coordinates, function(d) { return d.y; });
-      var xMax = d3.max([config.width, xCoordMax + config.plotBuffer]);
-      var yMax = d3.max([config.height, yCoordMax + config.plotBuffer]);
-      var xScale = d3.scale.linear().domain([0, xMax]).range([0, config.width]);
-      var yScale = d3.scale.linear().domain([0, yMax]).range([0, config.height]);
+      var xMax = d3.max([config.width, xCoordMax ]);
+      var yMax = d3.max([config.height, yCoordMax]);
+      var xScale = d3.scale.linear().domain([-config.margin.right, xMax + config.margin.left])
+        .range([0, config.width]);
+      var yScale = d3.scale.linear().domain([-config.margin.above, yMax + config.margin.below])
+        .range([0, config.height]);
 
       // We need to track if we are drawing across the letter in which case we
       // need to use the width + raidus, otherwise we just need to use the
@@ -85,9 +113,9 @@ var plot2D = function(given) {
         .attr('height', config.height);
 
       // Draw a frame around the plot
-      if (config.addFrame) {
+      if (config.frame.add) {
         vis.append('svg:rect')
-          .classed(config.frameClass, true)
+          .classed(config.frame['class'], true)
           .attr('x', 0)
           .attr('y', 0)
           .attr('width', config.width)
@@ -95,10 +123,10 @@ var plot2D = function(given) {
       }
 
       // Draw each letter
-      vis.selectAll(config.nucleotide)
+      vis.selectAll(config.nucleotide.class)
         .data(plot.coordinates).enter().append('svg:text')
         .attr('id', function(data) { return data['id']; })
-        .attr('class', config.nucleotide_class)
+        .attr('class', config.nucleotide['class'])
         .attr('x', function(data) { return xScale(data['x']); })
         .attr('y', function(data) { return yScale(data['y']); })
         .attr('font-size', config.font_size)
@@ -112,11 +140,11 @@ var plot2D = function(given) {
         var nt2 = plot.utils.element(obj.nt2);
         if (nt1 && nt2) {
           var interaction_vis = 'hidden';
-          if (config.defaultViewableInteractions(obj)) {
+          if (config.interaction.visible(obj)) {
             interaction_vis = 'visible';
           };
-          var p1 = intersectPoint(nt1, nt2, config.ntRadius, i);
-          var p2 = intersectPoint(nt2, nt1, config.ntRadius, i);
+          var p1 = intersectPoint(nt1, nt2, config.nucleotide.gap, i);
+          var p2 = intersectPoint(nt2, nt1, config.nucleotide.gap, i);
           interactions.push({
             visibility: interaction_vis,
             family: obj.family,
@@ -133,11 +161,11 @@ var plot2D = function(given) {
       }
 
       // Draw the interactions
-      vis.selectAll(config.interaction_class)
+      vis.selectAll(config.interaction.class)
         .data(interactions)
         .enter().append('svg:line')
         .attr('id', function(data) { return data.id; })
-        .attr('class', function(d) { return 'interaction ' + d.family; })
+        .attr('class', function(d) { return config.interaction.class + ' ' +  d.family; })
         .attr('x1', function(data) { return data.x1; })
         .attr('y1', function(data) { return data.y1; })
         .attr('x2', function(data) { return data.x2; })
@@ -145,9 +173,9 @@ var plot2D = function(given) {
         .attr('visibility', function(data) { return data.visibility; })
         .on('click', function(d) {
           if (d.visibility == 'visible') {
-            config.onInteractionClick(d);
+            config.interaction.on.click(d);
           };
-        });
+        })
 
       // Apply a function to each thing matching the selection
       plot.each = function(sel, fn) {
@@ -185,7 +213,7 @@ var plot2D = function(given) {
 
         function updateBrush(p) {
           var e = brush.extent();
-          vis.selectAll('.' + config.nucleotide_class)
+          vis.selectAll('.' + config.nucleotide.class)
             .attr("checked", function(d) {
               var inside = e[0][0] <= d.x && d.x <= e[1][0]
                 && e[0][1] <= d.y && d.y <= e[1][1];
@@ -200,7 +228,7 @@ var plot2D = function(given) {
 
         function endBrush() {
           if (brush.empty()) {
-            vis.selectAll('.' + config.nucleotide_class)
+            vis.selectAll('.' + config.nucleotide.class)
               .attr("checked", false);
             matched = {};
             config.onBrushClear();
@@ -213,7 +241,7 @@ var plot2D = function(given) {
           // Show the brush
           enable: function() {
             vis.append('g')
-              .classed(config.brush_class, true)
+              .classed(config.brush.class, true)
               .call(brush);
             config.brushEnabled = true;
             return plot;
@@ -221,7 +249,7 @@ var plot2D = function(given) {
 
           // Hide the brush
           disable: function() {
-            vis.selectAll('.' + config.brush_class).remove();
+            vis.selectAll('.' + config.brush.class).remove();
             config.brushEnabled = false;
             return plot;
           },
@@ -235,6 +263,10 @@ var plot2D = function(given) {
           }
         };
       }();
+
+      if (config.brush.enabled) {
+        plot.brush.enable();
+      }
 
       // The built in actions for interactions.
       plot.interactions = function() {
@@ -307,11 +339,10 @@ var plot2D = function(given) {
       plot[name] = value;
       return plot;
     };
-  };
+   };
 
-  for(var key in config) {
-    plot[key] = accessor(key);
-  }
+   plot.coordinates = accessor('coordinates');
+   plot.connections = accessor('connections');
 
   plot.utils = function() {
     var element = function(id) { return document.getElementById(id); };
