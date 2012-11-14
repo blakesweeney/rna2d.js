@@ -15,3 +15,15 @@
   stroke: black;
   opacity: 1;
 }
+
+.jmol-viewer {
+  position: fixed;
+  left: 760px;
+  top: 380px;
+  resize:both;
+  overflow:auto;
+}
+
+.jmol {
+  border: 1px solid #ddd;
+}
