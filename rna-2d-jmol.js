@@ -8,7 +8,7 @@ var jmolSetup = function() {
     jmolDiv.html( jmolApplet(400, "", 0) )
     .append('<label><input type="checkbox" id="showNtNums">Nucleotide numbers</label>')
     .append('<input type="button" class="btn" id="neighborhood" value="Show neighborhood">')
-    .append('<input type="button" id="stereo" value="Stereo">')
+    .append('<input type="button" class="btn" id="stereo" value="Stereo">')
     .show();
   }
 
