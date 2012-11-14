@@ -5,9 +5,10 @@ var jmolSetup = function() {
 
   // launch jmol if necessary
   if (jmolApp.length == 0 ) {
-    jmolDiv.html( jmolApplet(300, "", 0) )
+    jmolDiv.html( jmolApplet(500, "", 0) )
     .append('<label><input type="checkbox" id="showNtNums">Nucleotide numbers</label>')
     .append('<input type="button" class="btn" id="neighborhood" value="Show neighborhood">')
+    .append('<input type="button" id="stereo" value="Stereo">');
     .show();
   }
 
@@ -38,12 +39,14 @@ var jmolShowSelection = function(matched) {
   } else {
     data_coord = matched;
   }
+
   $('#tempJmolToolsObj').remove();
   $('body').append("<input type='radio' id='tempJmolToolsObj' data-coord='" + data_coord + "'>");
   $('#tempJmolToolsObj').hide();
   $('#tempJmolToolsObj').jmolTools({
     showNeighborhoodId: 'neighborhood',
     showNumbersId: 'showNtNums',
+    showStereoId: 'stereo',
   }).jmolToggle();
 };
 
