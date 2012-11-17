@@ -22,6 +22,7 @@ var plot2D = function(given) {
     height: 1000,
     coordinates: {},
     connections: {},
+    groups: {},
     brush: {
       'class': 'brush',
       enabled: true,
@@ -47,7 +48,14 @@ var plot2D = function(given) {
     frame: {
       add: true,
       'class': 'frame'
-    }
+    },
+    motif: {
+      'class': 'motif',
+      visible: 'hidden',
+      on: {
+        click: Object
+      },
+    },
   };
 
   config = merge(config, given);
@@ -180,6 +188,63 @@ var plot2D = function(given) {
             config.interaction.on.click(d);
           };
         })
+
+      // Compute a box around the motif
+      for(var i = 0; i < plot.groups.length; i++) {
+        var current = plot.groups[i];
+        var left = 0;
+        var right = xCoordMax;
+        var top = yCoordMax;
+        var bottom = 0;
+
+        // Find the outer points.
+        for(var j = 0; j < current.nts.length; j++) {
+          var id = current['nts'][j];
+          var bbox = plot.utils.element(id).getBBox();
+          if (bbox.x < right) {
+            right = bbox.x;
+          }
+          if (bbox.x + bbox.width > left) {
+            left = bbox.x + bbox.width;
+          }
+          if (bbox.y + bbox.height > bottom) {
+            bottom = bbox.y + bbox.height;
+          }
+          if (bbox.y < top) {
+            top = bbox.y;
+          }
+        };
+
+        current.bounding = [
+          { x: left, y: top },
+          { x: left, y: bottom },
+          { x: right, y: bottom },
+          { x: right, y: top }
+        ];
+      };
+
+      console.log(plot.groups);
+
+      var motifLine = d3.svg.line()
+        .x(function(d) { return d.x; })
+        .y(function(d) { return d.y; });
+
+      // Draw the motif boxes
+      vis.selectAll(config.motif.class)
+        .data(plot.groups).enter().append('svg:path')
+        .attr('id', function(data) { return data.id; })
+        .attr('class', function(d) { return d.id.split("_")[0]; })
+        .classed(config.motif.class, true)
+        .attr('data-nts', function(d) { return d.nts; })
+        .attr('d', function(d) { return motifLine(d.bounding) + "Z" })
+        .attr('visibility', function(data) { 
+          if (config.motif.visible) {
+            return 'visible';
+          }
+          return 'hidden';
+        })
+        .on('click', config.motif.on.click);
+
       // TODO need to add a mouseover like event that changes the class of the
       // interaction and the assoicated NTs. Use mouseenter and mouseleave to do
       // this
@@ -279,7 +344,7 @@ var plot2D = function(given) {
       plot.interactions = function() {
         var all = function(family) {
           if (!arguments.length) {
-            return vis.selectAll('.' + config.interaction_class);
+            return vis.selectAll('.' + config.interaction.class);
           };
           return vis.selectAll('.' + family);
         };
@@ -321,7 +386,7 @@ var plot2D = function(given) {
 
       // The built in actions for nucleotides.
       plot.nucleotides = function() {
-        var all = function() { return vis.selectAll(config.nucleotide_class); };
+        var all = function() { return vis.selectAll('.' + config.nucleotide.class); };
 
         return {
           all: all,
@@ -332,6 +397,38 @@ var plot2D = function(given) {
           }
         };
 
+      }();
+
+      // Controls for motifs
+      plot.motifs = function() {
+        var all = function() { return vis.selectAll('.' + config.motif.class); };
+
+        return {
+          all: all,
+
+          each: function(fn) {
+            fn(all());
+            return plot;
+          },
+
+          show: function() {
+            config.motif.visible = true;
+            return all().attr('visibility', 'visible');
+          },
+
+          hide: function() {
+            config.motif.visible = false;
+            return all().attr('visibility', 'hidden');
+          },
+
+          toggle: function() {
+            if (config.motif.visible) {
+              return plot.motifs.hide();
+            };
+            return plot.motifs.show();
+          },
+
+        };
       }();
 
     });
@@ -350,6 +447,7 @@ var plot2D = function(given) {
 
    plot.coordinates = accessor('coordinates');
    plot.connections = accessor('connections');
+   plot.groups = accessor('groups');
 
   plot.utils = function() {
     var element = function(id) { return document.getElementById(id); };

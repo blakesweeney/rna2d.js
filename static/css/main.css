@@ -27,3 +27,9 @@
 .jmol {
   border: 1px solid #ddd;
 }
+
+.motif {
+  fill: #000;
+  fill-opacity: .25;
+  stroke: #B0A2A8;
+}

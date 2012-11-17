@@ -25,6 +25,13 @@
         </div>
       </div>
 
+      <div id='motifs'>
+        <label for='motif-checkbox'>Show Motifs</label>
+        <div id='motif-button'>
+          <input id='motif-checkbox' type='checkbox' value='v' checked='checked'>
+        </div>
+      </div>
+
       <div id='interaction-controls'>
         <label for='cww-checkbox'>cWW</label>
         <div id='cww-toggle'>
@@ -90,13 +97,19 @@
 
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
             plot.connections(data);
-            d3.select('#rna-2d').call(plot);
-            plot.brush.enable();
+
+            d3.json('data/16S-motifs.json', function(data) {
+              plot.groups(data);
+
+              d3.select('#rna-2d').call(plot);
+              plot.brush.enable();
+            });
           });
         });
 
       $('#mode-checkbox').click(function() { plot.brush.toggle(); });
       $('#cww-checkbox').click(function() { plot.interactions.toggle('cWW'); });
+      $('#motif-checkbox').click(function() { plot.motifs.toggle(); });
 
       </script>
   </body>
