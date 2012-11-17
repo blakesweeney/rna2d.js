@@ -64,13 +64,20 @@
         var plot = plot2D({
           width: 630, 
           height: 795,
-          onBrushUpdate: jmolShowSelection,
-          onInteractionClick: jmolShowInteraction
+          interaction: {
+            visible: function(obj) { return obj.family == 'cWW' },
+            on: {
+              click: jmol2D.show.selection,
+            },
+          },
+          brush: {
+            on: {
+              update: jmol2D.show.selection,
+            },
+          },
         });
 
         d3.json('data/16S-ecoli.js', function(data) {
-            // data = data.slice(250, 275);
-            // data = [data[1], data[23]]
           plot.coordinates(data);
 
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
