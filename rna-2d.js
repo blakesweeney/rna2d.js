@@ -107,7 +107,6 @@ var plot2D = function(given) {
         // r = dist(bbox1.width/2, bbox1.height/2);
         var a = sign(dx) * Math.abs(dx * r / d);
         var b = sign(dy) * dist(r, a);
-        // console.log(dx, r, d, a);
         // return { x: c.x, y: c.y };
         return { x: c.x + a, y: c.y + b };
       };
@@ -239,9 +238,9 @@ var plot2D = function(given) {
             vis.selectAll('.' + config.nucleotide.class)
               .attr("checked", false);
             matched = {};
-            config.onBrushClear();
+            config.brush.on.clear();
           } else {
-            config.onBrushUpdate(matched);
+            config.brush.update(matched);
           };
         };
 
