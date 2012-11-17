@@ -4,7 +4,7 @@ var plot2D = function(given) {
     for(var key in old) {
       var val = old[key];
       if (typeof(val) == 'object') {
-        update[key]  = merge(old[key] || {}, val);
+        update[key]  = merge(update[key] || {}, val);
       } else {
         update[key] = val;
       }
@@ -240,7 +240,7 @@ var plot2D = function(given) {
             matched = {};
             config.brush.on.clear();
           } else {
-            config.brush.update(matched);
+            config.brush.on.update(matched);
           };
         };
 
