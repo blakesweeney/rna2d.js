@@ -75,7 +75,6 @@ var jmol2D = function(given) {
     }
 
     var count = data_coord.split(',').length;
-    console.log(count);
     if (count > config.group.max) {
       config.group.on.overflow();
       return;
