@@ -66,17 +66,16 @@ var jmol2D = function(given) {
   connection.show.selection = function(matched) {
     connection.setup();
 
-    var count = 0;
     var data_coord = '';
     if (typeof(matched) == 'object') {
-      count = matched.length;
       var ids = $.map(matched, function(value, key) { return key; });
       data_coord = ids.join(',');
     } else {
-      count = matched.split(',').length;
       data_coord = matched;
     }
 
+    var count = data_coord.split(',').length;
+    console.log(count);
     if (count > config.group.max) {
       config.group.on.overflow();
       return;
@@ -98,4 +97,4 @@ var jmol2D = function(given) {
   };
 
   return connection;
-}();
+};

@@ -61,18 +61,26 @@
 
       <!-- Code to generate 2D structure and toggle buttons -->
       <script type='text/javascript'>
+        var jmol = jmol2D({
+          group: {
+            on: {
+              overflow: function() { alert("Too many nts selected"); },
+            },
+          },
+        });
+
         var plot = plot2D({
           width: 630, 
           height: 795,
           interaction: {
             visible: function(obj) { return obj.family == 'cWW' },
             on: {
-              click: jmol2D.show.selection,
+              click: jmol.show.selection,
             },
           },
           brush: {
             on: {
-              update: jmol2D.show.selection,
+              update: jmol.show.selection,
             },
           },
         });
