@@ -1,56 +1,101 @@
-var jmolSetup = function() {
-  var jmolApp = $('#jmolApplet0');
-  var jmolDiv = $('#jmol');
-  $this = $(this);
+var jmol2D = function(given) {
 
-  // launch jmol if necessary
-  if (jmolApp.length == 0 ) {
-    jmolDiv.html( jmolApplet(400, "", 0) )
-    .append('<label><input type="checkbox" id="showNtNums">Numbers</label>')
-    .append('<input type="button" class="btn-small" id="neighborhood" value="Show neighborhood">')
-    .append('<input type="button" class="btn-small" id="stereo" value="Stereo">')
-    .show();
-  }
+  var merge = function(update, old) {
+    for(var key in old) {
+      var val = old[key];
+      if (typeof(val) == 'object') {
+        update[key]  = merge(update[key] || {}, val);
+      } else {
+        update[key] = val;
+      }
+    }
+    return update;
+  };
 
-  // clear jmol window
-  jmolScript('zap;');
+  var config = {
+    group: {
+      max: 200,
+      on: {
+        overflow: Object,
+      }
+    },
+    window: {
+      size: 400,
+      build: undefined,
+    }
+  };
 
-  // reset the state of the system
-  $.jmolTools.numModels = 0;
-  $.jmolTools.stereo = false;
-  $.jmolTools.neighborhood = false;
-  $('#neighborhood').val('Show neighborhood');
-  $.jmolTools.models = {};
-  // unbind all events
-  $('#stereo').unbind();
-  $('#neighborhood').unbind();
-  $('#showNtNums').unbind();
+  config = merge(config, given);
+  var connection = {
+    show: {},
+  };
 
-};
+  connection.setup = function() {
+    var jmolApp = $('#jmolApplet0');
+    var jmolDiv = $('#jmol');
+    $this = $(this);
 
-// Code to integrate this with RNA2D with Jmol tools.
-var jmolShowSelection = function(matched) {
-  jmolSetup();
+    // launch jmol if necessary
+    if (jmolApp.length == 0 ) {
+      jmolDiv.html( jmolApplet(config.window.size, "", 0) )
+      if (window.build !== undefined) {
+        window.build(jmolDiv);
+      } else {
+        jmolDiv.append('<label><input type="checkbox" id="showNtNums">Numbers</label>') 
+          .append('<input type="button" id="neighborhood" value="Show neighborhood">') 
+          .append('<input type="button" id="stereo" value="Stereo">');
+      }
+    }
 
-  var data_coord = '';
-  if (typeof(matched) == 'object') {
-    var ids = $.map(matched, function(value, key) { return key; });
-    data_coord = ids.join(',');
-  } else {
-    data_coord = matched;
-  }
+    // clear jmol window
+    jmolScript('zap;');
 
-  $('#tempJmolToolsObj').remove();
-  $('body').append("<input type='radio' id='tempJmolToolsObj' data-coord='" + data_coord + "'>");
-  $('#tempJmolToolsObj').hide();
-  $('#tempJmolToolsObj').jmolTools({
-    showNeighborhoodId: 'neighborhood',
-    showNumbersId: 'showNtNums',
-    showStereoId: 'stereo',
-  }).jmolToggle();
-};
+    // reset the state of the system
+    $.jmolTools.numModels = 0;
+    $.jmolTools.stereo = false;
+    $.jmolTools.neighborhood = false;
+    $('#neighborhood').val('Show neighborhood');
+    $.jmolTools.models = {};
+    // unbind all events
+    $('#stereo').unbind();
+    $('#neighborhood').unbind();
+    $('#showNtNums').unbind();
+  };
 
-var jmolShowInteraction = function(interaction) {
-  var data = {};
-  jmolShowSelection(interaction['data-nts']);
-};
+  // Code to integrate this with RNA2D with Jmol tools.
+  connection.show.selection = function(matched) {
+    connection.setup();
+
+    var count = 0;
+    var data_coord = '';
+    if (typeof(matched) == 'object') {
+      count = matched.length;
+      var ids = $.map(matched, function(value, key) { return key; });
+      data_coord = ids.join(',');
+    } else {
+      count = matched.split(',').length;
+      data_coord = matched;
+    }
+
+    if (count > config.group.max) {
+      config.group.on.overflow();
+      return;
+    }
+
+    $('#tempJmolToolsObj').remove();
+    $('body').append("<input type='radio' id='tempJmolToolsObj' data-coord='" + data_coord + "'>");
+    $('#tempJmolToolsObj').hide();
+    $('#tempJmolToolsObj').jmolTools({
+      showNeighborhoodId: 'neighborhood',
+      showNumbersId: 'showNtNums',
+      showStereoId: 'stereo',
+    }).jmolToggle();
+  };
+
+  // Show the given interaction.
+  connection.show.group = function(interaction) {
+    connection.show.selection(interaction['data-nts']);
+  };
+
+  return connection;
+}();
