@@ -111,7 +111,7 @@
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
             plot.connections(data);
 
-            d3.json('data/16S-motifs.json', function(data) {
+            d3.json('data/2AW7_motifs.json', function(data) {
               plot.groups(data);
 
               d3.select('#rna-2d').call(plot);
