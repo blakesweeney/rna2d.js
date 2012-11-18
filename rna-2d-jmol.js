@@ -38,8 +38,8 @@ var jmol2D = function(given) {
     // launch jmol if necessary
     if (jmolApp.length == 0 ) {
       jmolDiv.html( jmolApplet(config.window.size, "", 0) )
-      if (window.build !== undefined) {
-        window.build(jmolDiv);
+      if (config.window.build !== undefined) {
+        config.window.build(jmolDiv);
       } else {
         jmolDiv.append('<label><input type="checkbox" id="showNtNums">Numbers</label>') 
           .append('<input type="button" id="neighborhood" value="Show neighborhood">') 
