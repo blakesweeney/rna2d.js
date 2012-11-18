@@ -258,7 +258,7 @@ var plot2D = function(given) {
         .classed(config.motif.class, true)
         .attr('data-nts', function(d) { return d.nts; })
         .attr('d', function(d) { return motifLine(d.bounding) + "Z" })
-        .attr('visibility', function(data) { 
+        .attr('visibility', function(data) {
           if (config.motif.visible) {
             return 'visible';
           }
