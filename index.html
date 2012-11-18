@@ -80,6 +80,12 @@
         var plot = plot2D({
           width: 630, 
           height: 795,
+          nucleotide: {
+            on: {
+              // click: jmol
+              mouseover: 'highlight',
+            }
+          },
           interaction: {
             visible: function(obj) { return obj.family == 'cWW' },
             on: {

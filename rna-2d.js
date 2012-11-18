@@ -15,7 +15,12 @@ var plot2D = function(given) {
   var config = {
     nucleotide: {
       gap: 1,
-      'class': 'nucleotide'
+      highlight: 'red',
+      'class': 'nucleotide',
+      on: {
+        mouseover: Object,
+        mouseout: Object
+      }
     },
     font_size: 8,
     width: 500,
@@ -147,7 +152,9 @@ var plot2D = function(given) {
         .attr('x', function(data) { return xScale(data['x']); })
         .attr('y', function(data) { return yScale(data['y']); })
         .attr('font-size', config.font_size)
-        .text(function(data) { return data['sequence']; });
+        .text(function(data) { return data['sequence']; })
+        .on('mouseover', function() { console.log(config.nucleotide.on.mouseover); return config.nucleotide.on.mouseover(this); })
+        .on('mouseout', function() { return config.nucleotide.on.mouseout(this); })
 
       // Compute the data to use for interactions
       var interactions = [];
@@ -167,6 +174,8 @@ var plot2D = function(given) {
             family: obj.family,
             id: obj.nt1 + ',' + obj.nt2 + ',' + obj.family,
             'data-nts': obj.nt1 + ',' + obj.nt2,
+            'nt1': obj.nt1,
+            'nt2': obj.nt2,
             x1: p1.x,
             y1: p1.y,
             x2: p2.x,
@@ -191,6 +200,8 @@ var plot2D = function(given) {
         .attr('y2', function(data) { return data.y2; })
         .attr('visibility', function(data) { return data.visibility; })
         .attr('data-nts', function(data) { return data['data-nts']; })
+        .attr('nt1', function(data) { return data.nt1; })
+        .attr('nt2', function(data) { return data.nt2; })
         .on('click', config.interaction.on.click)
         .on('mouseover', function() { config.interaction.on.mouseover(this); })
         .on('mouseout', function() { config.interaction.on.mouseout(this) });
@@ -409,12 +420,28 @@ var plot2D = function(given) {
         var all = function() { return vis.selectAll('.' + config.nucleotide.class); };
 
         return {
+          interactions: function(obj) {
+            var selector = '[nt1=' + obj.getAttribute('id') + '], [nt2=' + obj.getAttribute('id') + ']';
+            return d3.selectAll(selector);
+          },
+
           all: all,
 
           each: function(fn) {
             fn(all());
             return plot;
-          }
+          },
+
+          highlight: function(obj) {
+            console.log('hi');
+            d3.select(obj).style('stroke', config.nucleotide.highlight);
+            return plot.nucleotides.interactions(obj).style('stroke', config.nucleotide.highlight);
+          },
+
+          normalize: function(obj) {
+            d3.select(obj).style('stroke', null);
+            return plot.nucleotides.interactions(obj).style('stroke', null);
+          },
         };
 
       }();
@@ -454,6 +481,11 @@ var plot2D = function(given) {
       if (config.interaction.on.mouseover == 'highlight') {
         config.interaction.on.mouseover = plot.interactions.highlight;
         config.interaction.on.mouseout = plot.interactions.normalize;
+      };
+
+      if (config.nucleotide.on.mouseover == 'highlight') {
+        config.nucleotide.on.mouseover = plot.nucleotides.highlight;
+        config.nucleotide.on.mouseout = plot.nucleotides.normalize;
       };
 
     });
