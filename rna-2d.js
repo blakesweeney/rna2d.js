@@ -34,6 +34,7 @@ var plot2D = function(given) {
     interaction: {
       'class': 'interaction',
       visible: function(obj) { return obj.family == 'cWW' },
+      log_missing: false,
       on: {
         click: Object
       }
@@ -168,7 +169,9 @@ var plot2D = function(given) {
             y2: p2.y
           });
         } else {
-          // console.log("Could not find both nts in ", obj);
+          if (config.interaction.log_missing) {
+            console.log("Could not find both nts in ", obj);
+          }
         };
       }
 
