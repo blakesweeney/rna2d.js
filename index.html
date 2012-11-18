@@ -7,6 +7,7 @@
     <script src='static/jmol/jmol.js'></script>
     <script src='static/js/jquery.min.js'></script>
     <script src='static/js/jquery.jmolTools.js'></script>
+    <script src='static/js/sizzle.js'></script>
     <script src='static/js/d3.js'></script>
 
     <script src='rna-2d.js'></script>
@@ -83,6 +84,7 @@
             visible: function(obj) { return obj.family == 'cWW' },
             on: {
               click: jmol.show.selection,
+              mouseover: 'highlight',
             },
           },
           brush: {

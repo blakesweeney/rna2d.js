@@ -35,8 +35,11 @@ var plot2D = function(given) {
       'class': 'interaction',
       visible: function(obj) { return obj.family == 'cWW' },
       log_missing: false,
+      highlight: 'red',
       on: {
-        click: Object
+        click: Object,
+        mouseover: Object,
+        mouseout: Object,
       }
     },
     almostFlat: 0.004,
@@ -62,6 +65,7 @@ var plot2D = function(given) {
   config = merge(config, given);
 
   var plot = function(selection) {
+
     selection.call(function(selection) {
 
       var xCoordMax = d3.max(plot.coordinates, function(d) { return d.x; });
@@ -186,7 +190,10 @@ var plot2D = function(given) {
         .attr('x2', function(data) { return data.x2; })
         .attr('y2', function(data) { return data.y2; })
         .attr('visibility', function(data) { return data.visibility; })
-        .on('click', config.interaction.on.click);
+        .attr('data-nts', function(data) { return data['data-nts']; })
+        .on('click', config.interaction.on.click)
+        .on('mouseover', function() { config.interaction.on.mouseover(this); })
+        .on('mouseout', function() { config.interaction.on.mouseout(this) });
 
       // Compute a box around the motif
       for(var i = 0; i < plot.groups.length; i++) {
@@ -347,6 +354,12 @@ var plot2D = function(given) {
         };
 
         return {
+          nts: function(obj) {
+            var nts = obj.getAttribute('data-nts').split(',').slice(0, 2);
+            var selector = '#' + nts.join(', #');
+            return d3.selectAll(selector);
+          },
+
           all: all,
 
           each: function(fn) {
@@ -377,7 +390,17 @@ var plot2D = function(given) {
               };
               return data.visibility;
             });
-          }
+          },
+
+          highlight: function(obj) {
+            d3.select(obj).style('stroke', config.interaction.highlight);
+            return plot.interactions.nts(obj).style('stroke', config.interaction.highlight);
+          },
+
+          normalize: function(obj) {
+            d3.select(obj).style('stroke', null);
+            return plot.interactions.nts(obj).style('stroke', null);
+          },
         };
       }();
 
@@ -427,6 +450,11 @@ var plot2D = function(given) {
 
         };
       }();
+
+      if (config.interaction.on.mouseover == 'highlight') {
+        config.interaction.on.mouseover = plot.interactions.highlight;
+        config.interaction.on.mouseout = plot.interactions.normalize;
+      };
 
     });
   };
