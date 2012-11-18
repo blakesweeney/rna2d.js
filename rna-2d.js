@@ -61,8 +61,11 @@ var plot2D = function(given) {
     motif: {
       'class': 'motif',
       visible: 'hidden',
+      highlight: 'red',
       on: {
-        click: Object
+        click: Object,
+        mouseover: Object,
+        mouseout: Object,
       },
     },
   };
@@ -219,7 +222,7 @@ var plot2D = function(given) {
           var id = current['nts'][j];
           var elem = plot.utils.element(id);
           if (elem == null) {
-            console.log('Missing nts in motif: ', current);
+            console.log('Missing nt ' + id + ' in motif: ', current);
             break;
           }
 
@@ -264,7 +267,9 @@ var plot2D = function(given) {
           }
           return 'hidden';
         })
-        .on('click', config.motif.on.click);
+        .on('click', config.motif.on.click)
+        .on('mouseover', function() { return config.motif.on.mouseover(this) })
+        .on('mouseout', function() { return config.motif.on.mouseout(this) });
 
       // TODO need to add a mouseover like event that changes the class of the
       // interaction and the assoicated NTs. Use mouseenter and mouseleave to do
@@ -372,7 +377,7 @@ var plot2D = function(given) {
 
         return {
           nts: function(obj) {
-            var nts = obj.getAttribute('data-nts').split(',').slice(0, 2);
+            var nts = obj.getAttribute('data-nts').split(',');
             var selector = '#' + nts.join(', #');
             return d3.selectAll(selector);
           },
@@ -456,6 +461,12 @@ var plot2D = function(given) {
         var all = function() { return vis.selectAll('.' + config.motif.class); };
 
         return {
+          nts: function(obj) {
+            var nts = obj.getAttribute('data-nts').split(',');
+            var selector = '#' + nts.join(', #');
+            return d3.selectAll(selector);
+          },
+
           all: all,
 
           each: function(fn) {
@@ -480,6 +491,14 @@ var plot2D = function(given) {
             return plot.motifs.show();
           },
 
+          highlight: function(obj) {
+            return plot.motifs.nts(obj).style('stroke', config.motif.highlight);
+          },
+
+          normalize: function(obj) {
+            return plot.motifs.nts(obj).style('stroke', null);
+          },
+
         };
       }();
 
@@ -491,6 +510,11 @@ var plot2D = function(given) {
       if (config.nucleotide.on.mouseover == 'highlight') {
         config.nucleotide.on.mouseover = plot.nucleotides.highlight;
         config.nucleotide.on.mouseout = plot.nucleotides.normalize;
+      };
+
+      if (config.motif.on.mouseover == 'highlight') {
+        config.motif.on.mouseover = plot.motifs.highlight;
+        config.motif.on.mouseout = plot.motifs.normalize;
       };
 
     });
