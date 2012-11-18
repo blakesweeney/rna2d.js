@@ -219,7 +219,7 @@ var plot2D = function(given) {
           var id = current['nts'][j];
           var elem = plot.utils.element(id);
           if (elem == null) {
-            console.log(current);
+            console.log('Missing nts in motif: ', current);
             break;
           }
           var bbox = elem.getBBox();
