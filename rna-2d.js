@@ -385,6 +385,10 @@ var plot2D = function(given) {
             return d3.selectAll(selector);
           },
 
+          family: function(obj) {
+            return obj.getAttribute('id').split(',')[2];
+          },
+
           all: all,
 
           each: function(fn) {
