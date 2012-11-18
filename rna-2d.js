@@ -222,6 +222,7 @@ var plot2D = function(given) {
             console.log('Missing nts in motif: ', current);
             break;
           }
+
           var bbox = elem.getBBox();
           if (bbox.x < right) {
             right = bbox.x;
