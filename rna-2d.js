@@ -296,7 +296,6 @@ var plot2D = function(given) {
 
       // Create a brush for selecting
       plot.brush = function() {
-        var matched = {};
 
         var brush = d3.svg.brush()
           .on('brushstart', startBrush)
@@ -308,31 +307,25 @@ var plot2D = function(given) {
         function startBrush() {
           // Check if click within the bounding box of all nts or interactions.
           // Ugh. Such a pain. Maybe do this later.
-          matched = {};
         };
 
-        function updateBrush(p) {
-          var e = brush.extent();
-          vis.selectAll('.' + config.nucleotide.class)
-            .attr("checked", function(d) {
-              var inside = e[0][0] <= d.x && d.x <= e[1][0]
-                && e[0][1] <= d.y && d.y <= e[1][1];
-              if (inside) {
-                matched[d.id] = d;
-              } else if (matched[d.id]) {
-                delete(matched[d.id]);
-              };
-              return inside;
-            });
-        };
+        // Do nothing for now.
+        function updateBrush(p) { };
 
         function endBrush() {
+          var matched = {};
           if (brush.empty()) {
-            vis.selectAll('.' + config.nucleotide.class)
-              .attr("checked", false);
-            matched = {};
             config.brush.on.clear();
           } else {
+            var e = brush.extent();
+            vis.selectAll('.' + config.nucleotide.class)
+              .attr("checked", function(d) {
+                var inside = e[0][0] <= d.x && d.x <= e[1][0]
+                  && e[0][1] <= d.y && d.y <= e[1][1];
+                if (inside) {
+                  matched[d.id] = d;
+                }
+              });
             config.brush.on.update(matched);
           };
         };
