@@ -90,6 +90,11 @@
               update: jmol.show.selection,
             },
           },
+          motif: {
+            on: {
+              click: function(motif) { console.log('motif', motif); },
+            },
+          },
         });
 
         d3.json('data/16S-ecoli.js', function(data) {
