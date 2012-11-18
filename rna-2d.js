@@ -31,6 +31,7 @@ var plot2D = function(given) {
     brush: {
       'class': 'brush',
       enabled: true,
+      initial: null,
       on: {
         clear: Object,
         update: Object
@@ -336,6 +337,14 @@ var plot2D = function(given) {
           };
         };
 
+        // TODO: Do this correctly.
+        if (config.brush.initial) {
+          brush.extent(config.brush.initial);
+          startBrush();
+          updateBrush();
+          endBrush();
+        }
+
         return {
           // Show the brush
           enable: function() {
@@ -359,7 +368,7 @@ var plot2D = function(given) {
               return plot.brush.disable();
             };
             return plot.brush.enable();
-          }
+          },
         };
       }();
 
