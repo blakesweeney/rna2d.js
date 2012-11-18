@@ -217,7 +217,12 @@ var plot2D = function(given) {
         // Find the outer points.
         for(var j = 0; j < current.nts.length; j++) {
           var id = current['nts'][j];
-          var bbox = plot.utils.element(id).getBBox();
+          var elem = plot.utils.element(id);
+          if (elem == null) {
+            console.log(current);
+            break;
+          }
+          var bbox = elem.getBBox();
           if (bbox.x < right) {
             right = bbox.x;
           }
@@ -230,14 +235,14 @@ var plot2D = function(given) {
           if (bbox.y < top) {
             top = bbox.y;
           }
-        };
 
-        current.bounding = [
-          { x: left, y: top },
-          { x: left, y: bottom },
-          { x: right, y: bottom },
-          { x: right, y: top }
-        ];
+          current.bounding = [
+            { x: left, y: top },
+            { x: left, y: bottom },
+            { x: right, y: bottom },
+            { x: right, y: top }
+          ];
+        }
       };
 
       var motifLine = d3.svg.line()
