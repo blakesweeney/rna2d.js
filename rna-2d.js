@@ -183,11 +183,7 @@ var plot2D = function(given) {
         .attr('x2', function(data) { return data.x2; })
         .attr('y2', function(data) { return data.y2; })
         .attr('visibility', function(data) { return data.visibility; })
-        .on('click', function(d) {
-          if (d.visibility == 'visible') {
-            config.interaction.on.click(d);
-          };
-        })
+        .on('click', config.interaction.on.click);
 
       // Compute a box around the motif
       for(var i = 0; i < plot.groups.length; i++) {
