@@ -66,7 +66,7 @@ var plot2D = function(given) {
 
       var xCoordMax = d3.max(plot.coordinates, function(d) { return d.x; });
       var yCoordMax = d3.max(plot.coordinates, function(d) { return d.y; });
-      var xMax = d3.max([config.width, xCoordMax ]);
+      var xMax = d3.max([config.width, xCoordMax]);
       var yMax = d3.max([config.height, yCoordMax]);
       var xScale = d3.scale.linear().domain([-config.margin.right, xMax + config.margin.left])
         .range([0, config.width]);
