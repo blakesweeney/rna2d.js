@@ -222,8 +222,6 @@ var plot2D = function(given) {
         ];
       };
 
-      console.log(plot.groups);
-
       var motifLine = d3.svg.line()
         .x(function(d) { return d.x; })
         .y(function(d) { return d.y; });
