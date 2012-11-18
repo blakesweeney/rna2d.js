@@ -153,7 +153,7 @@ var plot2D = function(given) {
         .attr('y', function(data) { return yScale(data['y']); })
         .attr('font-size', config.font_size)
         .text(function(data) { return data['sequence']; })
-        .on('mouseover', function() { console.log(config.nucleotide.on.mouseover); return config.nucleotide.on.mouseover(this); })
+        .on('mouseover', function() { return config.nucleotide.on.mouseover(this); })
         .on('mouseout', function() { return config.nucleotide.on.mouseout(this); })
 
       // Compute the data to use for interactions
@@ -433,7 +433,6 @@ var plot2D = function(given) {
           },
 
           highlight: function(obj) {
-            console.log('hi');
             d3.select(obj).style('stroke', config.nucleotide.highlight);
             return plot.nucleotides.interactions(obj).style('stroke', config.nucleotide.highlight);
           },
