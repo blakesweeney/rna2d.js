@@ -212,6 +212,7 @@ var plot2D = function(given) {
       // Compute a box around the motif
       for(var i = 0; i < plot.groups.length; i++) {
         var current = plot.groups[i];
+        current['data-nts'] = current.nts.join(',');
         var left = 0;
         var right = xCoordMax;
         var top = yCoordMax;
