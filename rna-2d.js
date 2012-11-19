@@ -69,6 +69,7 @@ var plot2D = function(given) {
         mouseout: Object,
       },
     },
+    zoom: true,
   };
 
   config = merge(config, given);
