@@ -1,7 +1,23 @@
+body {
+  position: relative;
+  padding-top: 40px;
+}
+
 .frame {
   fill: #fff;
   fill-opacity: .7;
   stroke: #aaa;
+}
+
+.jmol-viewer {
+  position: fixed;
+  left: 740px;
+  top: 150px;
+  overflow:auto;
+}
+
+.jmol {
+  border: 1px solid #ddd;
 }
 
 .brush {
@@ -10,20 +26,90 @@
   stroke: #B0A2A8;
 }
 
+.nucleotide {
+  cursor: default;
+}
+
 .interaction {
-  stroke-width: 1;
+  stroke-width: 1.5;
   stroke: black;
-  opacity: 1;
+  opacity: 0.4;
 }
 
-.jmol-viewer {
-  position: fixed;
-  left: 760px;
-  top: 380px;
-  resize:both;
-  overflow:auto;
+.motif {
+  fill: #000;
+  fill-opacity: .25;
+  stroke: #B0A2A8;
 }
 
-.jmol {
-  border: 1px solid #ddd;
+.IL {
+  fill: #5BB75B;
+  fill-opacity: .25;
+  stroke: #387038;
+}
+
+.HL {
+  fill: #49AFCD;
+  fill-opacity: .25;
+  stroke: #1F6377
+}
+
+.cWW, .ncWW {
+  stroke: black;
+  fill: black;
+}
+
+.tWW, .ntWW {
+  stroke: #663300;
+  fill: #3D1F00;
+}
+
+.cWH, .cHW, .ncWH, .ncWH {
+  stroke: #00CC00;
+  fill: #007A00;
+}
+
+.tWH, .tHW, .ntWH, .ntHW {
+  stroke: #CC00FF;
+  fill: #7A0099;
+}
+
+.cWS, .ncWS {
+  stroke: #669900;
+  fill: #3D5C00;
+}
+
+.cHH, .ncHH {
+  stroke: #009900;
+  fill: #005C00;
+}
+
+.tHH, .ntHH {
+  stroke: #6600FF;
+  fill: #3D0099;
+}
+
+.cHS, .cSH, .ncHS, .ncSH {
+  stroke: #FF9900;
+  fill: #995C00;
+}
+
+.cSS, .ncSS {
+  stroke: #CC9900;
+  fill: #7A5C00;
+}
+
+.tSS, .ntSS {
+  stroke: #666699;
+  fill: #3D3D5C;
+}
+
+.tHS, .tSH, .ntHS, .ntSH {
+  stroke: #3333FF;
+  fill: #1F1F99;
+}
+
+.tWS, .tSW .ntWS, .ntSW {
+  stroke: #3333CC;
+  fill: #1F1F7A;
 }
