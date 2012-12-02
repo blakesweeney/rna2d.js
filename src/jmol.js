@@ -1,16 +1,4 @@
-var jmol2D = function(given) {
-
-  var merge = function(update, old) {
-    for(var key in old) {
-      var val = old[key];
-      if (typeof(val) == 'object') {
-        update[key]  = merge(update[key] || {}, val);
-      } else {
-        update[key] = val;
-      }
-    }
-    return update;
-  };
+Rna2D.jmol = function(plot) {
 
   var config = {
     group: {
@@ -26,6 +14,7 @@ var jmol2D = function(given) {
   };
 
   config = merge(config, given);
+
   var connection = {
     show: {},
   };
@@ -33,7 +22,6 @@ var jmol2D = function(given) {
   connection.setup = function() {
     var jmolApp = $('#jmolApplet0');
     var jmolDiv = $('#jmol');
-    $this = $(this);
 
     // launch jmol if necessary
     if (jmolApp.length == 0 ) {
@@ -47,7 +35,6 @@ var jmol2D = function(given) {
       }
     }
 
-    // clear jmol window
     jmolScript('zap;');
 
     // reset the state of the system

@@ -10,8 +10,7 @@
     <script src='static/js/sizzle.js'></script>
     <script src='static/js/d3.js'></script>
 
-    <script src='rna-2d.js'></script>
-    <script src='rna-2d-jmol.js'></script>
+    <script src='rna2d.js'></script>
   </head>
 
   <body>
@@ -69,54 +68,52 @@
 
       <!-- Code to generate 2D structure and toggle buttons -->
       <script type='text/javascript'>
-        var jmol = jmol2D({
-          group: {
-            on: {
-              overflow: function() { alert("Too many nts selected"); },
-            },
-          },
-        });
+        // var jmol = jmol2D({
+        //   group: {
+        //     on: {
+        //       overflow: function() { alert("Too many nts selected"); },
+        //     },
+        //   },
+        // });
 
-        var plot = plot2D({
-          width: 630, 
-          height: 795,
-          nucleotide: {
-            on: {
-              // click: jmol
-              mouseover: 'highlight',
-            }
-          },
-          interaction: {
-            visible: function(obj) { return obj.family == 'cWW' },
-            on: {
-              click: jmol.show.selection,
-              mouseover: 'highlight',
-            },
-          },
-          brush: {
-            on: {
-              update: jmol.show.selection,
-            },
-          },
-          motif: {
-            on: {
-              click: function(motif) { console.log('motif', motif); },
-              mouseover: 'highlight'
-            },
-          },
-        });
+        var plot = Rna2D({ selection: '#rna-2d', width: 630, height: 795, })
+          .interactions.visible(function(obj) { return obj.family == 'cWW' });
+          // .brush.enabled(true);
+
+          // nucleotides: {
+          //   on: {
+          //     mouseover: 'highlight',
+          //   }
+          // },
+          // interaction: {
+          //   visible: function(obj) { return obj.family == 'cWW' },
+          //   on: {
+          //     click: jmol.show.selection,
+          //     mouseover: 'highlight',
+          //   },
+          // },
+          // brush: {
+          //   on: {
+          //     update: jmol.show.selection,
+          //   },
+          // },
+          // motif: {
+          //   on: {
+          //     click: function(motif) { console.log('motif', motif); },
+          //     mouseover: 'highlight'
+          //   },
+          // },
 
         d3.json('data/16S-ecoli.js', function(data) {
-          plot.coordinates(data);
+          plot.nucleotides(data);
 
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
-            plot.connections(data);
+            plot.interactions(data);
 
             d3.json('data/2AW7_motifs.json', function(data) {
-              plot.groups(data);
+              plot.motifs(data);
 
-              d3.select('#rna-2d').call(plot);
-              plot.brush.enable();
+              plot();
             });
           });
         });
