@@ -5,7 +5,6 @@ Rna2D.config = function(plot, given) {
       motifs = given.motifs || [],
       margin = given.margin || { left: 10, right: 10, above: 10, below: 10 },
       view = given.view || 'airport',
-      frame = given.frame || { 'class': 'frame', add: true },
       width =  given.width || 500,
       height = given.height || 1000,
       selection = given.selection;
@@ -19,14 +18,7 @@ Rna2D.config = function(plot, given) {
   plot.view = function(_) {
     if (!arguments.length) return view;
     view = _;
-    Rna2D.views[view](plot).
-      brush(plot);
-    return plot;
-  };
-
-  plot.frame = function(_) {
-    if (!arguments.length) return frame;
-    frame = _;
+    Rna2D.views[view](plot);
     return plot;
   };
 
@@ -65,6 +57,29 @@ Rna2D.config = function(plot, given) {
     height = _;
     return plot;
   };
+
+
+  // --------------------------------------------------------------------------
+  // Frame configuration options
+  // --------------------------------------------------------------------------
+  (function() { 
+    var frame = given.frame || {},
+        add = ('add' in frame ? frame.add : true),
+        klass = frame['class'] || 'frame';
+
+    plot.frame.add = function(_) {
+      if (!arguments.length) return add;
+      add = _;
+      return plot;
+    };
+
+    plot.frame.class = function(_) {
+      if (!arguments.length) return klass;
+      klass = _;
+      return plot;
+    };
+
+  })();
 
   // --------------------------------------------------------------------------
   // Brush configuration options

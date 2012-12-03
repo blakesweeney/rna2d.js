@@ -3,8 +3,7 @@
 Rna2D = function(config) {
   var plot = function() {
 
-    var selection = d3.select(plot.selection()),
-        frame = plot.frame();
+    var selection = d3.select(plot.selection());
 
     selection.call(function(selection) {
 
@@ -13,24 +12,18 @@ Rna2D = function(config) {
         .attr('width', plot.width())
         .attr('height', plot.height());
 
-      // Draw a frame around the plot as needed
-      if (frame.add) {
-        plot.vis.append('svg:rect')
-          .classed(frame.class, true)
-          .attr('x', 0)
-          .attr('y', 0)
-          .attr('width', plot.width())
-          .attr('height', plot.height() - 1);
-      };
-
       // Render the view.
       plot.render();
+
+      // Generate the components
+      plot.components()
 
       return plot;
     });
   };
 
-  Rna2D.brush(plot);
+  // Add all components.
+  Rna2D.components(plot);
 
   // Configure the plot
   Rna2D.config(plot, config);
@@ -41,90 +34,20 @@ Rna2D = function(config) {
 // Stores the views of the structure
 Rna2D.views = {};
 
-Rna2D.brush = function(plot) {
+Rna2D.components = function(plot) {
 
-  var brush = function() {
-
-    function startBrush() {
-      // Check if click within the bounding box of all nts or interactions.
-      // Ugh. Such a pain. Maybe do this later.
+  plot.components = function() {
+    for(var name in plot.components) {
+      plot.components[name](plot)
     };
+  }
 
-    // Do nothing for now.
-    function updateBrush(p) { };
-
-    function endBrush() {
-      var matched = {};
-      if (brush.empty()) {
-        plot.brush.clear();
-      } else {
-        var e = brush.extent();
-        vis.selectAll('.' + plot.nucleotides.class())
-          .attr("checked", function(d) {
-            var inside = e[0][0] <= d.x && d.x <= e[1][0]
-              && e[0][1] <= d.y && d.y <= e[1][1];
-            if (inside) {
-              matched[d.id] = d;
-            }
-          });
-        plot.brush.update(matched);
-      };
-    };
-
-    var brush = d3.svg.brush()
-      .on('brushstart', startBrush)
-      .on('brush', updateBrush)
-      .on('brushend', endBrush)
-      .x(plot.__xScale)
-      .y(plot.__yScale);
-
-    // TODO: Do this correctly.
-    if (plot.brush.initial()) {
-      plot.select(plot.brush.initial());
-    }
-
-    return plot;
-  };
-
-  plot.brush = brush;
-
-  // Draw the brush around the given extent
-  plot.brush.select = function(extent) {
-    brush.extent([]);
-    startBrush();
-    brush.extent(extent);
-    updateBrush();
-    endBrush();
-    return plot;
-  };
-
-  // Show the brush
-  plot.brush.enable = function() {
-    vis.append('g')
-      .classed(plot.brush.class(), true)
-      .call(brush);
-    plot.brush.enabled(true);
-    return plot;
-  };
-
-  // Hide the brush
-  plot.brush.disable = function() {
-    vis.selectAll('.' + plot.brush.class()).remove();
-    plot.brush.enabled(false);
-    return plot;
-  };
-
-  // Toggle the brush
-  plot.brush.toggle = function() {
-    if (plot.brush.enabled()) {
-      return plot.brush.disable();
-    };
-    return plot.brush.enable();
+  for(var name in Rna2D.components) {
+    Rna2D.components[name](plot)
   };
 
   return Rna2D;
-};
-
+}
 Rna2D.config = function(plot, given) {
 
   var nucleotides = given.nucleotdies || [],
@@ -132,7 +55,6 @@ Rna2D.config = function(plot, given) {
       motifs = given.motifs || [],
       margin = given.margin || { left: 10, right: 10, above: 10, below: 10 },
       view = given.view || 'airport',
-      frame = given.frame || { 'class': 'frame', add: true },
       width =  given.width || 500,
       height = given.height || 1000,
       selection = given.selection;
@@ -146,14 +68,7 @@ Rna2D.config = function(plot, given) {
   plot.view = function(_) {
     if (!arguments.length) return view;
     view = _;
-    Rna2D.views[view](plot).
-      brush(plot);
-    return plot;
-  };
-
-  plot.frame = function(_) {
-    if (!arguments.length) return frame;
-    frame = _;
+    Rna2D.views[view](plot);
     return plot;
   };
 
@@ -192,6 +107,29 @@ Rna2D.config = function(plot, given) {
     height = _;
     return plot;
   };
+
+
+  // --------------------------------------------------------------------------
+  // Frame configuration options
+  // --------------------------------------------------------------------------
+  (function() { 
+    var frame = given.frame || {},
+        add = ('add' in frame ? frame.add : true),
+        klass = frame['class'] || 'frame';
+
+    plot.frame.add = function(_) {
+      if (!arguments.length) return add;
+      add = _;
+      return plot;
+    };
+
+    plot.frame.class = function(_) {
+      if (!arguments.length) return klass;
+      klass = _;
+      return plot;
+    };
+
+  })();
 
   // --------------------------------------------------------------------------
   // Brush configuration options
@@ -624,6 +562,114 @@ Rna2D.utils = function() {
 
   return my;
 }();
+Rna2D.components.brush = function(plot) {
+
+  var brush;
+
+  plot.components.brush = function() {
+
+    brush = d3.svg.brush()
+      .on('brushstart', startBrush)
+      .on('brush', updateBrush)
+      .on('brushend', endBrush)
+      .x(plot.__xScale)
+      .y(plot.__yScale);
+
+    // Blank for now, later may use this for a multiple selecting brush.
+    function startBrush() { };
+
+    // Do nothing for now.
+    function updateBrush(p) { };
+
+    function endBrush() {
+      var matched = {};
+
+      if (brush.empty()) {
+        plot.brush.clear();
+      } else {
+
+        var e = brush.extent();
+        plot.vis.selectAll('.' + plot.nucleotides.class())
+          .attr("checked", function(d) {
+            if (e[0][0] <= d.x && d.x <= e[1][0] && 
+                e[0][1] <= d.y && d.y <= e[1][1]) {
+              matched[d.id] = d;
+            }
+          });
+
+        plot.brush.update(matched);
+      };
+    };
+
+    if (plot.brush.initial().length) {
+      plot.brush.select(plot.brush.initial());
+    }
+
+    if (plot.brush.enabled()) {
+      plot.brush.enable();
+    };
+
+    return plot;
+  };
+
+  plot.brush = function() { return brush; };
+
+  // Draw the brush around the given extent
+  // TODO: Do this correctly.
+  plot.brush.select = function(extent) {
+    brush.extent(extent);
+    brush(plot.selection());
+    return plot;
+  };
+
+  // Show the brush
+  plot.brush.enable = function() {
+    plot.vis.append('g')
+      .classed(plot.brush.class(), true)
+      .call(brush);
+    plot.brush.enabled(true);
+    return plot;
+  };
+
+  // Hide the brush
+  plot.brush.disable = function() {
+    plot.vis.selectAll('.' + plot.brush.class()).remove();
+    plot.brush.enabled(false);
+    return plot;
+  };
+
+  // Toggle the brush
+  plot.brush.toggle = function() {
+    if (plot.brush.enabled()) {
+      return plot.brush.disable();
+    };
+    return plot.brush.enable();
+  };
+
+  return Rna2D;
+};
+
+Rna2D.components.frame = function(plot) {
+
+  plot.components.frame = function() {
+
+    // Draw a frame around the plot as needed
+    if (plot.frame.add()) {
+      plot.vis.append('svg:rect')
+        .classed(plot.frame.class(), true)
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', plot.width())
+        .attr('height', plot.height() - 1)
+        .style('pointer-events', 'none');
+    };
+  }
+
+  plot.frame = {};
+
+  return Rna2D;
+}
+
 // Container for the airport view
 Rna2D.views.airport = function(plot) {
 

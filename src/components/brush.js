@@ -1,63 +1,66 @@
-Rna2D.brush = function(plot) {
+Rna2D.components.brush = function(plot) {
 
-  var brush = function() {
+  var brush;
 
-    function startBrush() {
-      // Check if click within the bounding box of all nts or interactions.
-      // Ugh. Such a pain. Maybe do this later.
-    };
+  plot.components.brush = function() {
 
-    // Do nothing for now.
-    function updateBrush(p) { };
-
-    function endBrush() {
-      var matched = {};
-      if (brush.empty()) {
-        plot.brush.clear();
-      } else {
-        var e = brush.extent();
-        vis.selectAll('.' + plot.nucleotides.class())
-          .attr("checked", function(d) {
-            var inside = e[0][0] <= d.x && d.x <= e[1][0]
-              && e[0][1] <= d.y && d.y <= e[1][1];
-            if (inside) {
-              matched[d.id] = d;
-            }
-          });
-        plot.brush.update(matched);
-      };
-    };
-
-    var brush = d3.svg.brush()
+    brush = d3.svg.brush()
       .on('brushstart', startBrush)
       .on('brush', updateBrush)
       .on('brushend', endBrush)
       .x(plot.__xScale)
       .y(plot.__yScale);
 
-    // TODO: Do this correctly.
-    if (plot.brush.initial()) {
-      plot.select(plot.brush.initial());
+    // Blank for now, later may use this for a multiple selecting brush.
+    function startBrush() { };
+
+    // Do nothing for now.
+    function updateBrush(p) { };
+
+    function endBrush() {
+      var matched = {};
+
+      if (brush.empty()) {
+        plot.brush.clear();
+      } else {
+
+        var e = brush.extent();
+        plot.vis.selectAll('.' + plot.nucleotides.class())
+          .attr("checked", function(d) {
+            if (e[0][0] <= d.x && d.x <= e[1][0] && 
+                e[0][1] <= d.y && d.y <= e[1][1]) {
+              matched[d.id] = d;
+            }
+          });
+
+        plot.brush.update(matched);
+      };
+    };
+
+    if (plot.brush.initial().length) {
+      plot.brush.select(plot.brush.initial());
     }
+
+    if (plot.brush.enabled()) {
+      plot.brush.enable();
+    };
 
     return plot;
   };
 
-  plot.brush = brush;
+  plot.brush = function() { return brush; };
 
   // Draw the brush around the given extent
+  // TODO: Do this correctly.
   plot.brush.select = function(extent) {
-    brush.extent([]);
-    startBrush();
     brush.extent(extent);
-    updateBrush();
-    endBrush();
+    brush(plot.selection());
     return plot;
   };
 
   // Show the brush
   plot.brush.enable = function() {
-    vis.append('g')
+    plot.vis.append('g')
       .classed(plot.brush.class(), true)
       .call(brush);
     plot.brush.enabled(true);
@@ -66,7 +69,7 @@ Rna2D.brush = function(plot) {
 
   // Hide the brush
   plot.brush.disable = function() {
-    vis.selectAll('.' + plot.brush.class()).remove();
+    plot.vis.selectAll('.' + plot.brush.class()).remove();
     plot.brush.enabled(false);
     return plot;
   };

@@ -1,8 +1,7 @@
 Rna2D = function(config) {
   var plot = function() {
 
-    var selection = d3.select(plot.selection()),
-        frame = plot.frame();
+    var selection = d3.select(plot.selection());
 
     selection.call(function(selection) {
 
@@ -11,24 +10,18 @@ Rna2D = function(config) {
         .attr('width', plot.width())
         .attr('height', plot.height());
 
-      // Draw a frame around the plot as needed
-      if (frame.add) {
-        plot.vis.append('svg:rect')
-          .classed(frame.class, true)
-          .attr('x', 0)
-          .attr('y', 0)
-          .attr('width', plot.width())
-          .attr('height', plot.height() - 1);
-      };
-
       // Render the view.
       plot.render();
+
+      // Generate the components
+      plot.components()
 
       return plot;
     });
   };
 
-  Rna2D.brush(plot);
+  // Add all components.
+  Rna2D.components(plot);
 
   // Configure the plot
   Rna2D.config(plot, config);
