@@ -159,7 +159,7 @@ Rna2D.views.airport.connections = function(plot) {
   };
 
   plot.interactions.normalize = function() {
-    obj = this;
+    var obj = this;
     d3.select(obj).style('stroke', null);
     return plot.interactions.nucleotides(obj).style('stroke', null);
   };
