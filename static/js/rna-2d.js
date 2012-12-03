@@ -4,7 +4,7 @@ var plot2D = function(given) {
     for(var key in old) {
       var val = old[key];
       if (typeof(val) == 'object') {
-        update[key]  = merge(old[key] || {}, val);
+        update[key]  = merge(update[key] || {}, val);
       } else {
         update[key] = val;
       }
@@ -15,16 +15,23 @@ var plot2D = function(given) {
   var config = {
     nucleotide: {
       gap: 1,
-      'class': 'nucleotide'
+      highlight: 'red',
+      'class': 'nucleotide',
+      on: {
+        mouseover: Object,
+        mouseout: Object
+      }
     },
     font_size: 8,
     width: 500,
     height: 1000,
     coordinates: {},
     connections: {},
+    groups: {},
     brush: {
       'class': 'brush',
       enabled: true,
+      initial: null,
       on: {
         clear: Object,
         update: Object
@@ -33,8 +40,12 @@ var plot2D = function(given) {
     interaction: {
       'class': 'interaction',
       visible: function(obj) { return obj.family == 'cWW' },
+      log_missing: false,
+      highlight: 'red',
       on: {
-        click: Object
+        click: Object,
+        mouseover: Object,
+        mouseout: Object,
       }
     },
     almostFlat: 0.004,
@@ -47,17 +58,28 @@ var plot2D = function(given) {
     frame: {
       add: true,
       'class': 'frame'
-    }
+    },
+    motif: {
+      'class': 'motif',
+      visible: 'hidden',
+      highlight: 'red',
+      on: {
+        click: Object,
+        mouseover: Object,
+        mouseout: Object,
+      },
+    },
   };
 
   config = merge(config, given);
 
   var plot = function(selection) {
+
     selection.call(function(selection) {
 
       var xCoordMax = d3.max(plot.coordinates, function(d) { return d.x; });
       var yCoordMax = d3.max(plot.coordinates, function(d) { return d.y; });
-      var xMax = d3.max([config.width, xCoordMax ]);
+      var xMax = d3.max([config.width, xCoordMax]);
       var yMax = d3.max([config.height, yCoordMax]);
       var xScale = d3.scale.linear().domain([-config.margin.right, xMax + config.margin.left])
         .range([0, config.width]);
@@ -107,7 +129,6 @@ var plot2D = function(given) {
         // r = dist(bbox1.width/2, bbox1.height/2);
         var a = sign(dx) * Math.abs(dx * r / d);
         var b = sign(dy) * dist(r, a);
-        // console.log(dx, r, d, a);
         // return { x: c.x, y: c.y };
         return { x: c.x + a, y: c.y + b };
       };
@@ -135,7 +156,9 @@ var plot2D = function(given) {
         .attr('x', function(data) { return xScale(data['x']); })
         .attr('y', function(data) { return yScale(data['y']); })
         .attr('font-size', config.font_size)
-        .text(function(data) { return data['sequence']; });
+        .text(function(data) { return data['sequence']; })
+        .on('mouseover', function() { return config.nucleotide.on.mouseover(this); })
+        .on('mouseout', function() { return config.nucleotide.on.mouseout(this); })
 
       // Compute the data to use for interactions
       var interactions = [];
@@ -155,13 +178,17 @@ var plot2D = function(given) {
             family: obj.family,
             id: obj.nt1 + ',' + obj.nt2 + ',' + obj.family,
             'data-nts': obj.nt1 + ',' + obj.nt2,
+            'nt1': obj.nt1,
+            'nt2': obj.nt2,
             x1: p1.x,
             y1: p1.y,
             x2: p2.x,
             y2: p2.y
           });
         } else {
-          // console.log("Could not find both nts in ", obj);
+          if (config.interaction.log_missing) {
+            console.log("Could not find both nts in ", obj);
+          }
         };
       }
 
@@ -176,11 +203,76 @@ var plot2D = function(given) {
         .attr('x2', function(data) { return data.x2; })
         .attr('y2', function(data) { return data.y2; })
         .attr('visibility', function(data) { return data.visibility; })
-        .on('click', function(d) {
-          if (d.visibility == 'visible') {
-            config.interaction.on.click(d);
-          };
+        .attr('data-nts', function(data) { return data['data-nts']; })
+        .attr('nt1', function(data) { return data.nt1; })
+        .attr('nt2', function(data) { return data.nt2; })
+        .on('click', config.interaction.on.click)
+        .on('mouseover', function() { config.interaction.on.mouseover(this); })
+        .on('mouseout', function() { config.interaction.on.mouseout(this) });
+
+      // Compute a box around the motif
+      for(var i = 0; i < plot.groups.length; i++) {
+        var current = plot.groups[i];
+        current['data-nts'] = current.nts.join(',');
+        var left = 0;
+        var right = xCoordMax;
+        var top = yCoordMax;
+        var bottom = 0;
+
+        // Find the outer points.
+        for(var j = 0; j < current.nts.length; j++) {
+          var id = current['nts'][j];
+          var elem = plot.utils.element(id);
+          if (elem == null) {
+            console.log('Missing nt ' + id + ' in motif: ', current);
+            break;
+          }
+
+          var bbox = elem.getBBox();
+          if (bbox.x < right) {
+            right = bbox.x;
+          }
+          if (bbox.x + bbox.width > left) {
+            left = bbox.x + bbox.width;
+          }
+          if (bbox.y + bbox.height > bottom) {
+            bottom = bbox.y + bbox.height;
+          }
+          if (bbox.y < top) {
+            top = bbox.y;
+          }
+
+          current.bounding = [
+            { x: left, y: top },
+            { x: left, y: bottom },
+            { x: right, y: bottom },
+            { x: right, y: top }
+          ];
+        }
+      };
+
+      var motifLine = d3.svg.line()
+        .x(function(d) { return d.x; })
+        .y(function(d) { return d.y; });
+
+      // Draw the motif boxes
+      vis.selectAll(config.motif.class)
+        .data(plot.groups).enter().append('svg:path')
+        .attr('id', function(data) { return data.id; })
+        .attr('class', function(d) { return d.id.split("_")[0]; })
+        .classed(config.motif.class, true)
+        .attr('data-nts', function(d) { return d.nts; })
+        .attr('d', function(d) { return motifLine(d.bounding) + "Z" })
+        .attr('visibility', function(data) {
+          if (config.motif.visible) {
+            return 'visible';
+          }
+          return 'hidden';
         })
+        .on('click', config.motif.on.click)
+        .on('mouseover', function() { return config.motif.on.mouseover(this) })
+        .on('mouseout', function() { return config.motif.on.mouseout(this) });
+
       // TODO need to add a mouseover like event that changes the class of the
       // interaction and the assoicated NTs. Use mouseenter and mouseleave to do
       // this
@@ -204,7 +296,6 @@ var plot2D = function(given) {
 
       // Create a brush for selecting
       plot.brush = function() {
-        var matched = {};
 
         var brush = d3.svg.brush()
           .on('brushstart', startBrush)
@@ -216,34 +307,36 @@ var plot2D = function(given) {
         function startBrush() {
           // Check if click within the bounding box of all nts or interactions.
           // Ugh. Such a pain. Maybe do this later.
-          matched = {};
         };
 
-        function updateBrush(p) {
-          var e = brush.extent();
-          vis.selectAll('.' + config.nucleotide.class)
-            .attr("checked", function(d) {
-              var inside = e[0][0] <= d.x && d.x <= e[1][0]
-                && e[0][1] <= d.y && d.y <= e[1][1];
-              if (inside) {
-                matched[d.id] = d;
-              } else if (matched[d.id]) {
-                delete(matched[d.id]);
-              };
-              return inside;
-            });
-        };
+        // Do nothing for now.
+        function updateBrush(p) { };
 
         function endBrush() {
+          var matched = {};
           if (brush.empty()) {
-            vis.selectAll('.' + config.nucleotide.class)
-              .attr("checked", false);
-            matched = {};
-            config.onBrushClear();
+            config.brush.on.clear();
           } else {
-            config.onBrushUpdate(matched);
+            var e = brush.extent();
+            vis.selectAll('.' + config.nucleotide.class)
+              .attr("checked", function(d) {
+                var inside = e[0][0] <= d.x && d.x <= e[1][0]
+                  && e[0][1] <= d.y && d.y <= e[1][1];
+                if (inside) {
+                  matched[d.id] = d;
+                }
+              });
+            config.brush.on.update(matched);
           };
         };
+
+        // TODO: Do this correctly.
+        if (config.brush.initial) {
+          brush.extent(config.brush.initial);
+          startBrush();
+          updateBrush();
+          endBrush();
+        }
 
         return {
           // Show the brush
@@ -268,7 +361,7 @@ var plot2D = function(given) {
               return plot.brush.disable();
             };
             return plot.brush.enable();
-          }
+          },
         };
       }();
 
@@ -280,12 +373,22 @@ var plot2D = function(given) {
       plot.interactions = function() {
         var all = function(family) {
           if (!arguments.length) {
-            return vis.selectAll('.' + config.interaction_class);
+            return vis.selectAll('.' + config.interaction.class);
           };
           return vis.selectAll('.' + family);
         };
 
         return {
+          nts: function(obj) {
+            var nts = obj.getAttribute('data-nts').split(',');
+            var selector = '#' + nts.join(', #');
+            return d3.selectAll(selector);
+          },
+
+          family: function(obj) {
+            return obj.getAttribute('id').split(',')[2];
+          },
+
           all: all,
 
           each: function(fn) {
@@ -316,24 +419,110 @@ var plot2D = function(given) {
               };
               return data.visibility;
             });
-          }
+          },
+
+          highlight: function(obj) {
+            d3.select(obj).style('stroke', config.interaction.highlight);
+            return plot.interactions.nts(obj).style('stroke', config.interaction.highlight);
+          },
+
+          normalize: function(obj) {
+            d3.select(obj).style('stroke', null);
+            return plot.interactions.nts(obj).style('stroke', null);
+          },
         };
       }();
 
       // The built in actions for nucleotides.
       plot.nucleotides = function() {
-        var all = function() { return vis.selectAll(config.nucleotide_class); };
+        var all = function() { return vis.selectAll('.' + config.nucleotide.class); };
 
         return {
+          interactions: function(obj) {
+            var selector = '[nt1=' + obj.getAttribute('id') + '], [nt2=' + obj.getAttribute('id') + ']';
+            return d3.selectAll(selector);
+          },
+
           all: all,
 
           each: function(fn) {
             fn(all());
             return plot;
-          }
+          },
+
+          highlight: function(obj) {
+            d3.select(obj).style('stroke', config.nucleotide.highlight);
+            return plot.nucleotides.interactions(obj).style('stroke', config.nucleotide.highlight);
+          },
+
+          normalize: function(obj) {
+            d3.select(obj).style('stroke', null);
+            return plot.nucleotides.interactions(obj).style('stroke', null);
+          },
         };
 
       }();
+
+      // Controls for motifs
+      plot.motifs = function() {
+        var all = function() { return vis.selectAll('.' + config.motif.class); };
+
+        return {
+          nts: function(obj) {
+            var nts = obj.getAttribute('data-nts').split(',');
+            var selector = '#' + nts.join(', #');
+            return d3.selectAll(selector);
+          },
+
+          all: all,
+
+          each: function(fn) {
+            fn(all());
+            return plot;
+          },
+
+          show: function() {
+            config.motif.visible = true;
+            return all().attr('visibility', 'visible');
+          },
+
+          hide: function() {
+            config.motif.visible = false;
+            return all().attr('visibility', 'hidden');
+          },
+
+          toggle: function() {
+            if (config.motif.visible) {
+              return plot.motifs.hide();
+            };
+            return plot.motifs.show();
+          },
+
+          highlight: function(obj) {
+            return plot.motifs.nts(obj).style('stroke', config.motif.highlight);
+          },
+
+          normalize: function(obj) {
+            return plot.motifs.nts(obj).style('stroke', null);
+          },
+
+        };
+      }();
+
+      if (config.interaction.on.mouseover == 'highlight') {
+        config.interaction.on.mouseover = plot.interactions.highlight;
+        config.interaction.on.mouseout = plot.interactions.normalize;
+      };
+
+      if (config.nucleotide.on.mouseover == 'highlight') {
+        config.nucleotide.on.mouseover = plot.nucleotides.highlight;
+        config.nucleotide.on.mouseout = plot.nucleotides.normalize;
+      };
+
+      if (config.motif.on.mouseover == 'highlight') {
+        config.motif.on.mouseover = plot.motifs.highlight;
+        config.motif.on.mouseout = plot.motifs.normalize;
+      };
 
     });
   };
@@ -351,6 +540,7 @@ var plot2D = function(given) {
 
    plot.coordinates = accessor('coordinates');
    plot.connections = accessor('connections');
+   plot.groups = accessor('groups');
 
   plot.utils = function() {
     var element = function(id) { return document.getElementById(id); };
