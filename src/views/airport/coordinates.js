@@ -75,3 +75,4 @@ Rna2D.views.airport.coordinates = function(plot) {
 
   return Rna2D;
 };
+
