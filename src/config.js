@@ -151,6 +151,10 @@ Rna2D.config = function(plot, given) {
 
     plot.nucleotides.mouseover = function(_) {
       if (!arguments.length) return mouseover;
+      if (_ === 'highlight') {
+        _ = plot.nucleotides.highlight;
+        plot.nucleotides.mouseout(plot.nucleotides.normalize);
+      }
       mouseover = _;
       return plot;
     };
@@ -193,11 +197,6 @@ Rna2D.config = function(plot, given) {
 
   })();
 
-  //     if (config.nucleotide.on.mouseover == 'highlight') {
-  //       config.nucleotide.on.mouseover = plot.nucleotides.highlight;
-  //       config.nucleotide.on.mouseout = plot.nucleotides.normalize;
-  //     };
-
   // --------------------------------------------------------------------------
   // Interaction configuration options
   // --------------------------------------------------------------------------
@@ -237,6 +236,10 @@ Rna2D.config = function(plot, given) {
 
     plot.interactions.mouseover = function(_) {
       if (!arguments.length) return mouseover;
+      if (_ === 'highlight') {
+        _ = plot.interactions.highlight;
+        plot.interactions.mouseout(plot.interactions.normalize);
+      };
       mouseover = _;
       return plot;
     };
@@ -255,21 +258,19 @@ Rna2D.config = function(plot, given) {
 
   })();
 
-  //     if (config.interaction.on.mouseover == 'highlight') {
-  //       config.interaction.on.mouseover = plot.interactions.highlight;
-  //       config.interaction.on.mouseout = plot.interactions.normalize;
-  //     };
-
   // --------------------------------------------------------------------------
   // Motif configuration options
   // --------------------------------------------------------------------------
   (function() {
     var motifs = given.motifs || {},
+        instanceKlass = motifs['instanceKlass'] || function(d) { return d.id.split("_")[0]; },
         klass = motifs['class'] || 'motif',
-        visible = motifs.visible || true,
+        visible = motifs.visible || function(d) { return true; },
         click = motifs.click || Object,
         mouseover = motifs.mouseover || Object
-        mouseout = motifs.mouseout || Object;
+        mouseout = motifs.mouseout || Object,
+        getID = motifs.getID || function(d) { return d.id; },
+        getNTs = motifs.getNTs || function(d) { return d.nts; };
 
     plot.motifs.click = function(_) {
       if (!arguments.length) return click;
@@ -279,6 +280,10 @@ Rna2D.config = function(plot, given) {
 
     plot.motifs.mouseover = function(_) {
       if (!arguments.length) return mouseover;
+      if (_ === 'highlight') {
+        _ = plot.motifs.highlight;
+        plot.motifs.mouseout(plot.motifs.normalize);
+      }
       mouseover = _;
       return plot;
     };
@@ -295,16 +300,29 @@ Rna2D.config = function(plot, given) {
       return plot;
     };
 
+    plot.motifs.getNTs = function(_) {
+      if (!arguments.length) return getNTs;
+      getNTs = _;
+      return plot;
+    }
+
+    plot.motifs.getID = function(_) {
+      if (!arguments.length) return getID;
+      getID = _;
+      return plot;
+    }
+
+    plot.motifs.instanceClass = function(_) {
+      if (!arguments.length) return instanceKlass;
+      instanceKlass = _;
+      return plot;
+    }
+
     plot.motifs.visible = function(_) {
       if (!arguments.length) return visible;
       visible = _;
       return plot;
     };
-
-    // if (config.motif.on.mouseover == 'highlight') {
-    //   plot.motifs.mouseover(plot.motifs.highlight);
-    //   plot.motif.on.mouseout(plot.motifs.normalize);
-    // };
 
   })();
 

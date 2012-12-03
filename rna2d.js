@@ -215,6 +215,10 @@ Rna2D.config = function(plot, given) {
 
     plot.nucleotides.mouseover = function(_) {
       if (!arguments.length) return mouseover;
+      if (_ === 'highlight') {
+        _ = plot.nucleotides.highlight;
+        plot.nucleotides.mouseout(plot.nucleotides.normalize);
+      }
       mouseover = _;
       return plot;
     };
@@ -257,11 +261,6 @@ Rna2D.config = function(plot, given) {
 
   })();
 
-  //     if (config.nucleotide.on.mouseover == 'highlight') {
-  //       config.nucleotide.on.mouseover = plot.nucleotides.highlight;
-  //       config.nucleotide.on.mouseout = plot.nucleotides.normalize;
-  //     };
-
   // --------------------------------------------------------------------------
   // Interaction configuration options
   // --------------------------------------------------------------------------
@@ -301,6 +300,10 @@ Rna2D.config = function(plot, given) {
 
     plot.interactions.mouseover = function(_) {
       if (!arguments.length) return mouseover;
+      if (_ === 'highlight') {
+        _ = plot.interactions.highlight;
+        plot.interactions.mouseout(plot.interactions.normalize);
+      };
       mouseover = _;
       return plot;
     };
@@ -319,21 +322,19 @@ Rna2D.config = function(plot, given) {
 
   })();
 
-  //     if (config.interaction.on.mouseover == 'highlight') {
-  //       config.interaction.on.mouseover = plot.interactions.highlight;
-  //       config.interaction.on.mouseout = plot.interactions.normalize;
-  //     };
-
   // --------------------------------------------------------------------------
   // Motif configuration options
   // --------------------------------------------------------------------------
   (function() {
     var motifs = given.motifs || {},
+        instanceKlass = motifs['instanceKlass'] || function(d) { return d.id.split("_")[0]; },
         klass = motifs['class'] || 'motif',
-        visible = motifs.visible || true,
+        visible = motifs.visible || function(d) { return true; },
         click = motifs.click || Object,
         mouseover = motifs.mouseover || Object
-        mouseout = motifs.mouseout || Object;
+        mouseout = motifs.mouseout || Object,
+        getID = motifs.getID || function(d) { return d.id; },
+        getNTs = motifs.getNTs || function(d) { return d.nts; };
 
     plot.motifs.click = function(_) {
       if (!arguments.length) return click;
@@ -343,6 +344,10 @@ Rna2D.config = function(plot, given) {
 
     plot.motifs.mouseover = function(_) {
       if (!arguments.length) return mouseover;
+      if (_ === 'highlight') {
+        _ = plot.motifs.highlight;
+        plot.motifs.mouseout(plot.motifs.normalize);
+      }
       mouseover = _;
       return plot;
     };
@@ -359,16 +364,29 @@ Rna2D.config = function(plot, given) {
       return plot;
     };
 
+    plot.motifs.getNTs = function(_) {
+      if (!arguments.length) return getNTs;
+      getNTs = _;
+      return plot;
+    }
+
+    plot.motifs.getID = function(_) {
+      if (!arguments.length) return getID;
+      getID = _;
+      return plot;
+    }
+
+    plot.motifs.instanceClass = function(_) {
+      if (!arguments.length) return instanceKlass;
+      instanceKlass = _;
+      return plot;
+    }
+
     plot.motifs.visible = function(_) {
       if (!arguments.length) return visible;
       visible = _;
       return plot;
     };
-
-    // if (config.motif.on.mouseover == 'highlight') {
-    //   plot.motifs.mouseover(plot.motifs.highlight);
-    //   plot.motif.on.mouseout(plot.motifs.normalize);
-    // };
 
   })();
 
@@ -685,7 +703,7 @@ Rna2D.views.airport.connections = function(plot) {
 
   plot.interactions.nucleotides = function(obj) {
     // TODO: Can this be done with getElementById? Will it be faster?
-    var nts = obj.getAttribute('data-nts').split(',');
+    var nts = [obj.getAttribute('nt1'), obj.getAttribute('nt2')];
     var selector = '#' + nts.join(', #');
     return d3.selectAll(selector);
   };
@@ -715,16 +733,16 @@ Rna2D.views.airport.connections = function(plot) {
     });
   };
 
-  plot.interactions.highlight = function(obj) {
-    if (!arguments.length) obj = this;
+  plot.interactions.highlight = function() {
+    var obj = this;
     d3.select(obj).style('stroke', plot.interactions.highlightColor());
-    return plot.interactions.nts(obj).style('stroke', plot.interactions.highlightColor())
+    return plot.interactions.nucleotides(obj).style('stroke', plot.interactions.highlightColor())
   };
 
-  plot.interactions.normalize = function(obj) {
-    if (!arguments.length) obj = this;
+  plot.interactions.normalize = function() {
+    obj = this;
     d3.select(obj).style('stroke', null);
-    return plot.interactions.nts(obj).style('stroke', null);
+    return plot.interactions.nucleotides(obj).style('stroke', null);
   };
 
   return Rna2D;
@@ -732,7 +750,7 @@ Rna2D.views.airport.connections = function(plot) {
 
 Rna2D.views.airport.groups = function(plot) {
 
-  var my = function() {
+  plot.groups = function() {
       // Compute a box around the motif
       var motifs = plot.motifs();
       for(var i = 0; i < motifs.length; i++) {
@@ -743,8 +761,9 @@ Rna2D.views.airport.groups = function(plot) {
             bottom = 0;
 
         // Find the outer points.
-        for(var j = 0; j < current.nts.length; j++) {
-          var id = current['nts'][j],
+        var nts = plot.motifs.getNTs()(current);
+        for(var j = 0; j < nts.length; j++) {
+          var id = nts[j],
               elem = Rna2D.utils.element(id);
 
           if (elem == null) {
@@ -782,20 +801,18 @@ Rna2D.views.airport.groups = function(plot) {
       // Draw the motif boxes
       plot.vis.selectAll(plot.motifs.class())
         .data(plot.motifs()).enter().append('svg:path')
-        .attr('id', function(data) { return data.id; })
-        .attr('class', function(d) { return d.id.split("_")[0]; })
+        .attr('id', plot.motifs.getID())
+        .attr('class', plot.motifs.instanceClass())
         .classed(plot.motifs.class(), true)
-        .attr('data-nts', function(d) { d.nts.join(','); })
+        .attr('data-nts', function(d) { plot.motifs.getNTs()(d).join(','); })
         .attr('d', function(d) { return motifLine(d.bounding) + "Z" })
         .attr('visibility', function(d) { return (plot.motifs.visible(d) ? 'visible' : 'hidden') })
-        .on('click', plot.motifs.click)
-        .on('mouseover', plot.motifs.mouseover)
-        .on('mouseout', plot.motifs.mouseout);
+        .on('click', plot.motifs.click())
+        .on('mouseover', plot.motifs.mouseover())
+        .on('mouseout', plot.motifs.mouseout());
 
      return plot;
   };
-
-  plot.groups = my;
 
   plot.motifs.toggle = function() {
 

@@ -1,6 +1,6 @@
 Rna2D.views.airport.groups = function(plot) {
 
-  var my = function() {
+  plot.groups = function() {
       // Compute a box around the motif
       var motifs = plot.motifs();
       for(var i = 0; i < motifs.length; i++) {
@@ -11,8 +11,9 @@ Rna2D.views.airport.groups = function(plot) {
             bottom = 0;
 
         // Find the outer points.
-        for(var j = 0; j < current.nts.length; j++) {
-          var id = current['nts'][j],
+        var nts = plot.motifs.getNTs()(current);
+        for(var j = 0; j < nts.length; j++) {
+          var id = nts[j],
               elem = Rna2D.utils.element(id);
 
           if (elem == null) {
@@ -50,20 +51,18 @@ Rna2D.views.airport.groups = function(plot) {
       // Draw the motif boxes
       plot.vis.selectAll(plot.motifs.class())
         .data(plot.motifs()).enter().append('svg:path')
-        .attr('id', function(data) { return data.id; })
-        .attr('class', function(d) { return d.id.split("_")[0]; })
+        .attr('id', plot.motifs.getID())
+        .attr('class', plot.motifs.instanceClass())
         .classed(plot.motifs.class(), true)
-        .attr('data-nts', function(d) { d.nts.join(','); })
+        .attr('data-nts', function(d) { plot.motifs.getNTs()(d).join(','); })
         .attr('d', function(d) { return motifLine(d.bounding) + "Z" })
         .attr('visibility', function(d) { return (plot.motifs.visible(d) ? 'visible' : 'hidden') })
-        .on('click', plot.motifs.click)
-        .on('mouseover', plot.motifs.mouseover)
-        .on('mouseout', plot.motifs.mouseout);
+        .on('click', plot.motifs.click())
+        .on('mouseover', plot.motifs.mouseover())
+        .on('mouseout', plot.motifs.mouseout());
 
      return plot;
   };
-
-  plot.groups = my;
 
   plot.motifs.toggle = function() {
 

@@ -77,7 +77,10 @@
         // });
 
         var plot = Rna2D({ selection: '#rna-2d', width: 630, height: 795, })
-          .interactions.visible(function(obj) { return obj.family == 'cWW' });
+        .interactions.visible(function(obj) { return obj.family == 'cWW' })
+        .interactions.mouseover('highlight')
+        .nucleotides.mouseover('highlight')
+        ;
           // .brush.enabled(true);
 
           // nucleotides: {

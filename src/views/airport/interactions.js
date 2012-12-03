@@ -122,7 +122,7 @@ Rna2D.views.airport.connections = function(plot) {
 
   plot.interactions.nucleotides = function(obj) {
     // TODO: Can this be done with getElementById? Will it be faster?
-    var nts = obj.getAttribute('data-nts').split(',');
+    var nts = [obj.getAttribute('nt1'), obj.getAttribute('nt2')];
     var selector = '#' + nts.join(', #');
     return d3.selectAll(selector);
   };
@@ -152,16 +152,16 @@ Rna2D.views.airport.connections = function(plot) {
     });
   };
 
-  plot.interactions.highlight = function(obj) {
-    if (!arguments.length) obj = this;
+  plot.interactions.highlight = function() {
+    var obj = this;
     d3.select(obj).style('stroke', plot.interactions.highlightColor());
-    return plot.interactions.nts(obj).style('stroke', plot.interactions.highlightColor())
+    return plot.interactions.nucleotides(obj).style('stroke', plot.interactions.highlightColor())
   };
 
-  plot.interactions.normalize = function(obj) {
-    if (!arguments.length) obj = this;
+  plot.interactions.normalize = function() {
+    obj = this;
     d3.select(obj).style('stroke', null);
-    return plot.interactions.nts(obj).style('stroke', null);
+    return plot.interactions.nucleotides(obj).style('stroke', null);
   };
 
   return Rna2D;
