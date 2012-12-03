@@ -81,8 +81,8 @@
         .interactions.mouseover('highlight')
         .nucleotides.mouseover('highlight')
         .motifs.mouseover('highlight')
+        .motifs.click(function(motif) { console.log('motif', motif); })
         ;
-          // .brush.enabled(true);
 
           // interaction: {
           //   on: {
@@ -92,11 +92,6 @@
           // brush: {
           //   on: {
           //     update: jmol.show.selection,
-          //   },
-          // },
-          // motif: {
-          //   on: {
-          //     click: function(motif) { console.log('motif', motif); },
           //   },
           // },
 
