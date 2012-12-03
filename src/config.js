@@ -16,6 +16,14 @@ Rna2D.config = function(plot, given) {
     return plot;
   };
 
+  plot.view = function(_) {
+    if (!arguments.length) return view;
+    view = _;
+    Rna2D.views[view](plot).
+      brush(plot);
+    return plot;
+  };
+
   plot.frame = function(_) {
     if (!arguments.length) return frame;
     frame = _;
@@ -326,13 +334,6 @@ Rna2D.config = function(plot, given) {
 
   })();
 
-  plot.view = function(_) {
-    if (!arguments.length) return view;
-    view = _;
-    Rna2D.views[view](plot).
-      brush(plot);
-    return plot;
-  }
   plot.view(view);
 
   return plot;
