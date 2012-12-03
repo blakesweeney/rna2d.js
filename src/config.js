@@ -273,6 +273,7 @@ Rna2D.config = function(plot, given) {
     var motifs = given.motifs || {},
         instanceKlass = motifs['instanceKlass'] || function(d) { return d.id.split("_")[0]; },
         klass = motifs['class'] || 'motif',
+        highlight = motifs.highlight || 'red',
         visible = motifs.visible || function(d) { return true; },
         click = motifs.click || Object,
         mouseover = motifs.mouseover || Object
@@ -329,6 +330,12 @@ Rna2D.config = function(plot, given) {
     plot.motifs.visible = function(_) {
       if (!arguments.length) return visible;
       visible = _;
+      return plot;
+    };
+
+    plot.motifs.highlightColor = function(_) {
+      if (!arguments.length) return highlight;
+      highlight = _;
       return plot;
     };
 

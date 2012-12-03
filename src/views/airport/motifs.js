@@ -58,7 +58,7 @@ Rna2D.views.airport.groups = function(plot) {
         .attr('id', plot.motifs.getID())
         .attr('class', plot.motifs.instanceClass())
         .classed(plot.motifs.class(), true)
-        .attr('data-nts', function(d) { plot.motifs.getNTs()(d).join(','); })
+        .attr('data-nts', function(d) { return plot.motifs.getNTs()(d).join(','); })
         .attr('d', function(d) { return motifLine(d.bounding) + "Z" })
         .attr('visibility', function(d) { return (d.visible ? 'visible' : 'hidden'); })
         .on('click', plot.motifs.click())
@@ -106,12 +106,14 @@ Rna2D.views.airport.groups = function(plot) {
       });
   };
 
-  plot.motifs.highlight = function(obj) {
-    return plot.motifs.nts(obj).style('stroke', config.motif.highlight);
+  plot.motifs.highlight = function() {
+    var obj = this;
+    return plot.motifs.nucleotides(obj).style('stroke', plot.motifs.highlightColor());
   };
 
-  plot.motifs.normalize = function(obj) {
-    return plot.motifs.nts(obj).style('stroke', null);
+  plot.motifs.normalize = function() {
+    var obj = this;
+    return plot.motifs.nucleotides(obj).style('stroke', null);
   };
 
   return Rna2D;
