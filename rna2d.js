@@ -135,11 +135,11 @@ Rna2D.config = function(plot, given) {
   // --------------------------------------------------------------------------
   (function() {
 
-    var brush = given.brush || {}
-        enabled = ('enabled' in brush ? brush['enabled'] : true),
-        initial = ('initial' in brush ? brush['initial'] : []),
+    var brush = given.brush || {},
+        enabled = ('enabled' in brush ? brush.enabled : true),
+        initial = ('initial' in brush ? brush.initial : []),
         klass = brush['class'] || 'brush',
-        update = brush.update || Object
+        update = brush.update || Object,
         clear = brush.clear || Object;
 
     plot.brush.enabled = function(_) {
