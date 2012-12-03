@@ -52,17 +52,19 @@ Rna2D.views.airport.coordinates = function(plot) {
   };
 
   plot.nucleotides.interactions = function(obj) {
-    if (!argument.length) obj = this;
+    if (!arguments.length) obj = this;
     var selector = '[nt1=' + obj.getAttribute('id') + '], [nt2=' + obj.getAttribute('id') + ']';
     return plot.vis.selectAll(selector);
   };
 
-  plot.nucleotides.highlight = function(obj) {
+  plot.nucleotides.highlight = function() {
+    var obj = this;
     d3.select(obj).style('stroke', plot.nucleotides.highlightColor());
     return plot.nucleotides.interactions(obj).style('stroke', plot.nucleotides.highlightColor());
   };
 
-  plot.nucleotides.normalize = function(obj) {
+  plot.nucleotides.normalize = function() {
+    var obj = this;
     d3.select(obj).style('stroke', null);
     return plot.nucleotides.interactions(obj).style('stroke', null);
   };

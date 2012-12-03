@@ -138,8 +138,8 @@ Rna2D.config = function(plot, given) {
     };
 
     plot.nucleotides.highlightColor = function(_) {
-      if (!arguments.length) return highlightColor;
-      highlightColor = _;
+      if (!arguments.length) return highlight;
+      highlight = _;
       return plot;
     };
 
