@@ -41,27 +41,90 @@ Rna2D = function(config) {
 // Stores the views of the structure
 Rna2D.views = {};
 
-Rna2D.utils = function() {
-  var my = {};
+Rna2D.brush = function(plot) {
 
-  my.merge = function(update, old) {
-    for(var key in old) {
-      var val = old[key];
-      if (typeof(val) == 'object') {
-        update[key]  = merge(update[key] || {}, val);
+  var brush = function() {
+
+    function startBrush() {
+      // Check if click within the bounding box of all nts or interactions.
+      // Ugh. Such a pain. Maybe do this later.
+    };
+
+    // Do nothing for now.
+    function updateBrush(p) { };
+
+    function endBrush() {
+      var matched = {};
+      if (brush.empty()) {
+        plot.brush.clear();
       } else {
-        update[key] = val;
-      }
+        var e = brush.extent();
+        vis.selectAll('.' + plot.nucleotides.class())
+          .attr("checked", function(d) {
+            var inside = e[0][0] <= d.x && d.x <= e[1][0]
+              && e[0][1] <= d.y && d.y <= e[1][1];
+            if (inside) {
+              matched[d.id] = d;
+            }
+          });
+        plot.brush.update(matched);
+      };
+    };
+
+    var brush = d3.svg.brush()
+      .on('brushstart', startBrush)
+      .on('brush', updateBrush)
+      .on('brushend', endBrush)
+      .x(plot.__xScale)
+      .y(plot.__yScale);
+
+    // TODO: Do this correctly.
+    if (plot.brush.initial()) {
+      plot.select(plot.brush.initial());
     }
-    return update;
+
+    return plot;
   };
 
-  my.element = function(id) { 
-    return document.getElementById(id); 
+  plot.brush = brush;
+
+  // Draw the brush around the given extent
+  plot.brush.select = function(extent) {
+    brush.extent([]);
+    startBrush();
+    brush.extent(extent);
+    updateBrush();
+    endBrush();
+    return plot;
   };
 
-  return my;
-}();
+  // Show the brush
+  plot.brush.enable = function() {
+    vis.append('g')
+      .classed(plot.brush.class(), true)
+      .call(brush);
+    plot.brush.enabled(true);
+    return plot;
+  };
+
+  // Hide the brush
+  plot.brush.disable = function() {
+    vis.selectAll('.' + plot.brush.class()).remove();
+    plot.brush.enabled(false);
+    return plot;
+  };
+
+  // Toggle the brush
+  plot.brush.toggle = function() {
+    if (plot.brush.enabled()) {
+      return plot.brush.disable();
+    };
+    return plot.brush.enable();
+  };
+
+  return Rna2D;
+};
+
 Rna2D.config = function(plot, given) {
 
   var nucleotides = given.nucleotdies || [],
@@ -410,89 +473,157 @@ Rna2D.config = function(plot, given) {
   return plot;
 };
 
-Rna2D.brush = function(plot) {
+Rna2D.jmol = function(plot) {
 
-  var brush = function() {
+  var config = {
+    group: {
+      max: 200,
+      on: {
+        overflow: Object,
+      }
+    },
+    window: {
+      size: 400,
+      build: undefined,
+    }
+  };
 
-    function startBrush() {
-      // Check if click within the bounding box of all nts or interactions.
-      // Ugh. Such a pain. Maybe do this later.
-    };
+  config = merge(config, given);
 
-    // Do nothing for now.
-    function updateBrush(p) { };
+  var connection = {
+    show: {},
+  };
 
-    function endBrush() {
-      var matched = {};
-      if (brush.empty()) {
-        plot.brush.clear();
+  connection.setup = function() {
+    var jmolApp = $('#jmolApplet0');
+    var jmolDiv = $('#jmol');
+
+    // launch jmol if necessary
+    if (jmolApp.length == 0 ) {
+      jmolDiv.html( jmolApplet(config.window.size, "", 0) )
+      if (config.window.build !== undefined) {
+        config.window.build(jmolDiv);
       } else {
-        var e = brush.extent();
-        vis.selectAll('.' + plot.nucleotides.class())
-          .attr("checked", function(d) {
-            var inside = e[0][0] <= d.x && d.x <= e[1][0]
-              && e[0][1] <= d.y && d.y <= e[1][1];
-            if (inside) {
-              matched[d.id] = d;
-            }
-          });
-        plot.brush.update(matched);
-      };
-    };
-
-    var brush = d3.svg.brush()
-      .on('brushstart', startBrush)
-      .on('brush', updateBrush)
-      .on('brushend', endBrush)
-      .x(plot.__xScale)
-      .y(plot.__yScale);
-
-    // TODO: Do this correctly.
-    if (plot.brush.initial()) {
-      plot.select(plot.brush.initial());
+        jmolDiv.append('<label><input type="checkbox" id="showNtNums">Numbers</label>') 
+          .append('<input type="button" id="neighborhood" value="Show neighborhood">') 
+          .append('<input type="button" id="stereo" value="Stereo">');
+      }
     }
 
-    return plot;
+    jmolScript('zap;');
+
+    // reset the state of the system
+    $.jmolTools.numModels = 0;
+    $.jmolTools.stereo = false;
+    $.jmolTools.neighborhood = false;
+    $('#neighborhood').val('Show neighborhood');
+    $.jmolTools.models = {};
+    // unbind all events
+    $('#stereo').unbind();
+    $('#neighborhood').unbind();
+    $('#showNtNums').unbind();
   };
 
-  plot.brush = brush;
+  // Code to integrate this with RNA2D with Jmol tools.
+  connection.show.selection = function(matched) {
+    connection.setup();
 
-  // Draw the brush around the given extent
-  plot.brush.select = function(extent) {
-    brush.extent([]);
-    startBrush();
-    brush.extent(extent);
-    updateBrush();
-    endBrush();
-    return plot;
+    var data_coord = '';
+    if (typeof(matched) == 'object') {
+      var ids = $.map(matched, function(value, key) { return key; });
+      data_coord = ids.join(',');
+    } else {
+      data_coord = matched;
+    }
+
+    var count = data_coord.split(',').length;
+    if (count > config.group.max) {
+      config.group.on.overflow();
+      return;
+    }
+
+    $('#tempJmolToolsObj').remove();
+    $('body').append("<input type='radio' id='tempJmolToolsObj' data-coord='" + data_coord + "'>");
+    $('#tempJmolToolsObj').hide();
+    $('#tempJmolToolsObj').jmolTools({
+      showNeighborhoodId: 'neighborhood',
+      showNumbersId: 'showNtNums',
+      showStereoId: 'stereo',
+    }).jmolToggle();
   };
 
-  // Show the brush
-  plot.brush.enable = function() {
-    vis.append('g')
-      .classed(plot.brush.class(), true)
-      .call(brush);
-    plot.brush.enabled(true);
-    return plot;
+  // Show the given interaction.
+  connection.show.group = function(interaction) {
+    connection.show.selection(interaction['data-nts']);
   };
 
-  // Hide the brush
-  plot.brush.disable = function() {
-    vis.selectAll('.' + plot.brush.class()).remove();
-    plot.brush.enabled(false);
-    return plot;
-  };
-
-  // Toggle the brush
-  plot.brush.toggle = function() {
-    if (plot.brush.enabled()) {
-      return plot.brush.disable();
-    };
-    return plot.brush.enable();
-  };
-
-  return Rna2D;
+  return connection;
 };
+Rna2D.motifs = function(plot) {
+  //     plot.motifs = function() {
+  //       var all = function() { return vis.selectAll('.' + config.motif.class); };
+
+  //       return {
+  //         nts: function(obj) {
+  //           var nts = obj.getAttribute('data-nts').split(',');
+  //           var selector = '#' + nts.join(', #');
+  //           return d3.selectAll(selector);
+  //         },
+
+  //         all: all,
+
+  //         each: function(fn) {
+  //           fn(all());
+  //           return plot;
+  //         },
+
+  //         show: function() {
+  //           config.motif.visible = true;
+  //           return all().attr('visibility', 'visible');
+  //         },
+
+  //         hide: function() {
+  //           config.motif.visible = false;
+  //           return all().attr('visibility', 'hidden');
+  //         },
+
+  //         toggle: function() {
+  //           if (config.motif.visible) {
+  //             return plot.motifs.hide();
+  //           };
+  //           return plot.motifs.show();
+  //         },
+
+  //         highlight: function(obj) {
+  //           return plot.motifs.nts(obj).style('stroke', config.motif.highlight);
+  //         },
+
+  //         normalize: function(obj) {
+  //           return plot.motifs.nts(obj).style('stroke', null);
+  //         },
+}
+
+Rna2D.utils = function() {
+  var my = {};
+
+  my.merge = function(update, old) {
+    for(var key in old) {
+      var val = old[key];
+      if (typeof(val) == 'object') {
+        update[key]  = merge(update[key] || {}, val);
+      } else {
+        update[key] = val;
+      }
+    }
+    return update;
+  };
+
+  my.element = function(id) { 
+    return document.getElementById(id); 
+  };
+
+  return my;
+}();
 // Container for the airport view
 Rna2D.views.airport = function(plot) {
 
@@ -589,6 +720,7 @@ Rna2D.views.airport.coordinates = function(plot) {
 
   return Rna2D;
 };
+
 Rna2D.views.airport.connections = function(plot) {
 
   // We need to track if we are drawing across the letter in which case we
@@ -889,5 +1021,6 @@ Rna2D.views.airport.groups = function(plot) {
 
   return Rna2D;
 }
+
 
 })();
