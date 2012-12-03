@@ -20,11 +20,11 @@ Rna2D = function(config) {
     });
   };
 
-  // Add all components.
-  Rna2D.components(plot);
-
   // Configure the plot
   Rna2D.config(plot, config);
+
+  // Add and configure all components.
+  Rna2D.components(plot, config);
 
   return plot;
 };

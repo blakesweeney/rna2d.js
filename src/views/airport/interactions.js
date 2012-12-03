@@ -78,6 +78,7 @@ Rna2D.views.airport.connections = function(plot) {
             interactions.push({
               visibility: visible(obj),
               classes: obj.family + ' ' + plot.interactions.class(),
+              'data-nts': obj.nt1 + ',' + obj.nt2,
               id: obj.nt1 + ',' + obj.nt2 + ',' + obj.family,
               nt1: obj.nt1,
               nt2: obj.nt2,
@@ -106,7 +107,7 @@ Rna2D.views.airport.connections = function(plot) {
         .attr('x2', function(d) { return d.x2; })
         .attr('y2', function(d) { return d.y2; })
         .attr('visibility', function(d) { return (d.visibility ? 'visible' : 'hidden'); })
-        .attr('data-nts', function(d) { return d.nt1 + ',' + d.nt2; })
+        .attr('data-nts', function(d) { return d.data; })
         .attr('nt1', function(d, i) { return d.nt1; })
         .attr('nt2', function(d, i) { return d.nt2; })
         .on('click', plot.interactions.click())

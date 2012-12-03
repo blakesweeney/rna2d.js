@@ -1,4 +1,4 @@
-Rna2D.components.frame = function(plot) {
+Rna2D.components.frame = function(plot, config) {
 
   plot.components.frame = function() {
 
@@ -15,6 +15,26 @@ Rna2D.components.frame = function(plot) {
   }
 
   plot.frame = {};
+
+  // Frame configuration options
+  (function(given) {
+    var frame = given.frame || {},
+        add = ('add' in frame ? frame.add : true),
+        klass = frame['class'] || 'frame';
+
+    plot.frame.add = function(_) {
+      if (!arguments.length) return add;
+      add = _;
+      return plot;
+    };
+
+    plot.frame.class = function(_) {
+      if (!arguments.length) return klass;
+      klass = _;
+      return plot;
+    };
+
+  })(config);
 
   return Rna2D;
 }

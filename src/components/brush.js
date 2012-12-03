@@ -1,4 +1,4 @@
-Rna2D.components.brush = function(plot) {
+Rna2D.components.brush = function(plot, config) {
 
   var brush;
 
@@ -49,6 +49,49 @@ Rna2D.components.brush = function(plot) {
   };
 
   plot.brush = function() { return brush; };
+
+  // --------------------------------------------------------------------------
+  // Brush configure options
+  // --------------------------------------------------------------------------
+  (function(given) {
+    var brush = given.brush || {},
+        enabled = ('enabled' in brush ? brush.enabled : true),
+        initial = ('initial' in brush ? brush.initial : []),
+        klass = brush['class'] || 'brush',
+        update = brush.update || Object,
+        clear = brush.clear || Object;
+
+    plot.brush.enabled = function(_) {
+      if (!arguments.length) return enabled;
+      enabled = _;
+      return plot;
+    };
+
+    plot.brush.initial = function(_) {
+      if (!arguments.length) return initial;
+      initial = _;
+      return plot;
+    };
+
+    plot.brush.class = function(_) {
+      if (!arguments.length) return klass;
+      klass = _;
+      return plot;
+    };
+
+    plot.brush.update = function(_) {
+      if (!arguments.length) return update;
+      update = _;
+      return plot;
+    };
+
+    plot.brush.clear = function(_) {
+      if (!arguments.length) return clear;
+      clear = _;
+      return plot;
+    };
+
+  })(config);
 
   // Draw the brush around the given extent
   // TODO: Do this correctly.
