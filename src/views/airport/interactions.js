@@ -52,29 +52,41 @@ Rna2D.views.airport.connections = function(plot) {
       // Compute the data to use for interactions
       var interactions = [],
           raw = plot.interactions(),
-          visible = plot.interactions.visible();
+          visible = plot.interactions.visible(),
+          seen = {},
+          idOf = function(nt1, nt2, family) { return nt1 + ',' + nt2 + ',' + family; };
 
       for(var i = 0; i < raw.length; i++) {
         var obj = raw[i],
             nt1 = Rna2D.utils.element(obj.nt1),
-            nt2 = Rna2D.utils.element(obj.nt2);
+            nt2 = Rna2D.utils.element(obj.nt2),
+            id = idOf(obj.nt1, obj.nt2, obj.family),
+            revId = idOf(obj.nt2, obj.nt1, obj.family);
 
         if (nt1 && nt2) {
+          if (!seen[id] && !seen[revId]) {
 
-          var p1 = intersectPoint(nt1, nt2, plot.nucleotides.gap()),
-              p2 = intersectPoint(nt2, nt1, plot.nucleotides.gap());
+            var p1 = intersectPoint(nt1, nt2, plot.nucleotides.gap()),
+                p2 = intersectPoint(nt2, nt1, plot.nucleotides.gap());
 
-          interactions.push({
-            visibility: visible(obj),
-            family: obj.family,
-            id: obj.nt1 + ',' + obj.nt2 + ',' + obj.family,
-            nt1: obj.nt1,
-            nt2: obj.nt2,
-            x1: p1.x,
-            y1: p1.y,
-            x2: p2.x,
-            y2: p2.y
-          });
+            var family = obj.family;
+            if (family[1] == family[2]) {
+            // if (plot.interactions.isSymmetric(family)) {
+              seen[id] = true;
+            };
+
+            interactions.push({
+              visibility: visible(obj),
+              family: obj.family,
+              id: obj.nt1 + ',' + obj.nt2 + ',' + obj.family,
+              nt1: obj.nt1,
+              nt2: obj.nt2,
+              x1: p1.x,
+              y1: p1.y,
+              x2: p2.x,
+              y2: p2.y
+            });
+          };
 
         } else {
           if (plot.interactions.logMissing()) {
