@@ -82,7 +82,7 @@ Rna2D.config = function(plot, given) {
       if (!arguments.length) return enabled;
       enabled = _;
       return plot;
-    }
+    };
 
     plot.brush.initial = function(_) {
       if (!arguments.length) return initial;
@@ -94,19 +94,19 @@ Rna2D.config = function(plot, given) {
       if (!arguments.length) return klass;
       klass = _;
       return plot;
-    }
+    };
 
     plot.brush.update = function(_) {
       if (!arguments.length) return update;
       update = _;
       return plot;
-    }
+    };
 
     plot.brush.clear = function(_) {
       if (!arguments.length) return clear;
       clear = _;
       return plot;
-    }
+    };
 
   })();
 
@@ -291,7 +291,7 @@ Rna2D.config = function(plot, given) {
       if (_ === 'highlight') {
         _ = plot.motifs.highlight;
         plot.motifs.mouseout(plot.motifs.normalize);
-      }
+      };
       mouseover = _;
       return plot;
     };
@@ -312,19 +312,19 @@ Rna2D.config = function(plot, given) {
       if (!arguments.length) return getNTs;
       getNTs = _;
       return plot;
-    }
+    };
 
     plot.motifs.getID = function(_) {
       if (!arguments.length) return getID;
       getID = _;
       return plot;
-    }
+    };
 
     plot.motifs.instanceClass = function(_) {
       if (!arguments.length) return instanceKlass;
       instanceKlass = _;
       return plot;
-    }
+    };
 
     plot.motifs.visible = function(_) {
       if (!arguments.length) return visible;
