@@ -77,7 +77,7 @@ Rna2D.views.airport.connections = function(plot) {
 
             interactions.push({
               visibility: visible(obj),
-              family: obj.family,
+              classes: obj.family + ' ' + plot.interactions.class(),
               id: obj.nt1 + ',' + obj.nt2 + ',' + obj.family,
               nt1: obj.nt1,
               nt2: obj.nt2,
@@ -100,8 +100,7 @@ Rna2D.views.airport.connections = function(plot) {
         .data(interactions)
         .enter().append('svg:line')
         .attr('id', function(d) { return d.id; })
-        .attr('class', function(d) { d.family; })
-        .classed(plot.interactions.class(), true)
+        .attr('class', function(d) { return d.classes; })
         .attr('x1', function(d) { return d.x1; })
         .attr('y1', function(d) { return d.y1; })
         .attr('x2', function(d) { return d.x2; })
@@ -136,7 +135,7 @@ Rna2D.views.airport.connections = function(plot) {
     // TODO: Can this be done with getElementById? Will it be faster?
     var nts = [obj.getAttribute('nt1'), obj.getAttribute('nt2')];
     var selector = '#' + nts.join(', #');
-    return d3.selectAll(selector);
+    return plot.vis.selectAll(selector);
   };
 
   plot.interactions.show =  function(family) {
