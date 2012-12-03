@@ -8,7 +8,11 @@ Rna2D.views.airport.groups = function(plot) {
             left = 0,
             right = plot.__xCoordMax,
             top = plot.__yCoordMax,
-            bottom = 0;
+            bottom = 0,
+            visible = plot.motifs.visible();
+
+        // Mark motif as visible or not
+        current.visible = visible(current);
 
         // Find the outer points.
         var nts = plot.motifs.getNTs()(current);
@@ -56,7 +60,7 @@ Rna2D.views.airport.groups = function(plot) {
         .classed(plot.motifs.class(), true)
         .attr('data-nts', function(d) { plot.motifs.getNTs()(d).join(','); })
         .attr('d', function(d) { return motifLine(d.bounding) + "Z" })
-        .attr('visibility', function(d) { return (plot.motifs.visible(d) ? 'visible' : 'hidden') })
+        .attr('visibility', function(d) { return (d.visible ? 'visible' : 'hidden'); })
         .on('click', plot.motifs.click())
         .on('mouseover', plot.motifs.mouseover())
         .on('mouseout', plot.motifs.mouseout());
@@ -64,8 +68,50 @@ Rna2D.views.airport.groups = function(plot) {
      return plot;
   };
 
-  plot.motifs.toggle = function() {
+  plot.motifs.all = function(family) {
+    if (!arguments.length || !family) family = plot.motifs.class();
+    return plot.vis.selectAll('.' + family);
+  };
 
+  plot.motifs.nucleotides = function(obj) {
+    var nts = obj.getAttribute('data-nts').split(',');
+    var selector = '#' + nts.join(', #');
+    return d3.selectAll(selector);
+  };
+
+  plot.motifs.show = function(family) {
+    return plot.motifs.all(family)
+      .attr('visibility', function(d) {
+        d.visible = true;
+        return 'visible';
+      });
+  };
+
+  plot.motifs.hide = function(family) {
+    return plot.motifs.all(family)
+      .attr('visibility', function(d) {
+        d.visible = false;
+        return 'hidden';
+      });
+  };
+
+  plot.motifs.toggle = function(family) {
+    return plot.motifs.all(family)
+      .attr('visibility', function(d) {
+        d.visible = !d.visible;
+        if (d.visible == false) {
+          return 'hidden';
+        };
+        return 'visible';
+      });
+  };
+
+  plot.motifs.highlight = function(obj) {
+    return plot.motifs.nts(obj).style('stroke', config.motif.highlight);
+  };
+
+  plot.motifs.normalize = function(obj) {
+    return plot.motifs.nts(obj).style('stroke', null);
   };
 
   return Rna2D;
