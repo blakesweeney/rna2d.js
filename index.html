@@ -69,15 +69,16 @@
       <!-- Code to generate 2D structure and toggle buttons -->
       <script type='text/javascript'>
 
-        var plot = Rna2D({ selection: '#rna-2d', width: 630, height: 795, })
-          .interactions.visible(function(obj) { return obj.family == 'cWW' })
+        var plot = Rna2D({ selection: '#rna-2d', width: 630, height: 795 });
+
+        plot.interactions.visible(function(obj) { return obj.family == 'cWW' })
           .interactions.mouseover('highlight')
           .nucleotides.mouseover('highlight')
+          .nucleotides.click(function() { console.log('nucleotide', this); })
           .motifs.mouseover('highlight')
-          .motifs.click(function(motif) { console.log('motif', motif); })
-          .jmol.overflow(function() { alert("Too many nts selected"); });
-
-       plot.brush.update(plot.jmol.selection)
+          .motifs.click(function() { console.log('motif', this); })
+          .jmol.overflow(function() { alert("Too many nts selected"); })
+          .brush.update(plot.jmol.selection)
           .interactions.click(plot.jmol.group);
 
           // brush: {

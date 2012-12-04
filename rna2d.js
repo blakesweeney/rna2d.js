@@ -444,7 +444,7 @@ Rna2D.components.brush = function(plot, config) {
             }
           });
 
-        plot.brush.update(matched);
+        plot.brush.update()(matched);
       };
     };
 
@@ -594,7 +594,6 @@ Rna2D.components.jmol = function(plot, config) {
       plot.jmol.windowBuild()($div);
       $div.show();
     };
-    console.log($div);
 
     // reset the state of the system
     jmolScript('zap;');
@@ -613,7 +612,6 @@ Rna2D.components.jmol = function(plot, config) {
   // Display a selection.
   plot.jmol.selection = function(matched) {
     setup();
-    console.log(matched);
 
     var data = matched;
     if (typeof(matched) == 'object') {
@@ -635,8 +633,6 @@ Rna2D.components.jmol = function(plot, config) {
       showNumbersId: plot.jmol.numbersID(),
       showStereoId: plot.jmol.stereoID(),
     }).jmolToggle();
-
-    console.log($('#' + plot.jmol.tmpID()));
   };
 
   // Show the given group. The group should have a data-nts property which is

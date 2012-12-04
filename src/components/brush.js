@@ -33,7 +33,7 @@ Rna2D.components.brush = function(plot, config) {
             }
           });
 
-        plot.brush.update(matched);
+        plot.brush.update()(matched);
       };
     };
 
