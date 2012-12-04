@@ -81,12 +81,6 @@
           .brush.update(plot.jmol.selection)
           .interactions.click(plot.jmol.group);
 
-          // brush: {
-          //   on: {
-          //     update: jmol.show.selection,
-          //   },
-          // },
-
         d3.json('data/16S-ecoli.js', function(data) {
           plot.nucleotides(data);
 
