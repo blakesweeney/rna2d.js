@@ -13,7 +13,7 @@ $(document).ready(function() {
     var nts = plot.interactions.nucleotides(this);
     var family = plot.interactions.family(this);
     nts.classed(family, true);
-    nts.style('font-size', plot.nucleotides.fontSize() + 2);
+    nts.style('font-size', plot.nucleotides.fontSize() + 4);
     d3.select(this).style('opacity', 1);
   };
 
@@ -26,7 +26,7 @@ $(document).ready(function() {
   };
 
   var highlightNucleotide = function() {
-    d3.select(this).style('font-size', plot.nucleotides.fontSize() + 2);
+    d3.select(this).style('font-size', plot.nucleotides.fontSize() + 4);
     var inters = plot.nucleotides.interactions(this)
     inters.style('opacity', 1);
   };
@@ -62,6 +62,26 @@ $(document).ready(function() {
     return plot.jmol.selection(selection);
   };
 
+  var normalColor = function() {
+    plot.nucleotides.color(function(d, i) { return 'black'; })
+    plot.nucleotides.doColor();
+  };
+
+  var colorBySequence = function() {
+    plot.nucleotides.color(function(d, i) {
+      var sequence = d['id'].split('_')[5];
+      if (sequence == 'A') {
+        return 'red';
+      } else if (sequence == 'C') {
+        return 'yellow';
+      } else if (sequence == 'G') { 
+        return 'green';
+      };
+      return 'blue';
+    });
+    plot.nucleotides.doColor();
+  }
+
   var plot = Rna2D({ width: 630, height: 795, selection: '#rna-2d' })
     .motifs.visible(function() { return false; })
     .motifs.click(motifClick)
@@ -71,7 +91,6 @@ $(document).ready(function() {
     .nucleotides.click(clickNucleotide)
     .nucleotides.mouseover(highlightNucleotide)
     .nucleotides.mouseout(normalizeNucleotide)
-    // .nucleotides.color(function() { return 'black'; })
     .interactions.click(clickInteraction)
     .interactions.mouseover(highlightInteraction)
     .interactions.mouseout(normalizeInteraction)
@@ -92,6 +111,10 @@ $(document).ready(function() {
       });
     });
   });
+
+  // Coloring controls.
+  $('#sequence-control').on('click', colorBySequence);
+  $('#normal-color-control').on('click', normalColor);
 
   // Callback to execute when toggling the controls
   var buttonToggle = function($btn) {

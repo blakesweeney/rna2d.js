@@ -42,7 +42,7 @@
 
       <div id='example' class='row'>
 
-        <div id='interaction-controls' class='span1'>
+        <div id='interaction-controls' class='span2'>
 
           <a href="#modal" role="button" class="btn btn-primary btn-block" data-toggle="modal">Help</a>
 
@@ -56,52 +56,102 @@
 
           <hr>
 
-          <div class="btn-toolbar">
-            <button type="button" id='cWW-toggle' class="btn btn-block cWW toggle-control">cWW</button>
-          </div>
 
-          <div class="btn-toolbar">
-            <button type="button" id='tWW-toggle' class="btn btn-block tWW toggle-control">tWW</button>
-          </div>
+          <div id="control-groups" class="accordian">
+            <div id="nucleotide-controls" class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#control-groups"
+                  href="#nucleotide-control-buttons">Nucleotides</a>
+              </div>
 
-          <div class="btn-toolbar">
-            <button type="button" id="cWS-toggle" class="btn btn-block cWS toggle-control">cWS</button>
-          </div>
+              <div id="nucleotide-control-buttons" class="accordion-body collapse">
+                <div class="accordion-inner">
 
-          <div class="btn-toolbar">
-            <button type="button" id="tWS-toggle" class="btn btn-block tWS toggle-control">tWS</button>
-          </div>
+                  <!-- <h5>Color By</h5> -->
 
-          <div class="btn-toolbar">
-            <button type="button" id="cWH-toggle" class="btn btn-block cWH toggle-control">cWH</button>
-          </div>
+                  <!-- <ul class="nav nav-pills nav-stacked"> -->
+                  <!--   <li class="active"><a href="#">None</a></li> -->
+                  <!--   <li><a href="#">R</a></li> -->
+                  <!--   <li><a href="#">Rfree</a></li> -->
+                  <!-- </ul> -->
 
-          <div class="btn-toolbar">
-            <button type="button" id="tWH-toggle" class="btn btn-block tWH toggle-control">tWH</button>
-          </div>
+                  <div class="button-group" data-toggle="buttons-radio">
+                    <div class="btn-toolbar">
+                      <button id="normal-color-control" class="btn btn-block active">None</button>
+                    </div>
+                    <div class="btn-toolbar">
+                      <button id="sequence-control" class="btn btn-block">Sequence</button>
+                    </div>
+                    <div class="btn-toolbar">
+                      <button id="R-control" class="btn btn-block disabled">Sfcheck R</button>
+                    </div>
+                    <div class="btn-toolbar">
+                      <button id="Rfree-control" class="btn btn-block disabled">Mapman R</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <div class="btn-toolbar">
-            <button type="button" id="cSH-toggle" class="btn btn-block cSH toggle-control">cSH</button>
-          </div>
+            <div id="interaction-controls" class="accordion-group">
+              <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse"
+                  data-parent="#control-groups" href="#interaction-control-buttons">Interactions</a>
+              </div>
 
-          <div class="btn-toolbar">
-            <button type="button" id="tSH-toggle" class="btn btn-block tSH toggle-control">tSH</button>
-          </div>
+              <div id="interaction-control-buttons" class="accordion-body collapse in">
+                <div class="accordion-inner">
+                  <div class="btn-toolbar">
+                    <button type="button" id='cWW-toggle' class="btn btn-block cWW toggle-control">cWW</button>
+                  </div>
 
-          <div class="btn-toolbar">
-            <button type="button" id="cSS-toggle" class="btn btn-block cSS toggle-control">cSS</button>
-          </div>
+                  <div class="btn-toolbar">
+                    <button type="button" id='tWW-toggle' class="btn btn-block tWW toggle-control">tWW</button>
+                  </div>
 
-          <div class="btn-toolbar">
-            <button type="button" id="tSS-toggle" class="btn btn-block tSS toggle-control">tSS</button>
-          </div>
+                  <div class="btn-toolbar">
+                    <button type="button" id="cWS-toggle" class="btn btn-block cWS toggle-control">cWS</button>
+                  </div>
 
-          <div class="btn-toolbar">
-            <button type="button" id="cHH-toggle" class="btn btn-block cHH toggle-control">cHH</button>
-          </div>
+                  <div class="btn-toolbar">
+                    <button type="button" id="tWS-toggle" class="btn btn-block tWS toggle-control">tWS</button>
+                  </div>
 
-          <div class="btn-toolbar">
-            <button type="button" id="tHH-toggle" class="btn btn-block tHH toggle-control">tHH</button>
+                  <div class="btn-toolbar">
+                    <button type="button" id="cWH-toggle" class="btn btn-block cWH toggle-control">cWH</button>
+                  </div>
+
+                  <div class="btn-toolbar">
+                    <button type="button" id="tWH-toggle" class="btn btn-block tWH toggle-control">tWH</button>
+                  </div>
+
+                  <div class="btn-toolbar">
+                    <button type="button" id="cSH-toggle" class="btn btn-block cSH toggle-control">cSH</button>
+                  </div>
+
+                  <div class="btn-toolbar">
+                    <button type="button" id="tSH-toggle" class="btn btn-block tSH toggle-control">tSH</button>
+                  </div>
+
+                  <div class="btn-toolbar">
+                    <button type="button" id="cSS-toggle" class="btn btn-block cSS toggle-control">cSS</button>
+                  </div>
+
+                  <div class="btn-toolbar">
+                    <button type="button" id="tSS-toggle" class="btn btn-block tSS toggle-control">tSS</button>
+                  </div>
+
+                  <div class="btn-toolbar">
+                    <button type="button" id="cHH-toggle" class="btn btn-block cHH toggle-control">cHH</button>
+                  </div>
+
+                  <div class="btn-toolbar">
+                    <button type="button" id="tHH-toggle" class="btn btn-block tHH toggle-control">tHH</button>
+                  </div>
+                </div>
+                
+              </div>
+            </div>
           </div>
 
         </div>
