@@ -85,8 +85,10 @@ Rna2D.config = function(plot, given) {
   };
 
   plot.interactions = function(_) {
+    console.log('inter');
     if (!arguments.length) return interactions;
     interactions = _;
+    console.log('set inter');
     return plot;
   };
 
@@ -114,7 +116,7 @@ Rna2D.config = function(plot, given) {
   (function() {
     var highlight = nucleotides.highlight || 'red',
         klass = nucleotides['class'] || 'nucleotide',
-        color = nucleotides.class || Object,
+        color = nucleotides.class || function(d, i) { return 'black' },
         fontSize = 11,
         gap = 1,
         click = nucleotides.click || Object,
@@ -1131,17 +1133,173 @@ Rna2D.views.airport.groups = function(plot) {
 Rna2D.views.circular = function(plot) {
 
   // Configure
-  Rna2D.views.circular.coordinates(plot);
-    // .views.circular.connections(plot)
+  Rna2D.views.circular.coordinates(plot)
+    .views.circular.connections(plot);
 
   // Generate rendering function
   plot.render = function() {
-    return plot.coordinates();
-      // .connections();
+    plot.coordinates().connections();
+
+    // Add motifs as needed
+    // if (plot.groups && plot.motifs().length) {
+    //   plot.groups();
+    // }
+
+    return plot;
   };
 
   return Rna2D;
 };
+Rna2D.views.circular.connections = function(plot) {
+
+  plot.connections = function() {
+
+    var ntIndexes = {},
+        getID = plot.nucleotides.getID(),
+        raw = plot.nucleotides();
+
+    for(var i = 0; i < raw.length; i++) {
+      var current = raw[i];
+      ntIndexes[getID(current)] = i;
+    }
+
+    var radiusOf = function(d) {
+      var nt1Index = ntIndexes[d.nt1],
+          nt2Index = ntIndexes[d.nt2];
+
+      if (d.nt1 in ntIndexes && d.nt2 in ntIndexes) {
+        var c1 = arcPoint(plot.__startAngle(null, nt1Index)),
+            c2 = arcPoint(plot.__endAngle(null, nt2Index))
+
+        return Math.sqrt(Math.pow(c2.x - c1.x, 2) + Math.pow(c2.y - c1.y, 2)) / 2;
+      }
+      return null;
+    };
+
+    var arcPoint = function(angle) {
+      var c = plot.__circleCenter
+          x = plot.__innerRadius * Math.cos(angle * 360 / (2 * Math.PI)),
+          y = plot.__innerRadius * Math.sin(angle * 360 / (2 * Math.PI));
+      return { x: c.x + x, y: c.y + y };
+    };
+
+    var centerOf = function(d) {
+      var nt1Index = ntIndexes[d.nt1],
+          nt2Index = ntIndexes[d.nt2];
+
+      if (d.nt1 in ntIndexes && d.nt2 in ntIndexes) {
+        var c1 = arcPoint(plot.__startAngle(null, nt1Index)),
+            c2 = arcPoint(plot.__endAngle(null, nt2Index))
+
+        return { x: (c2.x + c1.x) / 2, y: (c2.y + c2.y) / 2 };
+      } else {
+        console.log(d);
+      };
+
+      return null;
+    };
+
+    var rotation = function(d) {
+      return plot.__startAngle(null, ntIndexes[d.nt1]);
+    }
+
+    var arc = d3.svg.arc()
+          .outerRadius(radiusOf)
+          .innerRadius(function(d, i) { return radiusOf(d) + 2; })
+          .startAngle(function(d, i) { return  plot.__endAngle(null, ntIndexes[d.nt2]); })
+          .endAngle(function(d, i) { return  plot.__startAngle(null, ntIndexes[d.nt1]); })
+          ;
+
+    var data = plot.interactions().slice(1, 100),
+        visible = plot.interactions.visible()
+        ;
+
+    plot.vis.selectAll(plot.interactions.class())
+      .data(data).enter().append('path')
+      .attr('d', arc)
+      .attr('visibility', function(d, i) { return (visible(d) ? 'visible' : 'hidden'); })
+      .attr('transform', function(d) {
+        var center = centerOf(d);
+        if (center)  {
+          return 'translate(' + center.x + ',' + center.y + ')'
+        };
+        return null;
+      })
+
+    return plot;
+  };
+
+  return Rna2D;
+};
+
+    // var orderedNts = {},
+    //   raw = plot.nucleotides(),
+    //   getID = plot.nucleotides.getID(),
+    //   data = []
+    //   ;
+
+
+    // data = data.slice(1, 100);
+    // console.log(data);
+
+    // // var chord = d3.svg.chord()
+    // //   .radius(function(d, i) { return plot.__radius; })
+    // //   .source(function(d, i) { return d.source; })
+    // //   .target(function(d, i) { return d.target; })
+    // //   .startAngle(function(d, i) { return d.startAngle; })
+    // //   .endAngle(function(d, i) { return d.endAngle; })
+    // //   ;
+
+    // var arc = d3.svg.arc()
+    //       .outerRadius(outer)
+    //       .innerRadius(inner)
+    //       .startAngle(startAngle)
+    //       .endAngle(endAngle);
+
+    // console.log(chord(data[0]));
+
+    // plot.vis.selectAll(plot.interactions.class())
+    //   .append('g')
+    //   .data(data).enter().append('svg:path')
+    //   .classed(plot.interactions.class(), true)
+    //   .attr('d', chord)
+    //   ;
+
+    // for(var i = 0; i < raw.length; i++) {
+    //   var current = raw[i];
+    //   orderedNts[getID(current)] = { index: i };
+    // }
+
+    // raw = plot.interactions();
+    // for(var i = 0; i < raw.length; i++) {
+    //   var current = raw[i],
+    //       nt1 = orderedNts[current.nt1],
+    //       nt2 = orderedNts[current.nt2] ;
+
+    //   if (nt1 && nt2) {
+    //     var d = {
+    //       source: {
+    //         nt: current.nt1,
+    //         startAngle: plot.__startAngle(null, nt1.index),
+    //         endAngle:
+    //       },
+    //       target: {
+    //         nt: current.nt2,
+    //         startAngle:
+    //         endAngle: plot.__endAngle(null, nt2.index)
+    //       }
+
+    //     };
+    //     data.push(d);
+    //   } else {
+    //     // Handling missing nts
+    //   }
+    // }
+
+    // var ntGetter = function(interaction, nt) {
+    //   var cur = interaction[nt];
+    //   return orderedNts[cur];
+    // };
 Rna2D.views.circular.coordinates = function(plot) {
 
   // Let width of circle be config
@@ -1153,23 +1311,36 @@ Rna2D.views.circular.coordinates = function(plot) {
   plot.coordinates = function() {
 
     var outer = plot.width() / 4,
+        inner = outer - plot.pie.width(),
+        center = { x: plot.width() / 2, y: plot.height() / 2},
         count = plot.nucleotides().length,
-        arc = d3.svg.arc()
+        color = d3.scale.category20c(), //plot.nucleotides.color(),
+        angleSize = (2*Math.PI - plot.pie.gapSize()) / count,
+        startAngle = function(d, i) { return ((i - 1) * angleSize) + plot.pie.gapSize() / 2;  },
+        endAngle = function(d, i) { return (i * angleSize) + plot.pie.gapSize() / 2; };
+
+    var arc = d3.svg.arc()
           .outerRadius(outer)
-          .innerRadius(outer - plot.pie.width())
-          .startAngle(function(d, i) { return count * 2*Math.PI / (i - 1);  })
-          .endAngle(function(d, i) { return count * 2*Math.PI / i; });
+          .innerRadius(inner)
+          .startAngle(startAngle)
+          .endAngle(endAngle);
 
     plot.vis.selectAll(plot.nucleotides.class())
       .append('g')
       .data(plot.nucleotides()).enter().append('svg:path')
-      .attr('d', arc)
-      .attr('transform', 'translate(' + plot.width() / 2 + ',' + plot.height() / 2 + ')')
       .attr('id', plot.nucleotides.getID())
       .classed(plot.nucleotides.class(), true)
+      .attr('d', arc)
+      .attr('transform', 'translate(' + center.x + ',' + center.y + ')')
+      .attr('fill', function(d, i) { return color(i); })
       .on('click', plot.nucleotides.mouseover())
       .on('mouseover', plot.nucleotides.mouseover())
       .on('mouseout', plot.nucleotides.mouseout());
+
+    plot.__startAngle = startAngle;
+    plot.__endAngle = endAngle;
+    plot.__innerRadius = inner;
+    plot.__circleCenter = center;
 
     return plot;
   };
@@ -1177,11 +1348,18 @@ Rna2D.views.circular.coordinates = function(plot) {
   plot.pie = {};
 
   (function() {
-    var width = 10;
+    var width = 10,
+        gap = 0.2;
 
     plot.pie.width = function(_) {
       if (!arguments.length) return width;
       width = _;
+      return plot;
+    };
+
+    plot.pie.gapSize = function(_) {
+      if (!arguments.length) return gap;
+      gap = _;
       return plot;
     };
   })();

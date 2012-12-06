@@ -9,23 +9,36 @@ Rna2D.views.circular.coordinates = function(plot) {
   plot.coordinates = function() {
 
     var outer = plot.width() / 4,
+        inner = outer - plot.pie.width(),
+        center = { x: plot.width() / 2, y: plot.height() / 2},
         count = plot.nucleotides().length,
-        arc = d3.svg.arc()
+        color = d3.scale.category20c(), //plot.nucleotides.color(),
+        angleSize = (2*Math.PI - plot.pie.gapSize()) / count,
+        startAngle = function(d, i) { return ((i - 1) * angleSize) + plot.pie.gapSize() / 2;  },
+        endAngle = function(d, i) { return (i * angleSize) + plot.pie.gapSize() / 2; };
+
+    var arc = d3.svg.arc()
           .outerRadius(outer)
-          .innerRadius(outer - plot.pie.width())
-          .startAngle(function(d, i) { return count * 2*Math.PI / (i - 1);  })
-          .endAngle(function(d, i) { return count * 2*Math.PI / i; });
+          .innerRadius(inner)
+          .startAngle(startAngle)
+          .endAngle(endAngle);
 
     plot.vis.selectAll(plot.nucleotides.class())
       .append('g')
       .data(plot.nucleotides()).enter().append('svg:path')
-      .attr('d', arc)
-      .attr('transform', 'translate(' + plot.width() / 2 + ',' + plot.height() / 2 + ')')
       .attr('id', plot.nucleotides.getID())
       .classed(plot.nucleotides.class(), true)
+      .attr('d', arc)
+      .attr('transform', 'translate(' + center.x + ',' + center.y + ')')
+      .attr('fill', function(d, i) { return color(i); })
       .on('click', plot.nucleotides.mouseover())
       .on('mouseover', plot.nucleotides.mouseover())
       .on('mouseout', plot.nucleotides.mouseout());
+
+    plot.__startAngle = startAngle;
+    plot.__endAngle = endAngle;
+    plot.__innerRadius = inner;
+    plot.__circleCenter = center;
 
     return plot;
   };
@@ -33,11 +46,18 @@ Rna2D.views.circular.coordinates = function(plot) {
   plot.pie = {};
 
   (function() {
-    var width = 10;
+    var width = 10,
+        gap = 0.2;
 
     plot.pie.width = function(_) {
       if (!arguments.length) return width;
       width = _;
+      return plot;
+    };
+
+    plot.pie.gapSize = function(_) {
+      if (!arguments.length) return gap;
+      gap = _;
       return plot;
     };
   })();
