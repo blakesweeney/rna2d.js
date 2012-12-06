@@ -9,106 +9,86 @@ $(document).ready(function() {
     $jmol.append(form);
   };
 
-  var highlightInteraction = function(obj) {
-    var nts = plot.interactions.nts(obj);
-    var family = plot.interactions.family(obj);
+  var highlightInteraction = function() {
+    console.log(this);
+    var nts = plot.interactions.nucleotides(this);
+    var family = plot.interactions.family(this);
     nts.classed(family, true);
-    nts.style('font-size', 14);
-    d3.select(obj).style('opacity', 1);
+    nts.style('font-size', plot.nucleotides.fontSize() + 2);
+    d3.select(this).style('opacity', 1);
   };
 
-  var normalizeInteraction = function(obj) {
-    var nts = plot.interactions.nts(obj);
-    var family = plot.interactions.family(obj);
+  var normalizeInteraction = function() {
+    var nts = plot.interactions.nucleotides(this);
+    var family = plot.interactions.family(this);
     nts.classed(family, false);
-    nts.style('font-size', 8);
-    d3.select(obj).style('opacity', 0.4);
+    nts.style('font-size', plot.nucleotides.fontSize());
+    d3.select(this).style('opacity', 0.4);
   };
 
-  var highlightNucleotide = function(obj) {
-    d3.select(obj).style('font-size', 14);
-    var inters = plot.nucleotides.interactions(obj)
+  var highlightNucleotide = function() {
+    d3.select(this).style('font-size', plot.nucleotides.fontSize() + 2);
+    var inters = plot.nucleotides.interactions(this)
     inters.style('opacity', 1);
   };
 
-  var normalizeNucleotide = function(obj) {
-    d3.select(obj).style('font-size', 8);
-    var inters = plot.nucleotides.interactions(obj)
+  var normalizeNucleotide = function() {
+    d3.select(this).style('font-size', plot.nucleotides.fontSize());
+    var inters = plot.nucleotides.interactions(this)
     inters.style('opacity', 0.4);
   };
 
-  var motifClick = function(motif) {
-    var id = motif.id
+  var motifClick = function() {
+    var id = this.id
     var link = '<a href="http://rna.bgsu.edu/rna3dhub/loops/view/' + id +
       '">' + id + '</a>';
     $('#about-selection').children().remove();
     $('#about-selection').append(link);
     $('#about-selection').show();
-    return jmol.show.group(motif);
+    return plot.jmol.group({ 'data-nts': this.getAttribute('data-nts') });
   };
 
-  var clickInteraction = function(interaction) {
+  var clickInteraction = function() {
     $('#about-selection').hide();
-    return jmol.show.group(interaction);
-  }
+    return plot.jmol.group({ 'data-nts': this.getAttribute('nt1') + ',' + this.getAttribute('nt2') });
+  };
+
+  var clickNucleotide = function() {
+    $('#about-selection').hide();
+    return plot.jmol.group({ 'data-nts': this.id });
+  };
 
   var brushShow = function(selection) {
     $('#about-selection').hide();
-    return jmol.show.selection(selection);
-  }
+    return plot.jmol.selection(selection);
+  };
 
-  var jmol = jmol2D({
-    group: {
-      on: {
-        overflow: function() { $("#overflow").show() },
-      }
-    },
-    window: {
-      build: generateJmol,
-    },
-  });
-
-  var plot = plot2D({
-    width: 630,
-    height: 795,
-    motif: {
-      visible: false,
-      on: {
-        click: motifClick,
-      }
-    },
-    brush: {
-      enabled: true,
-      initial: [[100, 36], [207, 132]],
-      on: {
-        update: brushShow,
-      }
-    },
-    nucleotide: {
-      on: {
-        mouseover: highlightNucleotide,
-        mouseout: normalizeNucleotide,
-      }
-    },
-    interaction: {
-      on: {
-        click: clickInteraction,
-        mouseover: highlightInteraction,
-        mouseout: normalizeInteraction,
-      }
-    }
-  });
+  var plot = Rna2D({ width: 630, height: 795, selection: '#rna-2d' })
+    .motifs.visible(function() { return false; })
+    .motifs.click(motifClick)
+    .brush.enabled(true)
+    .brush.initial([[100, 36], [207, 132]])
+    .brush.update(brushShow)
+    .nucleotides.click(clickNucleotide)
+    .nucleotides.mouseover(highlightNucleotide)
+    .nucleotides.mouseout(normalizeNucleotide)
+    // .nucleotides.color(function() { return 'black'; })
+    .interactions.click(clickInteraction)
+    .interactions.mouseover(highlightInteraction)
+    .interactions.mouseover(normalizeInteraction)
+    .jmol.overflow(function() { $("#overflow").show() })
+    .jmol.windowBuild(generateJmol)
 
   d3.json('static/data/16S-ecoli.js', function(data) {
-    plot.coordinates(data);
+    plot.nucleotides(data);
 
     d3.csv('static/data/16S-ecoli-interactions.csv', function(data) {
-      plot.connections(data);
+      plot.interactions(data);
 
       d3.json('static/data/2AW7_motifs.json', function(data) {
-        plot.groups(data);
+        plot.motifs(data);
 
-        d3.select('#rna-2d').call(plot);
+        plot();
         plot.interactions.toggle('ncWW');
       });
     });
