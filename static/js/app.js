@@ -10,7 +10,6 @@ $(document).ready(function() {
   };
 
   var highlightInteraction = function() {
-    console.log(this);
     var nts = plot.interactions.nucleotides(this);
     var family = plot.interactions.family(this);
     nts.classed(family, true);
@@ -75,7 +74,7 @@ $(document).ready(function() {
     // .nucleotides.color(function() { return 'black'; })
     .interactions.click(clickInteraction)
     .interactions.mouseover(highlightInteraction)
-    .interactions.mouseover(normalizeInteraction)
+    .interactions.mouseout(normalizeInteraction)
     .jmol.overflow(function() { $("#overflow").show() })
     .jmol.windowBuild(generateJmol)
 
