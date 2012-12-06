@@ -8,6 +8,8 @@ Rna2D.views.circular.coordinates = function(plot) {
 
   plot.coordinates = function() {
 
+    plot.nucleotides(plot.nucleotides().slice(1, 100));
+
     var outer = plot.width() / 4,
         inner = outer - plot.pie.width(),
         center = { x: plot.width() / 2, y: plot.height() / 2},

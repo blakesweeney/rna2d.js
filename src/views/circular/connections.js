@@ -54,8 +54,8 @@ Rna2D.views.circular.connections = function(plot) {
     var arc = d3.svg.arc()
           .outerRadius(radiusOf)
           .innerRadius(function(d, i) { return radiusOf(d) + 2; })
-          .startAngle(function(d, i) { return  plot.__endAngle(null, ntIndexes[d.nt2]); })
-          .endAngle(function(d, i) { return  plot.__startAngle(null, ntIndexes[d.nt1]); })
+          .startAngle(0)//function(d, i) { return  plot.__endAngle(null, ntIndexes[d.nt2]); })
+          .endAngle(Math.PI)//function(d, i) { return  plot.__startAngle(null, ntIndexes[d.nt1]); })
           ;
 
     var data = plot.interactions().slice(1, 100),
