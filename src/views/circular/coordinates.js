@@ -8,16 +8,17 @@ Rna2D.views.circular.coordinates = function(plot) {
 
   plot.coordinates = function() {
 
-    plot.nucleotides(plot.nucleotides().slice(1, 10));
+    // plot.nucleotides(plot.nucleotides().slice(1, 10));
 
-    var outer = plot.width() / 4,
+    var outer = plot.width() / 2 - (plot.margin().left + plot.margin().right),
         inner = outer - plot.pie.width(),
         center = { x: plot.width() / 2, y: plot.height() / 2},
         count = plot.nucleotides().length,
         color = d3.scale.category20c(), //plot.nucleotides.color(),
         angleSize = (2*Math.PI - plot.pie.gapSize()) / count,
-        startAngle = function(d, i) { return ((i - 1) * angleSize) + plot.pie.gapSize() / 2;  },
-        endAngle = function(d, i) { return (i * angleSize) / 2; };
+        halfGap = plot.pie.gapSize() / 2,
+        startAngle = function(d, i) { return i * angleSize + halfGap; },
+        endAngle = function(d, i) { return (i + 1) * angleSize + halfGap; };
 
     var rawNts = plot.nucleotides(),
         getID = plot.nucleotides.getID();
@@ -31,22 +32,24 @@ Rna2D.views.circular.coordinates = function(plot) {
       return plot.nucleotides.indexes[ntId];
     };
 
-    plot.pie.ntCoordinates = function(ntId) {
-      console.log(ntId);
-      var index = plot.nucleotides.indexOf(ntId),
-          angle = startAngle(null, index) + endAngle(null, index) / 2,
-          c = plot.__circleCenter,
-          x = plot.__innerRadius * Math.cos(angle * 360 / (2 * Math.PI)),
-          y = plot.__innerRadius * Math.sin(angle * 360 / (2 * Math.PI));
-      console.log(index, c, x, y);
-      return { x: c.x + x, y: c.y + y };
-    };
-
     var arc = d3.svg.arc()
           .outerRadius(outer)
           .innerRadius(inner)
           .startAngle(startAngle)
           .endAngle(endAngle);
+
+   // Use to compute where to place the arcs for interaction arcs.
+   var innerArc = d3.svg.arc()
+          .outerRadius(inner)
+          .innerRadius(inner - 3)
+          .startAngle(startAngle)
+          .endAngle(endAngle);
+
+    plot.pie.ntCoordinates = function(ntId) {
+      var centroid = innerArc.centroid(null, plot.nucleotides.indexOf(ntId)),
+          c = plot.__circleCenter;
+      return { x: c.x + centroid[0], y: c.y + centroid[1] };
+    };
 
     plot.vis.selectAll(plot.nucleotides.class())
       .append('g')
