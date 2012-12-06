@@ -64,7 +64,7 @@ Rna2D.config = function(plot, given) {
   (function() {
     var highlight = nucleotides.highlight || 'red',
         klass = nucleotides['class'] || 'nucleotide',
-        color = nucleotides.class || Object,
+        color = nucleotides.color || 'black',
         fontSize = 11,
         gap = 1,
         click = nucleotides.click || Object,
