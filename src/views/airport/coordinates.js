@@ -49,7 +49,7 @@ Rna2D.views.airport.coordinates = function(plot) {
   // Define the common actions for a nucleotide in a plot.
   // --------------------------------------------------------------------------
   plot.nucleotides.all = function() {
-    return plot.vis.selectAll('.' + plot.nucleotide.class());
+    return plot.vis.selectAll('.' + plot.nucleotides.class());
   };
 
   plot.nucleotides.interactions = function(obj) {
