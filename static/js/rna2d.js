@@ -438,7 +438,7 @@ Rna2D.components.brush = function(plot, config) {
         var e = brush.extent();
         plot.vis.selectAll('.' + plot.nucleotides.class())
           .attr("checked", function(d) {
-            if (e[0][0] <= d.x && d.x <= e[1][0] && 
+            if (e[0][0] <= d.x && d.x <= e[1][0] &&
                 e[0][1] <= d.y && d.y <= e[1][1]) {
               matched[d.id] = d;
             }
@@ -446,6 +446,16 @@ Rna2D.components.brush = function(plot, config) {
 
         plot.brush.update()(matched);
       };
+    };
+
+    // Draw the brush around the given extent
+    // TODO: Do this correctly.
+    plot.brush.select = function(extent) {
+      startBrush();
+      brush.extent(extent);
+      updateBrush();
+      endBrush();
+      return plot;
     };
 
     if (plot.brush.initial().length) {
@@ -503,14 +513,6 @@ Rna2D.components.brush = function(plot, config) {
     };
 
   })(config);
-
-  // Draw the brush around the given extent
-  // TODO: Do this correctly.
-  plot.brush.select = function(extent) {
-    brush.extent(extent);
-    brush(plot.selection());
-    return plot;
-  };
 
   // Show the brush
   plot.brush.enable = function() {
