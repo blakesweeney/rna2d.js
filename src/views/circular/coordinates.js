@@ -10,11 +10,11 @@ Rna2D.views.circular.coordinates = function(plot) {
 
     // plot.nucleotides(plot.nucleotides().slice(1, 10));
 
-    var outer = plot.width() / 2 - (plot.margin().left + plot.margin().right),
+    var margin = 2 * Math.min(plot.margin().left, plot.margin().right),
+        outer = plot.width() / 2 - margin,
         inner = outer - plot.pie.width(),
         center = { x: plot.width() / 2, y: plot.height() / 2},
         count = plot.nucleotides().length,
-        color = d3.scale.category20c(), //plot.nucleotides.color(),
         angleSize = (2*Math.PI - plot.pie.gapSize()) / count,
         halfGap = plot.pie.gapSize() / 2,
         startAngle = function(d, i) { return i * angleSize + halfGap; },
@@ -58,7 +58,7 @@ Rna2D.views.circular.coordinates = function(plot) {
       .classed(plot.nucleotides.class(), true)
       .attr('d', arc)
       .attr('transform', 'translate(' + center.x + ',' + center.y + ')')
-      .attr('fill', function(d, i) { return color(i); })
+      .attr('fill', plot.nucleotides.color())
       .on('click', plot.nucleotides.mouseover())
       .on('mouseover', function() { console.log(this); })// plot.nucleotides.mouseover())
       .on('mouseout', plot.nucleotides.mouseout());
