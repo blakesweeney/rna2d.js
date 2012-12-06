@@ -60,7 +60,7 @@ Rna2D.views.circular.coordinates = function(plot) {
       .attr('transform', 'translate(' + center.x + ',' + center.y + ')')
       .attr('fill', plot.nucleotides.color())
       .on('click', plot.nucleotides.mouseover())
-      .on('mouseover', function() { console.log(this); })// plot.nucleotides.mouseover())
+      .on('mouseover', plot.nucleotides.mouseover())
       .on('mouseout', plot.nucleotides.mouseout());
 
     plot.__startAngle = startAngle;
