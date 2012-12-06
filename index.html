@@ -78,8 +78,11 @@
           .motifs.mouseover('highlight')
           .motifs.click(function() { console.log('motif', this); })
           .jmol.overflow(function() { alert("Too many nts selected"); })
+          .brush.enabled(true)
           .brush.update(plot.jmol.selection)
           .interactions.click(plot.jmol.group);
+
+        plot.brush.initial([[100, 36], [207, 132]]);
 
         d3.json('data/16S-ecoli.js', function(data) {
           plot.nucleotides(data);
