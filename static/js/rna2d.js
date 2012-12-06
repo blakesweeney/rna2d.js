@@ -114,7 +114,7 @@ Rna2D.config = function(plot, given) {
   (function() {
     var highlight = nucleotides.highlight || 'red',
         klass = nucleotides['class'] || 'nucleotide',
-        color = nucleotides.class || Object,
+        color = nucleotides.color || 'black',
         fontSize = 11,
         gap = 1,
         click = nucleotides.click || Object,
@@ -787,6 +787,7 @@ Rna2D.views.airport.coordinates = function(plot) {
       .attr('x', function(d, i) { return xScale(plot.nucleotides.getX()(d, i)); })
       .attr('y', function(d, i) { return yScale(plot.nucleotides.getY()(d, i)); })
       .attr('font-size', plot.nucleotides.fontSize())
+      .attr('fill', plot.nucleotides.color())
       .text(plot.nucleotides.getSequence())
       .on('click', plot.nucleotides.click())
       .on('mouseover', plot.nucleotides.mouseover())
@@ -823,7 +824,7 @@ Rna2D.views.airport.coordinates = function(plot) {
   };
 
   plot.nucleotides.doColor = function() {
-    return plot.nucleotides.all().attr('color', plot.nucleotides.color());
+    return plot.nucleotides.all().attr('fill', plot.nucleotides.color());
   };
 
   return Rna2D;
