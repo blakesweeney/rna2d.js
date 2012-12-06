@@ -74,7 +74,7 @@ $(document).ready(function() {
         return 'red';
       } else if (sequence == 'C') {
         return 'yellow';
-      } else if (sequence == 'G') { 
+      } else if (sequence == 'G') {
         return 'green';
       };
       return 'blue';
@@ -113,8 +113,15 @@ $(document).ready(function() {
   });
 
   // Coloring controls.
-  $('#sequence-control').on('click', colorBySequence);
-  $('#normal-color-control').on('click', normalColor);
+  $('#sequence-control').on('click', function(e) {
+    var $btn = $(e.target);
+    $btn.button('toggle');
+    if ($btn.hasClass('active')) {
+      colorBySequence();
+    } else {
+      normalColor();
+    };
+  })
 
   // Callback to execute when toggling the controls
   var buttonToggle = function($btn) {
