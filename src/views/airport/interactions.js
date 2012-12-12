@@ -47,78 +47,39 @@ Rna2D.views.airport.connections = function(plot) {
     return { x: c.x + a, y: c.y + b };
   };
 
-  var chart = function() {
+  plot.connections  = function(standard) {
 
       // Compute the data to use for interactions
-      var interactions = [],
-          raw = plot.interactions(),
-          visible = plot.interactions.visible(),
-          seen = {},
-          idOf = function(nt1, nt2, family) { return nt1 + ',' + nt2 + ',' + family; };
+      var interactions = plot.interactions.valid(),
+          getNTs = plot.interactions.getNTs();
 
-      for(var i = 0; i < raw.length; i++) {
-        var obj = raw[i],
-            nt1 = Rna2D.utils.element(obj.nt1),
-            nt2 = Rna2D.utils.element(obj.nt2),
-            id = idOf(obj.nt1, obj.nt2, obj.family),
-            revId = idOf(obj.nt2, obj.nt1, obj.family);
+      console.log(plot.interactions().length);
+      console.log(plot.interactions.valid().length);
+      for(var i = 0; i < interactions.length; i++) {
+        var obj = interactions[i],
+            nts = getNTs(obj),
+            nt1 = Rna2D.utils.element(nts[0]),
+            nt2 = Rna2D.utils.element(nts[1]);
+        var
+            p1 = intersectPoint(nt1, nt2, plot.nucleotides.gap()),
+            p2 = intersectPoint(nt2, nt1, plot.nucleotides.gap());
 
-        if (nt1 && nt2) {
-          if (!seen[id] && !seen[revId]) {
-
-            var p1 = intersectPoint(nt1, nt2, plot.nucleotides.gap()),
-                p2 = intersectPoint(nt2, nt1, plot.nucleotides.gap());
-
-            var family = obj.family;
-            if (family[1] == family[2]) {
-            // if (plot.interactions.isSymmetric(family)) {
-              seen[id] = true;
-            };
-
-            interactions.push({
-              visibility: visible(obj),
-              classes: obj.family + ' ' + plot.interactions.class(),
-              'data-nts': obj.nt1 + ',' + obj.nt2,
-              id: obj.nt1 + ',' + obj.nt2 + ',' + obj.family,
-              nt1: obj.nt1,
-              nt2: obj.nt2,
-              x1: p1.x,
-              y1: p1.y,
-              x2: p2.x,
-              y2: p2.y
-            });
-          };
-
-        } else {
-          if (plot.interactions.logMissing()) {
-            console.log("Could not find both nts in ", obj);
-          }
-        };
+        obj.line = { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };
       }
 
       // Draw the interactions
       plot.vis.selectAll(plot.interactions.class())
         .data(interactions)
         .enter().append('svg:line')
-        .attr('id', function(d) { return d.id; })
-        .attr('class', function(d) { return d.classes; })
-        .attr('x1', function(d) { return d.x1; })
-        .attr('y1', function(d) { return d.y1; })
-        .attr('x2', function(d) { return d.x2; })
-        .attr('y2', function(d) { return d.y2; })
-        .attr('visibility', function(d) { return (d.visibility ? 'visible' : 'hidden'); })
-        .attr('data-nts', function(d) { return d.data; })
-        .attr('nt1', function(d, i) { return d.nt1; })
-        .attr('nt2', function(d, i) { return d.nt2; })
-        .on('click', plot.interactions.click())
-        .on('mouseover', plot.interactions.mouseover())
-        .on('mouseout', plot.interactions.mouseout());
+        .call(standard)
+        .attr('stroke', plot.interactions.color())
+        .attr('x1', function(d) { return d.line.x1; })
+        .attr('y1', function(d) { return d.line.y1; })
+        .attr('x2', function(d) { return d.line.x2; })
+        .attr('y2', function(d) { return d.line.y2; })
 
     return plot;
   };
-
-  // Set the rendering function
-  plot.connections = chart;
 
   // --------------------------------------------------------------------------
   // The general actions for an interaction

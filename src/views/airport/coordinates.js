@@ -1,8 +1,8 @@
-Rna2D.views.airport.coordinates = function(plot) {
+Rna2D.views.airport.coordinates = function(plot, config) {
 
   // We make a chart function which draws the nucleotides in the given
   // coordinates.
-  var chart = function() {
+  plot.coordinates = function(standard) {
 
     var data = plot.nucleotides(),
         width = plot.width(),
@@ -29,32 +29,14 @@ Rna2D.views.airport.coordinates = function(plot) {
     // Draw all nucleotides.
     plot.vis.selectAll(plot.nucleotides.class())
       .data(data).enter().append('svg:text')
-      .attr('id', plot.nucleotides.getID())
-      .classed(plot.nucleotides.class(), true)
+      .call(standard)
       .attr('x', function(d, i) { return xScale(plot.nucleotides.getX()(d, i)); })
       .attr('y', function(d, i) { return yScale(plot.nucleotides.getY()(d, i)); })
       .attr('font-size', plot.nucleotides.fontSize())
       .text(plot.nucleotides.getSequence())
-      .on('click', plot.nucleotides.click())
-      .on('mouseover', plot.nucleotides.mouseover())
-      .on('mouseout', plot.nucleotides.mouseout());
+      .attr('fill', plot.nucleotides.color())
 
     return plot;
-  };
-
-  plot.coordinates = chart;
-
-  // --------------------------------------------------------------------------
-  // Define the common actions for a nucleotide in a plot.
-  // --------------------------------------------------------------------------
-  plot.nucleotides.all = function() {
-    return plot.vis.selectAll('.' + plot.nucleotide.class());
-  };
-
-  plot.nucleotides.interactions = function(obj) {
-    if (!arguments.length) obj = this;
-    var selector = '[nt1=' + obj.getAttribute('id') + '], [nt2=' + obj.getAttribute('id') + ']';
-    return plot.vis.selectAll(selector);
   };
 
   plot.nucleotides.highlight = function() {
@@ -67,10 +49,6 @@ Rna2D.views.airport.coordinates = function(plot) {
     var obj = this;
     d3.select(obj).style('stroke', null);
     return plot.nucleotides.interactions(obj).style('stroke', null);
-  };
-
-  plot.nucleotides.doColor = function() {
-    return plot.nucleotides.all().attr('color', plot.nucleotides.color());
   };
 
   return Rna2D;

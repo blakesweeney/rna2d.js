@@ -1,62 +1,44 @@
 Rna2D.views.circular.connections = function(plot) {
 
-  plot.connections = function() {
+  plot.connections = function(standard) {
 
-    var getID = plot.nucleotides.getID(),
-        raw = plot.nucleotides();
+    var getNTs = plot.interactions.getNTs();
+
+   // Use to compute where to place the arcs for interaction arcs.
+   var innerArc = d3.svg.arc()
+          .outerRadius(plot.__innerRadius)
+          .innerRadius(plot.__innerRadius - 3)
+          .startAngle(plot.__startAngle)
+          .endAngle(plot.__endAngle);
+
+    var position = function(ntId) {
+      var centroid = innerArc.centroid(null, plot.nucleotides.indexOf(ntId)),
+          c = plot.__circleCenter;
+      return { x: c.x + centroid[0], y: c.y + centroid[1] };
+    };
 
     var curve = function(d, i) {
-      var from = plot.pie.ntCoordinates(d.nt1)
-          to = plot.pie.ntCoordinates(d.nt2)
-          center = plot.__circleCenter, // TODO: Move center to get better arcs.
-          control = { x: center.x - from.x, y: center.y - from.y },
-          final = { x: to.x - from.x, y: to.y - from.y };
+      var nts = getNTs(d),
+          from = position(nts[0]),
+          to = position(nts[1]),
+          distance = Rna2D.utils.distance(from, to),
+          center = plot.__circleCenter; // TODO: Move center to get better arcs.
 
-      return "M " + from.x + " " + from.y + 
-             " q " + control.x + " " + control.y + 
-             " " + final.x + " " + final.y;
+      return "M "  + from.x              + " " + from.y +
+             " A " + (distance / 2) + "," + (distance / 2) +
+             " " + 0 + // Rotation
+             " " + 0 + " " + 0 +  // Large Arc and Sweep flag
+             " " + to.x + "," + to.y;
     };
 
-    var interactions = [],
-        raw = plot.interactions(),
-        seen = {},
-        idOf = function(nt1, nt2, family) { return nt1 + ',' + nt2 + ',' + family; };
-
-    for(var i = 0; i < raw.length; i++) {
-      var obj = raw[i],
-          nt1 = Rna2D.utils.element(obj.nt1),
-          nt2 = Rna2D.utils.element(obj.nt2),
-          id = idOf(obj.nt1, obj.nt2, obj.family),
-          revId = idOf(obj.nt2, obj.nt1, obj.family);
-
-      if (nt1 && nt2) {
-        if (!seen[id] && !seen[revId]) {
-          var family = obj.family;
-          if (family[1] == family[2]) {
-            seen[id] = true;
-          };
-
-          interactions.push(obj);
-        }
-      }
-    };
-
-    var visible = plot.interactions.visible();
+    var data = plot.interactions.valid();//.slice(1, 3);
 
     plot.vis.selectAll(plot.interactions.class())
-      .data(interactions).enter().append('path')
-      .attr('id', function(d) { return idOf(d.nt1, d.nt2, d.family); })
-      .classed(plot.interactions.class(), true)
+      .data(data).enter().append('path')
+      .call(standard)
       .attr('d', curve)
       .attr('fill', 'none')
-      .attr('stroke', 'black')//plot.interactions.color())
-      .attr('visibility', function(d, i) { return (visible(d) ? 'visible' : 'hidden'); })
-      .attr('nt1', function(d, i) { return d.nt1; })
-      .attr('nt2', function(d, i) { return d.nt2; })
-      .on('click', plot.interactions.click())
-      .on('mouseover', function() { console.log(this) })// plot.interactions.mouseover())
-      .on('mouseout', plot.interactions.mouseout());
-      ;
+      .attr('stroke', plot.interactions.color());
 
     return plot;
   };
