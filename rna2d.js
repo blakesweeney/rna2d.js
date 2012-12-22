@@ -48,7 +48,7 @@ Rna2D = function(config) {
           .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
           .attr('nt2', function(d, i) { return ntsOf(d)[1]; })
           .on('click', plot.interactions.click())
-          .on('mouseover', function() { console.log(this) })// plot.interactions.mouseover())
+          .on('mouseover', plot.interactions.mouseover())
           .on('mouseout', plot.interactions.mouseout());
       });
 
@@ -122,12 +122,6 @@ Rna2D.config = function(plot, given) {
     return plot;
   };
 
-  plot.interactions = function(_) {
-    if (!arguments.length) return interactions;
-    interactions = _;
-    return plot;
-  };
-
   plot.width = function(_) {
     if (!arguments.length) return width;
     width = _;
@@ -141,148 +135,18 @@ Rna2D.config = function(plot, given) {
   };
 
 
-  // --------------------------------------------------------------------------
-  // Interaction configuration options
-  // --------------------------------------------------------------------------
-  (function() {
-
-    var klass = interactions['class'] || 'interaction',
-      logMissing = true,
-      visible = interactions.visible || function(obj) { return obj.family == 'cWW' },
-      click = interactions.click || Object,
-      mouseover = interactions.mouseover || Object,
-      mouseout = interactions.mouseout || Object,
-      highlight = interactions.highlight || 'red';
-
-    plot.interactions.class = function(_) {
-      if (!arguments.length) return klass;
-      klass = _;
-      return plot;
-    };
-
-    plot.interactions.logMissing = function(_) {
-      if (!arguments.length) return logMissing;
-      logMissing = _;
-      return plot;
-    };
-
-    plot.interactions.visible = function(_) {
-      if (!arguments.length) return visible;
-      visible = _;
-      return plot;
-    };
-
-    plot.interactions.click = function(_) {
-      if (!arguments.length) return click;
-      click = _;
-      return plot;
-    };
-
-    plot.interactions.mouseover = function(_) {
-      if (!arguments.length) return mouseover;
-      if (_ === 'highlight') {
-        _ = plot.interactions.highlight;
-        plot.interactions.mouseout(plot.interactions.normalize);
-      };
-      mouseover = _;
-      return plot;
-    };
-
-    plot.interactions.mouseout = function(_) {
-      if (!arguments.length) return mouseout;
-      mouseout = _;
-      return plot;
-    };
-
-    plot.interactions.highlightColor = function(_) {
-      if (!arguments.length) return highlight;
-      highlight = _;
-      return plot;
-    };
-
-  })();
-
-  // --------------------------------------------------------------------------
-  // Motif configuration options
-  // --------------------------------------------------------------------------
-  // (function() {
-  //   var motifs = given.motifs || {},
-  //       instanceKlass = motifs['instanceKlass'] || function(d) { return d.id.split("_")[0]; },
-  //       klass = motifs['class'] || 'motif',
-  //       highlight = motifs.highlight || 'red',
-  //       visible = motifs.visible || function(d) { return true; },
-  //       click = motifs.click || Object,
-  //       mouseover = motifs.mouseover || Object
-  //       mouseout = motifs.mouseout || Object,
-  //       getID = motifs.getID || function(d) { return d.id; },
-  //       getNTs = motifs.getNTs || function(d) { return d.nts; };
-
-  //   plot.motifs.click = function(_) {
-  //     if (!arguments.length) return click;
-  //     click = _;
-  //     return plot;
-  //   };
-
-  //   plot.motifs.mouseover = function(_) {
-  //     if (!arguments.length) return mouseover;
-  //     if (_ === 'highlight') {
-  //       _ = plot.motifs.highlight;
-  //       plot.motifs.mouseout(plot.motifs.normalize);
-  //     };
-  //     mouseover = _;
-  //     return plot;
-  //   };
-
-  //   plot.motifs.mouseout = function(_) {
-  //     if (!arguments.length) return mouseout;
-  //     mouseout = _;
-  //     return plot;
-  //   };
-
-  //   plot.motifs.class = function(_) {
-  //     if (!arguments.length) return klass;
-  //     klass = _;
-  //     return plot;
-  //   };
-
-  //   plot.motifs.getNTs = function(_) {
-  //     if (!arguments.length) return getNTs;
-  //     getNTs = _;
-  //     return plot;
-  //   };
-
-  //   plot.motifs.getID = function(_) {
-  //     if (!arguments.length) return getID;
-  //     getID = _;
-  //     return plot;
-  //   };
-
-  //   plot.motifs.instanceClass = function(_) {
-  //     if (!arguments.length) return instanceKlass;
-  //     instanceKlass = _;
-  //     return plot;
-  //   };
-
-  //   plot.motifs.visible = function(_) {
-  //     if (!arguments.length) return visible;
-  //     visible = _;
-  //     return plot;
-  //   };
-
-  //   plot.motifs.highlightColor = function(_) {
-  //     if (!arguments.length) return highlight;
-  //     highlight = _;
-  //     return plot;
-  //   };
-
-  // })();
-
   plot.view(view);
 
   return plot;
 };
 
 Rna2D.interactions = function(plot, config) {
+
+  plot.interactions = function(_) {
+    if (!arguments.length) return interactions;
+    interactions = _;
+    return plot;
+  };
 
   // An interaction is valid if it is in the forward direction, and
   plot.interactions.valid = function() {
@@ -312,8 +176,43 @@ Rna2D.interactions = function(plot, config) {
   (function(config) {
 
     var getFamily = function(d) { return d['family'] },
-        getNTs = function(d) { return [d['nt1'], d['nt2']]; }
+        getNTs = function(d) { return [d['nt1'], d['nt2']]; },
+        visible = function(d) { return plot.interactions.getFamily()(d) == 'cWW'; },
+        mouseover = Object,
+        mouseout = Object,
+        click = Object,
+        klass = 'interaction'
         ;
+
+    plot.interactions.visible = function(_) {
+      if (!arguments.length) return visible;
+      visible = _;
+      return plot;
+    };
+
+    plot.interactions.mouseover = function(_) {
+      if (!arguments.length) return mouseover;
+      mouseover = _;
+      return plot;
+    };
+
+    plot.interactions.mouseout = function(_) {
+      if (!arguments.length) return mouseout;
+      mouseout = _;
+      return plot;
+    };
+
+    plot.interactions.click = function(_) {
+      if (!arguments.length) return click;
+      click = _;
+      return plot;
+    }
+
+    plot.interactions.class = function(_) {
+      if (!arguments.length) return klass;
+      klass = _;
+      return plot;
+    }
 
     plot.interactions.getFamily = function(_) {
       if (!arguments.length) return getFamily;
@@ -1377,17 +1276,22 @@ Rna2D.views.circular.connections = function(plot) {
           from = position(nts[0]),
           to = position(nts[1]),
           distance = Rna2D.utils.distance(from, to),
-          center = plot.__circleCenter; // TODO: Move center to get better arcs.
+          angleDiff = plot.__startAngle(null, plot.nucleotides.indexOf(nts[0])) - 
+                      plot.__startAngle(null, plot.nucleotides.indexOf(nts[1])),
+          radius = Math.abs(angleDiff) * distance
+          ;
 
-      return "M "  + from.x              + " " + from.y +
-             " A " + (distance / 2) + "," + (distance / 2) +
-             " " + 0 + // Rotation
-             " " + 0 + " " + 0 +  // Large Arc and Sweep flag
-             " " + to.x + "," + to.y;
+      return "M "  + from.x + " " + from.y +     // Start point
+             " A " + radius + "," + radius +     // Radii of elpise
+             " " + 0 +                           // Rotation
+             " " + 0 + " " + 0 +                 // Large Arc and Sweep flag
+             " " + to.x + "," + to.y;            // End point
 
       // return "M "  + from.x              + " " + from.y +
-      //        " q " + (center.x - from.x) + " " + (center.y - from.y) +
-      //        " "   + (to.x - from.x)     + " " + (to.y - from.y);
+      //        " A " + (distance / 2) + "," + (distance / 2) +
+      //        " " + 0 + // Rotation
+      //        " " + 0 + " " + 0 +  // Large Arc and Sweep flag
+      //        " " + to.x + "," + to.y;
     };
 
     var data = plot.interactions.valid();//.slice(1, 3);
@@ -1436,6 +1340,9 @@ Rna2D.views.circular.coordinates = function(plot) {
     plot.__endAngle = endAngle;
     plot.__innerRadius = inner;
     plot.__circleCenter = center;
+    // plot.__midAngle = function(d, i) { return
+    // plot.__xScale = 
+    // plot.__yScale = 
 
     return plot;
   };

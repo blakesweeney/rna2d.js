@@ -30,6 +30,9 @@ Rna2D.views.circular.coordinates = function(plot) {
     plot.__endAngle = endAngle;
     plot.__innerRadius = inner;
     plot.__circleCenter = center;
+    // plot.__midAngle = function(d, i) { return
+    // plot.__xScale = 
+    // plot.__yScale = 
 
     return plot;
   };

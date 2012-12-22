@@ -46,7 +46,7 @@ Rna2D = function(config) {
           .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
           .attr('nt2', function(d, i) { return ntsOf(d)[1]; })
           .on('click', plot.interactions.click())
-          .on('mouseover', function() { console.log(this) })// plot.interactions.mouseover())
+          .on('mouseover', plot.interactions.mouseover())
           .on('mouseout', plot.interactions.mouseout());
       });
 
