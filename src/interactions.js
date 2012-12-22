@@ -34,8 +34,43 @@ Rna2D.interactions = function(plot, config) {
   (function(config) {
 
     var getFamily = function(d) { return d['family'] },
-        getNTs = function(d) { return [d['nt1'], d['nt2']]; }
+        getNTs = function(d) { return [d['nt1'], d['nt2']]; },
+        visible = function(d) { return plot.interactions.getFamily()(d) == 'cWW'; },
+        mouseover = Object,
+        mouseout = Object,
+        click = Object,
+        klass = 'interaction'
         ;
+
+    plot.interactions.visible = function(_) {
+      if (!arguments.length) return visible;
+      visible = _;
+      return plot;
+    };
+
+    plot.interactions.mouseover = function(_) {
+      if (!arguments.length) return mouseover;
+      mouseover = _;
+      return plot;
+    };
+
+    plot.interactions.mouseout = function(_) {
+      if (!arguments.length) return mouseout;
+      mouseout = _;
+      return plot;
+    };
+
+    plot.interactions.click = function(_) {
+      if (!arguments.length) return click;
+      click = _;
+      return plot;
+    }
+
+    plot.interactions.class = function(_) {
+      if (!arguments.length) return klass;
+      klass = _;
+      return plot;
+    }
 
     plot.interactions.getFamily = function(_) {
       if (!arguments.length) return getFamily;
