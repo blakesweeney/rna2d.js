@@ -1,41 +1,51 @@
-Rna2D.components.frame = function(plot, config) {
+Rna2D.components.frame = {
 
-  plot.components.frame = function() {
+  config: {
+    add: true,
+    'class': 'frame'
+  },
 
-    // Draw a frame around the plot as needed
-    if (plot.frame.add()) {
-      plot.vis.append('svg:rect')
-        .classed(plot.frame.class(), true)
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', plot.width())
-        .attr('height', plot.height() - 1)
-        .style('pointer-events', 'none');
-    };
-  }
+  generate: function(plot) {
 
-  plot.frame = {};
-
-  // Frame configuration options
-  (function(given) {
-    var frame = given.frame || {},
-        add = ('add' in frame ? frame.add : true),
-        klass = frame['class'] || 'frame';
-
-    plot.frame.add = function(_) {
-      if (!arguments.length) return add;
-      add = _;
-      return plot;
+    if (!plot.frame.add()) {
+      return plot.vis;
     };
 
-    plot.frame.class = function(_) {
-      if (!arguments.length) return klass;
-      klass = _;
-      return plot;
-    };
+    return plot.vis.append('svg:rect')
+      .classed(plot.frame.class(), true)
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', plot.width())
+      .attr('height', plot.height() - 1)
+      .style('pointer-events', 'none');
+  },
+};
 
-  })(config);
+//Rna2D.components.frame = function(plot) {
 
-  return Rna2D;
-}
+  //plot.components.frame = function() {
+
+    //// Draw a frame around the plot as needed
+    //if (plot.frame.add()) {
+      //plot.vis.append('svg:rect')
+        //.classed(plot.frame.class(), true)
+        //.attr('x', 0)
+        //.attr('y', 0)
+        //.attr('width', plot.width())
+        //.attr('height', plot.height() - 1)
+        //.style('pointer-events', 'none');
+    //};
+  //}
+
+  //plot.frame = {};
+
+  //// Frame configuration options
+  //var config = {
+    //add: true,
+    //'class': 'frame'
+  //};
+  //Rna2D.utils.generateAccessors(plot.frame, config);
+
+  //return Rna2D;
+//}
 

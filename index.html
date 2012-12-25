@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang='en'>
   <head>
+    <title>Rna2D.js</title>
     <meta charset='utf-8'>
     <link href='static/css/main.css' rel='stylesheet'>
 
@@ -71,24 +72,36 @@
 
         var plot = Rna2D({ selection: '#rna-2d', width: 630, height: 795 });
 
-        plot.interactions.visible(function(obj) { return obj.family == 'cWW' })
-          .interactions.mouseover('highlight')
-          .nucleotides.mouseover('highlight')
-          .nucleotides.click(function() { console.log('nucleotide', this); })
-          .motifs.mouseover('highlight')
-          .motifs.click(function() { console.log('motif', this); })
-          .jmol.overflow(function() { alert("Too many nts selected"); })
-          .brush.update(plot.jmol.selection)
-          .interactions.click(plot.jmol.group);
+        //plot.interactions.visible(function(obj) { return obj.family == 'cWW' })
+          //.interactions.mouseover('highlight')
+          //.nucleotides.mouseover('highlight')
+          //.nucleotides.click(function() { console.log('nucleotide', this); })
+          //plot.motifs.mouseover('highlight')
+          //.motifs.click(
+          //plot.jmol.overflow(function() { alert("Too many nts selected"); })
+          //.brush.enabled(true)
+          //.brush.update(plot.jmol.selection)
+          //<!--.interactions.click(plot.jmol.group);-->
+          ;
 
         d3.json('data/16S-ecoli.js', function(data) {
-          plot.nucleotides(data);
+            plot.nucleotides(data)
+              .mouseover('highlight')
+              .click(function() { console.log('nuclotide', this); })
+              ;
 
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
-            plot.interactions(data);
+            plot.interactions(data)
+              .click(plot.jmol.group)
+              .mouseover('highlight')
+              //.show(function(obj) { return obj.family == 'cWW' });
+              ;
 
             d3.json('data/2AW7_motifs.json', function(data) {
-              plot.motifs(data);
+              plot.motifs(data)
+                .mouseover('highlight')
+                .click(function() { console.log('motif', this); })
+                ;
 
               plot();
             });

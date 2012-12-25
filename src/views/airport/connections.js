@@ -59,8 +59,7 @@ Rna2D.views.airport.connections = function(plot) {
         var obj = interactions[i],
             nts = getNTs(obj),
             nt1 = Rna2D.utils.element(nts[0]),
-            nt2 = Rna2D.utils.element(nts[1]);
-        var
+            nt2 = Rna2D.utils.element(nts[1]),
             p1 = intersectPoint(nt1, nt2, plot.nucleotides.gap()),
             p2 = intersectPoint(nt2, nt1, plot.nucleotides.gap());
 
@@ -79,50 +78,6 @@ Rna2D.views.airport.connections = function(plot) {
         .attr('y2', function(d) { return d.line.y2; })
 
     return plot;
-  };
-
-  // --------------------------------------------------------------------------
-  // The general actions for an interaction
-  // --------------------------------------------------------------------------
-  plot.interactions.all = function(family) {
-    if (!arguments.length || !family) family = plot.interactions.class();
-    return plot.vis.selectAll('.' + family);
-  };
-
-  plot.interactions.family = function(obj) {
-    return obj.getAttribute('id').split(',')[2];
-  };
-
-  plot.interactions.nucleotides = function(obj) {
-    // TODO: Can this be done with getElementById? Will it be faster?
-    var nts = [obj.getAttribute('nt1'), obj.getAttribute('nt2')];
-    var selector = '#' + nts.join(', #');
-    return plot.vis.selectAll(selector);
-  };
-
-  plot.interactions.show =  function(family) {
-    return plot.interactions.all(family).attr('visibility', function(data) {
-      data.visibility = true;
-      return 'visible';
-    });
-  };
-
-  plot.interactions.hide = function(family) {
-    return plot.interactions.all(family).attr('visibility', function(data) {
-      data.visibility = false;
-      return 'hidden';
-    });
-  };
-
-  plot.interactions.toggle = function(family) {
-    return plot.interactions.all(family).attr('visibility', function(data) {
-      if (data.visibility) {
-        data.visibility = false;
-        return 'hidden';
-      }
-      data.visibility = true;
-      return 'visible';
-    });
   };
 
   plot.interactions.highlight = function() {

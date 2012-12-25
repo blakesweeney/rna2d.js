@@ -26,13 +26,15 @@ Rna2D.views.circular.coordinates = function(plot) {
       .attr('transform', 'translate(' + center.x + ',' + center.y + ')')
       .attr('fill', plot.nucleotides.color())
 
-    plot.__startAngle = startAngle;
-    plot.__endAngle = endAngle;
-    plot.__innerRadius = inner;
+    plot.__ntArc = arc;
     plot.__circleCenter = center;
-    // plot.__midAngle = function(d, i) { return
-    // plot.__xScale = 
-    // plot.__yScale = 
+    // TODO: Fix scales
+    plot.__xScale = d3.scale.linear()
+      .domain([0, plot.width()])
+      .range([-center.x, center.x + plot.width()])
+    plot.__yScale = d3.scale.linear()
+      .domain([0, plot.height()])
+      .range([-center.x, center.y + plot.height()])
 
     return plot;
   };

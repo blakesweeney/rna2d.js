@@ -6,10 +6,10 @@ Rna2D.views.circular.connections = function(plot) {
 
    // Use to compute where to place the arcs for interaction arcs.
    var innerArc = d3.svg.arc()
-          .outerRadius(plot.__innerRadius)
-          .innerRadius(plot.__innerRadius - 3)
-          .startAngle(plot.__startAngle)
-          .endAngle(plot.__endAngle);
+          .outerRadius(plot.__ntArc.innerRadius()())
+          .innerRadius(plot.__ntArc.innerRadius()() - 3)
+          .startAngle(plot.__ntArc.startAngle())
+          .endAngle(plot.__ntArc.endAngle());
 
     var position = function(ntId) {
       var centroid = innerArc.centroid(null, plot.nucleotides.indexOf(ntId)),
@@ -18,14 +18,14 @@ Rna2D.views.circular.connections = function(plot) {
     };
 
     var curve = function(d, i) {
-      var nts = getNTs(d),
+      var startAngle = innerArc.startAngle(),
+          nts = getNTs(d),
           from = position(nts[0]),
           to = position(nts[1]),
           distance = Rna2D.utils.distance(from, to),
-          angleDiff = plot.__startAngle(null, plot.nucleotides.indexOf(nts[0])) - 
-                      plot.__startAngle(null, plot.nucleotides.indexOf(nts[1])),
-          radius = Math.abs(angleDiff) * distance
-          ;
+          angleDiff = startAngle(null, plot.nucleotides.indexOf(nts[0])) -
+                      startAngle(null, plot.nucleotides.indexOf(nts[1])),
+          radius = Math.abs(angleDiff) * distance;
 
       return "M "  + from.x + " " + from.y +     // Start point
              " A " + radius + "," + radius +     // Radii of elpise
@@ -33,17 +33,10 @@ Rna2D.views.circular.connections = function(plot) {
              " " + 0 + " " + 0 +                 // Large Arc and Sweep flag
              " " + to.x + "," + to.y;            // End point
 
-      // return "M "  + from.x              + " " + from.y +
-      //        " A " + (distance / 2) + "," + (distance / 2) +
-      //        " " + 0 + // Rotation
-      //        " " + 0 + " " + 0 +  // Large Arc and Sweep flag
-      //        " " + to.x + "," + to.y;
     };
 
-    var data = plot.interactions.valid();//.slice(1, 3);
-
     plot.vis.selectAll(plot.interactions.class())
-      .data(data).enter().append('path')
+      .data(plot.interactions.valid()).enter().append('path')
       .call(standard)
       .attr('d', curve)
       .attr('fill', 'none')
@@ -54,3 +47,4 @@ Rna2D.views.circular.connections = function(plot) {
 
   return Rna2D;
 };
+

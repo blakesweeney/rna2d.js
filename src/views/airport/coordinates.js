@@ -1,4 +1,4 @@
-Rna2D.views.airport.coordinates = function(plot, config) {
+Rna2D.views.airport.coordinates = function(plot) {
 
   // We make a chart function which draws the nucleotides in the given
   // coordinates.
@@ -21,8 +21,8 @@ Rna2D.views.airport.coordinates = function(plot, config) {
           .domain([-margin.above, yMax + margin.below])
           .range([0, height]);
 
-    plot.__xScale = xScale;
-    plot.__yScale = yScale;
+    plot.xScale(xScale);
+    plot.yScale(yScale);
     plot.__xCoordMax = xCoordMax;
     plot.__yCoordMax = yCoordMax;
 

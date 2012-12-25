@@ -6,9 +6,7 @@ Rna2D.views = function(plot, config) {
 
   view.coordinates(plot, config);
   view.connections(plot, config);
-  if ('groups' in view) {
-    view.groups(plot, config);
-  }
+  view.groups(plot, config);
 
   return Rna2D;
 }

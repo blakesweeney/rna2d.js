@@ -1,4 +1,4 @@
-Rna2D = function(config) {
+var Rna2D = window.Rna2D || function(config) {
   var plot = function(selection) {
 
     // Set the selection to the given one.
@@ -12,48 +12,63 @@ Rna2D = function(config) {
       // interactions.
       plot.nucleotides.computeOrder();
 
-      // Create visualization object
       plot.vis = sel.append('svg')
         .attr('width', plot.width())
         .attr('height', plot.height());
 
+      // ----------------------------------------------------------------------
       // Draw all coordinates and attach all standard data
+      // ----------------------------------------------------------------------
       plot.coordinates(function(selection) {
-        var classOf = function(d, i) {
-          var base = plot.nucleotides.class(),
-              computed = plot.nucleotides.classOf()(d, i);
-          return base + ' ' + computed;
-        };
 
-        return selection.attr('id', plot.nucleotides.getID())
-          .classed(plot.nucleotides.class(), true)
-          .attr('class', classOf)
-          .on('click', plot.nucleotides.mouseover())
-          .on('mouseover', plot.nucleotides.mouseover())
-          .on('mouseout', plot.nucleotides.mouseout());
+        selection.attr('id', plot.nucleotides.getID())
+          .attr('class', function(d, i) {
+            return plot.nucleotides['class']() + ' ' + plot.nucleotides.classOf()(d, i);
+          });
+
+        Rna2D.utils.attachHandlers(selection, plot.nucleotides);
+
+        return selection;
       });
 
+      // ----------------------------------------------------------------------
       // Draw all interactions and add all common data
-      plot.connections(function(sele) {
+      // ----------------------------------------------------------------------
+      plot.connections(function(selection) {
         var ntsOf = plot.interactions.getNTs(),
-            visible = plot.interactions.visible();
+            visible = plot.interactions.show();
 
-        return sele.attr('id', plot.interactions.getID())
-          .classed(plot.interactions.class(), true)
-          // .attr('class', plot.interactions.classOf())
+        selection.attr('id', plot.interactions.getID())
+          .attr('class', function(d, i) {
+            return plot.interactions['class']() + ' ' + plot.interactions.classOf()(d, i);
+          })
           .attr('visibility', function(d) { return (visible(d) ? 'visible' : 'hidden'); })
-          .attr('data-nts', function(d, i) { return ntsOf(d).join(',') })
+          .attr('data-nts', function(d, i) { return ntsOf(d).join(','); })
           .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
-          .attr('nt2', function(d, i) { return ntsOf(d)[1]; })
-          .on('click', plot.interactions.click())
-          .on('mouseover', plot.interactions.mouseover())
-          .on('mouseout', plot.interactions.mouseout());
+          .attr('nt2', function(d, i) { return ntsOf(d)[1]; });
+
+        Rna2D.utils.attachHandlers(selection, plot.interactions);
+
+        return selection;
       });
 
-      // Sometimes we draw motifs - It's not always needed.
-      if (plot.groups && plot.motifs().length) {
-        plot.groups();
-      }
+      // ----------------------------------------------------------------------
+      // Draw motifs
+      // ----------------------------------------------------------------------
+      plot.groups(function(selection) {
+        var ntsOf = plot.motifs.getNTs();
+
+        selection.attr('id', plot.motifs.getID())
+          .attr('class', function(d, i) {
+            return plot.motifs['class']() + ' ' + plot.motifs.classOf()(d, i);
+          })
+          .attr('data-nts', function(d) { return plot.motifs.getNTs()(d).join(','); })
+          .attr('visibility', function(d) { return (d.visible ? 'visible' : 'hidden'); });
+
+        Rna2D.utils.attachHandlers(selection, plot.motifs);
+
+        return selection;
+      });
 
       // Generate the components - brush, frame, zoom, etc
       plot.components();
@@ -64,16 +79,15 @@ Rna2D = function(config) {
 
   // Configure the plot
   Rna2D.config(plot, config);
-  Rna2D.interactions(plot, config);
-  Rna2D.nucleotides(plot, config);
-  Rna2D.motifs(plot, config);
 
-  // Add and configure all components.
-  Rna2D.components(plot, config);
+  // Add all components.
+  Rna2D.components(plot);
 
   // Setup the view
   Rna2D.views(plot, config);
 
   return plot;
 };
+
+window.Rna2D = Rna2D;
 
