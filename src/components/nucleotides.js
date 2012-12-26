@@ -17,7 +17,9 @@ Rna2D.components.nucleotides = function() {
       getID: function(d) { return d.id; },
       getX: function(d) { return d.x; },
       getY: function(d) { return d.y; },
-      getSequence: function(d) { return d.sequence; }
+      getSequence: function(d) { return d.sequence; },
+      highlight: Object,
+      normalize: Object
     },
 
     sideffects: function(plot) {

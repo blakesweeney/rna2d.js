@@ -35,7 +35,7 @@ Rna2D.views.airport.connections = function(plot) {
         return { x: x1, y: y1 + r };
       }
       return { x: x1, y: y1 + bbox1.height + r};
-    };
+    }
 
     // All other lines
     r = 1;
@@ -53,8 +53,6 @@ Rna2D.views.airport.connections = function(plot) {
       var interactions = plot.interactions.valid(),
           getNTs = plot.interactions.getNTs();
 
-      console.log(plot.interactions().length);
-      console.log(plot.interactions.valid().length);
       for(var i = 0; i < interactions.length; i++) {
         var obj = interactions[i],
             nts = getNTs(obj),
@@ -67,7 +65,7 @@ Rna2D.views.airport.connections = function(plot) {
       }
 
       // Draw the interactions
-      plot.vis.selectAll(plot.interactions.class())
+      plot.vis.selectAll(plot.interactions['class']())
         .data(interactions)
         .enter().append('svg:line')
         .call(standard)
@@ -75,22 +73,22 @@ Rna2D.views.airport.connections = function(plot) {
         .attr('x1', function(d) { return d.line.x1; })
         .attr('y1', function(d) { return d.line.y1; })
         .attr('x2', function(d) { return d.line.x2; })
-        .attr('y2', function(d) { return d.line.y2; })
+        .attr('y2', function(d) { return d.line.y2; });
 
     return plot;
   };
 
-  plot.interactions.highlight = function() {
+  plot.interactions.highlight(function() {
     var obj = this;
     d3.select(obj).style('stroke', plot.interactions.highlightColor());
-    return plot.interactions.nucleotides(obj).style('stroke', plot.interactions.highlightColor())
-  };
+    return plot.interactions.nucleotides(obj).style('stroke', plot.interactions.highlightColor());
+  });
 
-  plot.interactions.normalize = function() {
+  plot.interactions.normalize(function() {
     var obj = this;
     d3.select(obj).style('stroke', null);
     return plot.interactions.nucleotides(obj).style('stroke', null);
-  };
+  });
 
   return Rna2D;
 };

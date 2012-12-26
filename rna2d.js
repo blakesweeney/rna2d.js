@@ -9,6 +9,12 @@ var Rna2D = window.Rna2D || function(config) {
       plot.selection(selection);
     }
 
+    // Setup the view
+    var view = Rna2D.views[plot.view()];
+    view.coordinates(plot);
+    view.connections(plot);
+    view.groups(plot);
+
     d3.select(plot.selection()).call(function(sel) {
 
       // Compute the nucleotide ordering. This is often used when drawing
@@ -50,6 +56,7 @@ var Rna2D = window.Rna2D || function(config) {
           .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
           .attr('nt2', function(d, i) { return ntsOf(d)[1]; });
 
+          console.log('mouseover', plot.interactions.mouseover());
         Rna2D.utils.attachHandlers(selection, plot.interactions);
 
         return selection;
@@ -85,9 +92,6 @@ var Rna2D = window.Rna2D || function(config) {
 
   // Add all components.
   Rna2D.components(plot);
-
-  // Setup the view
-  Rna2D.views(plot, config);
 
   return plot;
 };
@@ -145,9 +149,6 @@ Rna2D.components = function(plot) {
 Rna2D.config = function(plot, given) {
 
   var config = { 
-    nucleotides: [],
-    interactions: [],
-    motifs: [],
     margin: { left: 10, right: 10, above: 10, below: 10 },
     view: 'circular',
     width:  500,
@@ -173,27 +174,38 @@ Rna2D.utils = function() {
   my.generateAccessors = function(obj, state, callback) {
     d3.keys(state).forEach(function(key) {
 
-      obj[key] = function(x) {
-        if (!arguments.length) {
-          return state[key];
-        }
-        var old = state[key];
-        state[key] = x;
-        if (callback && callback[key]) {
-          callback[key](old, x);
-        }
-        return obj;
-      };
+      obj[key] = function() {
+        return function(x) {
+          if (!arguments.length) {
+            return state[key];
+          }
+          var old = state[key];
+          state[key] = x;
+          if (callback && callback[key]) {
+            callback[key](old, x);
+          }
+          return obj;
+        };
+      }();
 
     });
   };
 
   my.attachHandlers = function(selection, obj) {
-    (['mouseover', 'mouseout', 'click']).forEach(function(handler) {
+    var handlers = ['click', 'mouseover', 'mouseout'];
+
+    if (obj.mouseover() === 'highlight') {
+      handlers = [handlers[0]];
+      selection.on('mouseover', obj.highlight())
+        .on('mouseout', obj.normalize());
+    }
+
+    handlers.forEach(function(handler) {
       if (obj[handler]) {
-        selection.on(handler, obj[handler]);
+        selection.on(handler, obj[handler]());
       }
     });
+
     return selection;
   };
 
@@ -212,17 +224,17 @@ Rna2D.utils = function() {
 }();
 
 // Stores the views of the structure
-Rna2D.views = function(plot, config) {
+Rna2D.views = function(plot) {
 
   var name = plot.view(),
       view = Rna2D.views[name];
 
-  view.coordinates(plot, config);
-  view.connections(plot, config);
-  view.groups(plot, config);
+  view.coordinates(plot);
+  view.connections(plot);
+  view.groups(plot);
 
   return Rna2D;
-}
+};
 
 // TODO: Organize so we don't have to add this silly setup.
 // Some builtin views.
@@ -355,6 +367,47 @@ Rna2D.components.interactions = function () {
 
   return {
 
+    config: {
+      getFamily: function(d) { return d.family; },
+      getNTs: function(d) { return [d.nt1, d.nt2]; },
+      // TODO: Why does this not build an accessor?
+      show: function(d) { return plot.interactions.getFamily()(d) == 'cWW'; },
+      mouseover: null,
+      mouseout: null,
+      click: null,
+      'class': 'interaction',
+      classOf: function(d) { return d.family; },
+      highlightColor: 'red',
+      highlight: Object,
+      normalize: Object,
+      isForward: function(d) {
+        var getFamily = plot.interactions.getFamily(),
+            family = getFamily(d);
+        if (family.length == 3) {
+          family = family.slice(1, 3).toUpperCase();
+        } else {
+          family = family.slice(2, 4).toUpperCase();
+        }
+        return family == 'WW' || family == 'WH' || family == 'WS' ||
+               family == 'HH' || family == 'HS' || family == 'SS';
+      },
+      isSymmetric: function(d, i) {
+        var getFamily = plot.interactions.getFamily(),
+            family = getFamily(d);
+        return family[1] == family[2];
+      },
+      getID: function(d) {
+        var family = plot.interactions.getFamily()(d),
+            nts = plot.interactions.getNTs()(d);
+        if (plot.interactions.isSymmetric()(d)) {
+          nts.sort();
+        }
+        nts.push(family);
+        return nts.join(',');
+      },
+      color: 'black'
+    },
+
     sideffects: function(plot) {
       // An interaction is valid if it is in the forward direction, it is not a
       // duplicate, and it has nucleotides which have been indexed. Interactions
@@ -382,45 +435,6 @@ Rna2D.components.interactions = function () {
 
         return valid;
       };
-    },
-
-    config: {
-      getFamily: function(d) { return d.family; },
-      getNTs: function(d) { return [d.nt1, d.nt2]; },
-      // TODO: Why does this not build an accessor?
-      show: function(d) { return plot.interactions.getFamily()(d) == 'cWW'; },
-      mouseover: null,
-      mouseout: null,
-      click: null,
-      'class': 'interaction',
-      classOf: function(d) { return d.family; },
-      higlight: Object,
-      isForward: function(d) {
-        var getFamily = plot.interactions.getFamily(),
-            family = getFamily(d);
-        if (family.length == 3) {
-          family = family.slice(1, 3).toUpperCase();
-        } else {
-          family = family.slice(2, 4).toUpperCase();
-        }
-        return family == 'WW' || family == 'WH' || family == 'WS' ||
-               family == 'HH' || family == 'HS' || family == 'SS';
-      },
-      isSymmetric: function(d, i) {
-        var getFamily = plot.interactions.getFamily(),
-            family = getFamily(d);
-        return family[1] == family[2];
-      },
-      getID: function(d) {
-        var family = plot.interactions.getFamily()(d),
-            nts = plot.interactions.getNTs()(d);
-        if (plot.interactions.isSymmetric()(d)) {
-          nts.sort();
-        }
-        nts.push(family);
-        return nts.join(',');
-      },
-      color: 'black'
     },
 
     actions: function(plot) {
@@ -577,7 +591,9 @@ Rna2D.components.motifs = function () {
       mouseover: null,
       mouseout: null,
       getID: function(d) { return d.id; },
-      getNTs: function(d) { return d.nts; }
+      getNTs: function(d) { return d.nts; },
+      highlight: Object,
+      normalize: Object
     },
 
     actions: function(plot) {
@@ -601,13 +617,6 @@ Rna2D.components.motifs = function () {
       plot.motifs.toggle = function() {
       };
 
-      plot.motifs.highlight = function() {
-        return plot.motifs.nucleotides(this).style('stroke', config.motif.highlightColor());
-      };
-
-      plot.motifs.normalize = function() {
-        return plot.motifs.nucleotides(this).style('stroke', null);
-      };
     }
 
     //         show: function() {
@@ -687,7 +696,9 @@ Rna2D.components.nucleotides = function() {
       getID: function(d) { return d.id; },
       getX: function(d) { return d.x; },
       getY: function(d) { return d.y; },
-      getSequence: function(d) { return d.sequence; }
+      getSequence: function(d) { return d.sequence; },
+      highlight: Object,
+      normalize: Object
     },
 
     sideffects: function(plot) {
@@ -773,7 +784,7 @@ Rna2D.views.airport.connections = function(plot) {
         return { x: x1, y: y1 + r };
       }
       return { x: x1, y: y1 + bbox1.height + r};
-    };
+    }
 
     // All other lines
     r = 1;
@@ -791,8 +802,6 @@ Rna2D.views.airport.connections = function(plot) {
       var interactions = plot.interactions.valid(),
           getNTs = plot.interactions.getNTs();
 
-      console.log(plot.interactions().length);
-      console.log(plot.interactions.valid().length);
       for(var i = 0; i < interactions.length; i++) {
         var obj = interactions[i],
             nts = getNTs(obj),
@@ -805,7 +814,7 @@ Rna2D.views.airport.connections = function(plot) {
       }
 
       // Draw the interactions
-      plot.vis.selectAll(plot.interactions.class())
+      plot.vis.selectAll(plot.interactions['class']())
         .data(interactions)
         .enter().append('svg:line')
         .call(standard)
@@ -813,22 +822,22 @@ Rna2D.views.airport.connections = function(plot) {
         .attr('x1', function(d) { return d.line.x1; })
         .attr('y1', function(d) { return d.line.y1; })
         .attr('x2', function(d) { return d.line.x2; })
-        .attr('y2', function(d) { return d.line.y2; })
+        .attr('y2', function(d) { return d.line.y2; });
 
     return plot;
   };
 
-  plot.interactions.highlight = function() {
+  plot.interactions.highlight(function() {
     var obj = this;
     d3.select(obj).style('stroke', plot.interactions.highlightColor());
-    return plot.interactions.nucleotides(obj).style('stroke', plot.interactions.highlightColor())
-  };
+    return plot.interactions.nucleotides(obj).style('stroke', plot.interactions.highlightColor());
+  });
 
-  plot.interactions.normalize = function() {
+  plot.interactions.normalize(function() {
     var obj = this;
     d3.select(obj).style('stroke', null);
     return plot.interactions.nucleotides(obj).style('stroke', null);
-  };
+  });
 
   return Rna2D;
 };
@@ -874,19 +883,19 @@ Rna2D.views.airport.coordinates = function(plot) {
     return plot;
   };
 
-  plot.nucleotides.highlight = function() {
+  plot.nucleotides.highlight(function() {
     var obj = this;
     d3.select(obj).style('stroke', plot.nucleotides.highlightColor());
     return plot.nucleotides.interactions(obj)
       .style('stroke', plot.nucleotides.highlightColor());
-  };
+  });
 
-  plot.nucleotides.normalize = function() {
+  plot.nucleotides.normalize(function() {
     var obj = this;
     d3.select(obj).style('stroke', null);
     return plot.nucleotides.interactions(obj)
       .style('stroke', null);
-  };
+  });
 
   return Rna2D;
 };
@@ -913,7 +922,7 @@ Rna2D.views.airport.groups = function(plot) {
           var id = nts[j],
               elem = Rna2D.utils.element(id);
 
-          if (elem == null) {
+          if (elem === null) {
             console.log('Missing nt ' + id + ' in motif: ', current);
             break;
           }
@@ -939,30 +948,30 @@ Rna2D.views.airport.groups = function(plot) {
             { x: right, y: top }
           ];
         }
-      };
+      }
 
       var motifLine = d3.svg.line()
         .x(function(d) { return d.x; })
         .y(function(d) { return d.y; });
 
       // Draw the motif boxes
-      plot.vis.selectAll(plot.motifs.class())
+      plot.vis.selectAll(plot.motifs['class']())
         .data(plot.motifs()).enter().append('svg:path')
         .call(standard)
-        .attr('d', function(d) { return motifLine(d.bounding) + "Z" })
+        .attr('d', function(d) { return motifLine(d.bounding) + "Z"; });
 
      return plot;
   };
 
-  plot.motifs.highlight = function() {
+  plot.motifs.highlight(function() {
     var obj = this;
     return plot.motifs.nucleotides(obj).style('stroke', plot.motifs.highlightColor());
-  };
+  });
 
-  plot.motifs.normalize = function() {
+  plot.motifs.normalize(function() {
     var obj = this;
     return plot.motifs.nucleotides(obj).style('stroke', null);
-  };
+  });
 
   return Rna2D;
 };

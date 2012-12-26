@@ -13,7 +13,9 @@ Rna2D.components.motifs = function () {
       mouseover: null,
       mouseout: null,
       getID: function(d) { return d.id; },
-      getNTs: function(d) { return d.nts; }
+      getNTs: function(d) { return d.nts; },
+      highlight: Object,
+      normalize: Object
     },
 
     actions: function(plot) {
@@ -37,13 +39,6 @@ Rna2D.components.motifs = function () {
       plot.motifs.toggle = function() {
       };
 
-      plot.motifs.highlight = function() {
-        return plot.motifs.nucleotides(this).style('stroke', config.motif.highlightColor());
-      };
-
-      plot.motifs.normalize = function() {
-        return plot.motifs.nucleotides(this).style('stroke', null);
-      };
     }
 
     //         show: function() {

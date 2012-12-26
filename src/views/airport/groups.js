@@ -20,7 +20,7 @@ Rna2D.views.airport.groups = function(plot) {
           var id = nts[j],
               elem = Rna2D.utils.element(id);
 
-          if (elem == null) {
+          if (elem === null) {
             console.log('Missing nt ' + id + ' in motif: ', current);
             break;
           }
@@ -46,30 +46,30 @@ Rna2D.views.airport.groups = function(plot) {
             { x: right, y: top }
           ];
         }
-      };
+      }
 
       var motifLine = d3.svg.line()
         .x(function(d) { return d.x; })
         .y(function(d) { return d.y; });
 
       // Draw the motif boxes
-      plot.vis.selectAll(plot.motifs.class())
+      plot.vis.selectAll(plot.motifs['class']())
         .data(plot.motifs()).enter().append('svg:path')
         .call(standard)
-        .attr('d', function(d) { return motifLine(d.bounding) + "Z" })
+        .attr('d', function(d) { return motifLine(d.bounding) + "Z"; });
 
      return plot;
   };
 
-  plot.motifs.highlight = function() {
+  plot.motifs.highlight(function() {
     var obj = this;
     return plot.motifs.nucleotides(obj).style('stroke', plot.motifs.highlightColor());
-  };
+  });
 
-  plot.motifs.normalize = function() {
+  plot.motifs.normalize(function() {
     var obj = this;
     return plot.motifs.nucleotides(obj).style('stroke', null);
-  };
+  });
 
   return Rna2D;
 };

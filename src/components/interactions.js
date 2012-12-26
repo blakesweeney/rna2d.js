@@ -4,6 +4,47 @@ Rna2D.components.interactions = function () {
 
   return {
 
+    config: {
+      getFamily: function(d) { return d.family; },
+      getNTs: function(d) { return [d.nt1, d.nt2]; },
+      // TODO: Why does this not build an accessor?
+      show: function(d) { return plot.interactions.getFamily()(d) == 'cWW'; },
+      mouseover: null,
+      mouseout: null,
+      click: null,
+      'class': 'interaction',
+      classOf: function(d) { return d.family; },
+      highlightColor: 'red',
+      highlight: Object,
+      normalize: Object,
+      isForward: function(d) {
+        var getFamily = plot.interactions.getFamily(),
+            family = getFamily(d);
+        if (family.length == 3) {
+          family = family.slice(1, 3).toUpperCase();
+        } else {
+          family = family.slice(2, 4).toUpperCase();
+        }
+        return family == 'WW' || family == 'WH' || family == 'WS' ||
+               family == 'HH' || family == 'HS' || family == 'SS';
+      },
+      isSymmetric: function(d, i) {
+        var getFamily = plot.interactions.getFamily(),
+            family = getFamily(d);
+        return family[1] == family[2];
+      },
+      getID: function(d) {
+        var family = plot.interactions.getFamily()(d),
+            nts = plot.interactions.getNTs()(d);
+        if (plot.interactions.isSymmetric()(d)) {
+          nts.sort();
+        }
+        nts.push(family);
+        return nts.join(',');
+      },
+      color: 'black'
+    },
+
     sideffects: function(plot) {
       // An interaction is valid if it is in the forward direction, it is not a
       // duplicate, and it has nucleotides which have been indexed. Interactions
@@ -31,45 +72,6 @@ Rna2D.components.interactions = function () {
 
         return valid;
       };
-    },
-
-    config: {
-      getFamily: function(d) { return d.family; },
-      getNTs: function(d) { return [d.nt1, d.nt2]; },
-      // TODO: Why does this not build an accessor?
-      show: function(d) { return plot.interactions.getFamily()(d) == 'cWW'; },
-      mouseover: null,
-      mouseout: null,
-      click: null,
-      'class': 'interaction',
-      classOf: function(d) { return d.family; },
-      higlight: Object,
-      isForward: function(d) {
-        var getFamily = plot.interactions.getFamily(),
-            family = getFamily(d);
-        if (family.length == 3) {
-          family = family.slice(1, 3).toUpperCase();
-        } else {
-          family = family.slice(2, 4).toUpperCase();
-        }
-        return family == 'WW' || family == 'WH' || family == 'WS' ||
-               family == 'HH' || family == 'HS' || family == 'SS';
-      },
-      isSymmetric: function(d, i) {
-        var getFamily = plot.interactions.getFamily(),
-            family = getFamily(d);
-        return family[1] == family[2];
-      },
-      getID: function(d) {
-        var family = plot.interactions.getFamily()(d),
-            nts = plot.interactions.getNTs()(d);
-        if (plot.interactions.isSymmetric()(d)) {
-          nts.sort();
-        }
-        nts.push(family);
-        return nts.join(',');
-      },
-      color: 'black'
     },
 
     actions: function(plot) {

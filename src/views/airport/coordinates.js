@@ -39,19 +39,19 @@ Rna2D.views.airport.coordinates = function(plot) {
     return plot;
   };
 
-  plot.nucleotides.highlight = function() {
+  plot.nucleotides.highlight(function() {
     var obj = this;
     d3.select(obj).style('stroke', plot.nucleotides.highlightColor());
     return plot.nucleotides.interactions(obj)
       .style('stroke', plot.nucleotides.highlightColor());
-  };
+  });
 
-  plot.nucleotides.normalize = function() {
+  plot.nucleotides.normalize(function() {
     var obj = this;
     d3.select(obj).style('stroke', null);
     return plot.nucleotides.interactions(obj)
       .style('stroke', null);
-  };
+  });
 
   return Rna2D;
 };
