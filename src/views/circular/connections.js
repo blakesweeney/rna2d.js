@@ -47,15 +47,21 @@ Rna2D.views.circular.connections = function(plot) {
 
   plot.interactions.highlight(function() {
     var obj = this,
-        highlightColor = plot.interactions.highlightColor();
+        highlightColor = plot.interactions.highlightColor(),
+        nts = plot.interactions.nucleotides(obj);
+
     d3.select(obj).style('stroke', highlightColor(obj));
-    return plot.interactions.nucleotides(obj).style('stroke', highlightColor(obj));
+    plot.pie.addLetters()(nts[0]); // TODO: WTF? 
+
+    return nts.style('stroke', highlightColor(obj));
   });
 
   plot.interactions.normalize(function() {
     var obj = this;
     d3.select(obj).style('stroke', null);
-    return plot.interactions.nucleotides(obj).style('stroke', null);
+    plot.pie.clearLetters()();
+    plot.interactions.nucleotides(obj).style('stroke', null);
+    return plot.interactions;
   });
 
   return Rna2D;

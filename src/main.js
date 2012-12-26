@@ -30,7 +30,8 @@ var Rna2D = window.Rna2D || function(config) {
         selection.attr('id', plot.nucleotides.getID())
           .attr('class', function(d, i) {
             return plot.nucleotides['class']() + ' ' + plot.nucleotides.classOf()(d, i);
-          });
+          })
+          .attr('data-sequence', plot.nucleotides.getSequence());
 
         Rna2D.utils.attachHandlers(selection, plot.nucleotides);
 

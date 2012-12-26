@@ -5,7 +5,6 @@ Rna2D.components.interactions = function () {
     config: {
       getFamily: function(d) { return d.family; },
       getNTs: function(d) { return [d.nt1, d.nt2]; },
-      // TODO: Why does this not build an accessor?
       show: function(d) { return plot.interactions.getFamily()(d) == 'cWW'; },
       mouseover: null,
       mouseout: null,
@@ -85,9 +84,8 @@ Rna2D.components.interactions = function () {
       };
 
       plot.interactions.nucleotides = function(obj) {
-        // TODO: Can this be done with getElementById? Will it be faster?
-        var nts = [obj.getAttribute('nt1'), obj.getAttribute('nt2')];
-        var selector = '#' + nts.join(', #');
+        var nts = obj.getAttribute('data-nts').split(','),
+            selector = '#' + nts.join(', #');
         return plot.vis.selectAll(selector);
       };
 
