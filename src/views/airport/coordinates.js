@@ -40,10 +40,11 @@ Rna2D.views.airport.coordinates = function(plot) {
   };
 
   plot.nucleotides.highlight(function() {
-    var obj = this;
-    d3.select(obj).style('stroke', plot.nucleotides.highlightColor());
+    var obj = this,
+        highlightColor = plot.nucleotides.highlightColor();
+    d3.select(obj).style('stroke', highlightColor());
     return plot.nucleotides.interactions(obj)
-      .style('stroke', plot.nucleotides.highlightColor());
+      .style('stroke', highlightColor());
   });
 
   plot.nucleotides.normalize(function() {

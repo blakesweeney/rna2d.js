@@ -79,9 +79,10 @@ Rna2D.views.airport.connections = function(plot) {
   };
 
   plot.interactions.highlight(function() {
-    var obj = this;
-    d3.select(obj).style('stroke', plot.interactions.highlightColor());
-    return plot.interactions.nucleotides(obj).style('stroke', plot.interactions.highlightColor());
+    var obj = this,
+        highlightColor = plot.interactions.highlightColor();
+    d3.select(obj).style('stroke', highlightColor(obj));
+    return plot.interactions.nucleotides(obj).style('stroke', highlightColor(obj));
   });
 
   plot.interactions.normalize(function() {

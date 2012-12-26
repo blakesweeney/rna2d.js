@@ -62,8 +62,9 @@ Rna2D.views.airport.groups = function(plot) {
   };
 
   plot.motifs.highlight(function() {
-    var obj = this;
-    return plot.motifs.nucleotides(obj).style('stroke', plot.motifs.highlightColor());
+    var obj = this,
+        highlightColor = plot.motifs.highlightColor();
+    return plot.motifs.nucleotides(obj).style('stroke', highlightColor(obj));
   });
 
   plot.motifs.normalize(function() {

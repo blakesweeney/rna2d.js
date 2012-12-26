@@ -40,10 +40,11 @@ Rna2D.views.circular.coordinates = function(plot) {
   };
 
   plot.nucleotides.highlight(function() {
-    var obj = this;
-    d3.select(obj).style('stroke', plot.nucleotides.highlightColor());
+    var obj = this,
+        highlightColor = plot.nucleotides.highlightColor();
+    d3.select(obj).style('stroke', highlightColor(obj));
     return plot.nucleotides.interactions(obj)
-      .style('stroke', plot.nucleotides.highlightColor());
+      .style('stroke', highlightColor(obj));
   });
 
   plot.nucleotides.normalize(function() {

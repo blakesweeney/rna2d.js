@@ -79,12 +79,9 @@ Rna2D.components.jmol = {
       if (!arguments.length || !group) {
         group = this;
       }
-      plot.jmol.selection(group['data-nts']);
+      plot.jmol.showSelection(group.getAttribute('data-nts'));
     };
 
-    plot.components.jmol = function() {
-      return plot;
-    };
   }
 
 };

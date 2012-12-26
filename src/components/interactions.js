@@ -1,7 +1,5 @@
 Rna2D.components.interactions = function () {
 
-  //var interactions = [];
-
   return {
 
     config: {
@@ -14,7 +12,7 @@ Rna2D.components.interactions = function () {
       click: null,
       'class': 'interaction',
       classOf: function(d) { return d.family; },
-      highlightColor: 'red',
+      highlightColor: function() { return 'red'; },
       highlight: Object,
       normalize: Object,
       isForward: function(d) {

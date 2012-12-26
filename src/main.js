@@ -53,7 +53,6 @@ var Rna2D = window.Rna2D || function(config) {
           .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
           .attr('nt2', function(d, i) { return ntsOf(d)[1]; });
 
-          console.log('mouseover', plot.interactions.mouseover());
         Rna2D.utils.attachHandlers(selection, plot.interactions);
 
         return selection;

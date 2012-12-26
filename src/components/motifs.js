@@ -7,7 +7,7 @@ Rna2D.components.motifs = function () {
     config: {
       classOf: function(d) { return d.id.split("_")[0]; },
       'class': 'motif',
-      highlightColor: 'red',
+      highlightColor: function() { return 'red'; },
       visible: function(d) { return true; },
       click: null,
       mouseover: null,

@@ -5,7 +5,7 @@ Rna2D.components.nucleotides = function() {
   return {
 
     config: {
-      highlightColor: 'red',
+      highlightColor: function() { return 'red'; },
       'class': 'nucleotide',
       classOf: function(d, i) { return ''; },
       color: 'black',

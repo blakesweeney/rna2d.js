@@ -56,7 +56,6 @@ var Rna2D = window.Rna2D || function(config) {
           .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
           .attr('nt2', function(d, i) { return ntsOf(d)[1]; });
 
-          console.log('mouseover', plot.interactions.mouseover());
         Rna2D.utils.attachHandlers(selection, plot.interactions);
 
         return selection;
@@ -363,8 +362,6 @@ Rna2D.components.frame = {
 
 Rna2D.components.interactions = function () {
 
-  //var interactions = [];
-
   return {
 
     config: {
@@ -377,7 +374,7 @@ Rna2D.components.interactions = function () {
       click: null,
       'class': 'interaction',
       classOf: function(d) { return d.family; },
-      highlightColor: 'red',
+      highlightColor: function() { return 'red'; },
       highlight: Object,
       normalize: Object,
       isForward: function(d) {
@@ -566,12 +563,9 @@ Rna2D.components.jmol = {
       if (!arguments.length || !group) {
         group = this;
       }
-      plot.jmol.selection(group['data-nts']);
+      plot.jmol.showSelection(group.getAttribute('data-nts'));
     };
 
-    plot.components.jmol = function() {
-      return plot;
-    };
   }
 
 };
@@ -585,7 +579,7 @@ Rna2D.components.motifs = function () {
     config: {
       classOf: function(d) { return d.id.split("_")[0]; },
       'class': 'motif',
-      highlightColor: 'red',
+      highlightColor: function() { return 'red'; },
       visible: function(d) { return true; },
       click: null,
       mouseover: null,
@@ -684,7 +678,7 @@ Rna2D.components.nucleotides = function() {
   return {
 
     config: {
-      highlightColor: 'red',
+      highlightColor: function() { return 'red'; },
       'class': 'nucleotide',
       classOf: function(d, i) { return ''; },
       color: 'black',
@@ -828,9 +822,10 @@ Rna2D.views.airport.connections = function(plot) {
   };
 
   plot.interactions.highlight(function() {
-    var obj = this;
-    d3.select(obj).style('stroke', plot.interactions.highlightColor());
-    return plot.interactions.nucleotides(obj).style('stroke', plot.interactions.highlightColor());
+    var obj = this,
+        highlightColor = plot.interactions.highlightColor();
+    d3.select(obj).style('stroke', highlightColor(obj));
+    return plot.interactions.nucleotides(obj).style('stroke', highlightColor(obj));
   });
 
   plot.interactions.normalize(function() {
@@ -884,10 +879,11 @@ Rna2D.views.airport.coordinates = function(plot) {
   };
 
   plot.nucleotides.highlight(function() {
-    var obj = this;
-    d3.select(obj).style('stroke', plot.nucleotides.highlightColor());
+    var obj = this,
+        highlightColor = plot.nucleotides.highlightColor();
+    d3.select(obj).style('stroke', highlightColor());
     return plot.nucleotides.interactions(obj)
-      .style('stroke', plot.nucleotides.highlightColor());
+      .style('stroke', highlightColor());
   });
 
   plot.nucleotides.normalize(function() {
@@ -964,8 +960,9 @@ Rna2D.views.airport.groups = function(plot) {
   };
 
   plot.motifs.highlight(function() {
-    var obj = this;
-    return plot.motifs.nucleotides(obj).style('stroke', plot.motifs.highlightColor());
+    var obj = this,
+        highlightColor = plot.motifs.highlightColor();
+    return plot.motifs.nucleotides(obj).style('stroke', highlightColor(obj));
   });
 
   plot.motifs.normalize(function() {
@@ -1024,9 +1021,10 @@ Rna2D.views.circular.connections = function(plot) {
   };
 
   plot.interactions.highlight(function() {
-    var obj = this;
-    d3.select(obj).style('stroke', plot.interactions.highlightColor());
-    return plot.interactions.nucleotides(obj).style('stroke', plot.interactions.highlightColor());
+    var obj = this,
+        highlightColor = plot.interactions.highlightColor();
+    d3.select(obj).style('stroke', highlightColor(obj));
+    return plot.interactions.nucleotides(obj).style('stroke', highlightColor(obj));
   });
 
   plot.interactions.normalize(function() {
@@ -1080,10 +1078,11 @@ Rna2D.views.circular.coordinates = function(plot) {
   };
 
   plot.nucleotides.highlight(function() {
-    var obj = this;
-    d3.select(obj).style('stroke', plot.nucleotides.highlightColor());
+    var obj = this,
+        highlightColor = plot.nucleotides.highlightColor();
+    d3.select(obj).style('stroke', highlightColor(obj));
     return plot.nucleotides.interactions(obj)
-      .style('stroke', plot.nucleotides.highlightColor());
+      .style('stroke', highlightColor(obj));
   });
 
   plot.nucleotides.normalize(function() {
