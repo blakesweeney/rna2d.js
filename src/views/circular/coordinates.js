@@ -18,45 +18,47 @@ Rna2D.views.circular.coordinates = function(plot) {
           .startAngle(startAngle)
           .endAngle(endAngle);
 
-    plot.vis.selectAll(plot.nucleotides.class())
+    plot.vis.selectAll(plot.nucleotides['class']())
       .append('g')
       .data(plot.nucleotides()).enter().append('svg:path')
       .call(standard)
       .attr('d', arc)
       .attr('transform', 'translate(' + center.x + ',' + center.y + ')')
-      .attr('fill', plot.nucleotides.color())
+      .attr('fill', plot.nucleotides.color());
 
     plot.__ntArc = arc;
     plot.__circleCenter = center;
     // TODO: Fix scales
     plot.__xScale = d3.scale.linear()
       .domain([0, plot.width()])
-      .range([-center.x, center.x + plot.width()])
+      .range([-center.x, center.x + plot.width()]);
     plot.__yScale = d3.scale.linear()
       .domain([0, plot.height()])
-      .range([-center.x, center.y + plot.height()])
+      .range([-center.x, center.y + plot.height()]);
 
     return plot;
   };
 
+  plot.nucleotides.highlight(function() {
+    var obj = this;
+    d3.select(obj).style('stroke', plot.nucleotides.highlightColor());
+    return plot.nucleotides.interactions(obj)
+      .style('stroke', plot.nucleotides.highlightColor());
+  });
+
+  plot.nucleotides.normalize(function() {
+    var obj = this;
+    d3.select(obj).style('stroke', null);
+    return plot.nucleotides.interactions(obj)
+      .style('stroke', null);
+  });
+
   plot.pie = {};
-
-  (function() {
-    var width = 10,
-        gap = 0.2;
-
-    plot.pie.width = function(_) {
-      if (!arguments.length) return width;
-      width = _;
-      return plot;
-    };
-
-    plot.pie.gapSize = function(_) {
-      if (!arguments.length) return gap;
-      gap = _;
-      return plot;
-    };
-  })();
+  var config = {
+    width: 10,
+    gap: 0.2
+  };
+  Rna2D.generateAccessors(plot.pie, config);
 
   return Rna2D;
 };
