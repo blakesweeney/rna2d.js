@@ -1014,7 +1014,7 @@ Rna2D.views.circular.connections = function(plot) {
         nts = plot.interactions.nucleotides(obj);
 
     d3.select(obj).style('stroke', highlightColor(obj));
-    plot.pie.addLetters()(nts[0]); // TODO: WTF? 
+    plot.pie.addLetters()(nts[0]); // TODO: WTF?
 
     return nts.style('stroke', highlightColor(obj));
   });
