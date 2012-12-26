@@ -81,22 +81,22 @@
             .update(plot.jmol.showSelection);
 
         d3.json('data/16S-ecoli.js', function(data) {
-            plot.nucleotides(data);
-              plot.nucleotides.mouseover('highlight');
-              plot.nucleotides.click(function() { console.log('nuclotide', this); });
+            plot.nucleotides(data)
+              .mouseover('highlight')
+              .click(function() { console.log('nuclotide', this); })
               ;
 
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
-            plot.interactions(data);
-              plot.interactions.mouseover('highlight');
-              plot.interactions.click(plot.jmol.showGroup);
-              //.show(function(obj) { return obj.family == 'cWW' });
+            plot.interactions(data)
+              .mouseover('highlight')
+              .click(plot.jmol.showGroup)
+              .show(function(obj) { return obj.family == 'cWW' });
               ;
 
             d3.json('data/2AW7_motifs.json', function(data) {
-              plot.motifs(data);
-                plot.motifs.mouseover('highlight');
-                plot.motifs.click(function() { console.log('motif', this); });
+              plot.motifs(data)
+                .mouseover('highlight')
+                .click(function() { console.log('motif', this); })
                 ;
 
               plot();

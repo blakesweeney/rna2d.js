@@ -109,7 +109,7 @@ Rna2D.components = function(plot) {
   for(var name in Rna2D.components) {
     var obj = Rna2D.components[name];
 
-    (function() {
+    (function(name) {
       var data = null;
       plot[name] = function(x) {
         if (!arguments.length) {
@@ -118,7 +118,7 @@ Rna2D.components = function(plot) {
         data = x;
         return plot[name];
       };
-    })();
+    })(name);
 
     Rna2D.utils.generateAccessors(plot[name], obj.config);
 
