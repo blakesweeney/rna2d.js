@@ -35,7 +35,7 @@ Rna2D.views.circular.connections = function(plot) {
 
     };
 
-    plot.vis.selectAll(plot.interactions.class())
+    plot.vis.selectAll(plot.interactions['class']())
       .data(plot.interactions.valid()).enter().append('path')
       .call(standard)
       .attr('d', curve)
@@ -44,6 +44,18 @@ Rna2D.views.circular.connections = function(plot) {
 
     return plot;
   };
+
+  plot.interactions.highlight(function() {
+    var obj = this;
+    d3.select(obj).style('stroke', plot.interactions.highlightColor());
+    return plot.interactions.nucleotides(obj).style('stroke', plot.interactions.highlightColor());
+  });
+
+  plot.interactions.normalize(function() {
+    var obj = this;
+    d3.select(obj).style('stroke', null);
+    return plot.interactions.nucleotides(obj).style('stroke', null);
+  });
 
   return Rna2D;
 };

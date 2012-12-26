@@ -56,9 +56,9 @@ Rna2D.views.circular.coordinates = function(plot) {
   plot.pie = {};
   var config = {
     width: 10,
-    gap: 0.2
+    gapSize: 0.2
   };
-  Rna2D.generateAccessors(plot.pie, config);
+  Rna2D.utils.generateAccessors(plot.pie, config);
 
   return Rna2D;
 };

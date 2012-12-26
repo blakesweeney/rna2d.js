@@ -1013,7 +1013,7 @@ Rna2D.views.circular.connections = function(plot) {
 
     };
 
-    plot.vis.selectAll(plot.interactions.class())
+    plot.vis.selectAll(plot.interactions['class']())
       .data(plot.interactions.valid()).enter().append('path')
       .call(standard)
       .attr('d', curve)
@@ -1022,6 +1022,18 @@ Rna2D.views.circular.connections = function(plot) {
 
     return plot;
   };
+
+  plot.interactions.highlight(function() {
+    var obj = this;
+    d3.select(obj).style('stroke', plot.interactions.highlightColor());
+    return plot.interactions.nucleotides(obj).style('stroke', plot.interactions.highlightColor());
+  });
+
+  plot.interactions.normalize(function() {
+    var obj = this;
+    d3.select(obj).style('stroke', null);
+    return plot.interactions.nucleotides(obj).style('stroke', null);
+  });
 
   return Rna2D;
 };
@@ -1082,27 +1094,11 @@ Rna2D.views.circular.coordinates = function(plot) {
   });
 
   plot.pie = {};
-
-  (function() {
-    var width = 10,
-        gap = 0.2;
-
-    plot.pie.width = function(_) {
-      if (!arguments.length) {
-        return width;
-      }
-      width = _;
-      return plot;
-    };
-
-    plot.pie.gapSize = function(_) {
-      if (!arguments.length) {
-        return gap;
-      }
-      gap = _;
-      return plot;
-    };
-  })();
+  var config = {
+    width: 10,
+    gapSize: 0.2
+  };
+  Rna2D.utils.generateAccessors(plot.pie, config);
 
   return Rna2D;
 };
