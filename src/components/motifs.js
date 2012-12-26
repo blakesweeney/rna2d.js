@@ -3,11 +3,6 @@ Rna2D.components.motifs = function () {
   var motifs = [];
 
   return {
-    self: function(x) {
-        if (!arguments.length) return motifs;
-        motifs = x;
-        return motifs;
-    },
 
     config: {
       classOf: function(d) { return d.id.split("_")[0]; },

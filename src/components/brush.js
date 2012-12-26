@@ -4,10 +4,12 @@ Rna2D.components.brush = function() {
 
   return {
 
-    self: function(x) {
-      if (!arguments.length) return brush;
-      brush = x;
-      return brush;
+    config: {
+      enabled: true,
+      initial: [],
+      'class': 'brush',
+      update: Object,
+      clear: Object
     },
 
     actions: function(plot) {
@@ -43,14 +45,6 @@ Rna2D.components.brush = function() {
       };
     },
 
-    config: {
-      enabled: true,
-      initial: [],
-      'class': 'brush',
-      update: Object,
-      clear: Object
-    },
-
     generate: function(plot) {
       var brush = d3.svg.brush()
         .on('brushstart', startBrush)
@@ -62,12 +56,12 @@ Rna2D.components.brush = function() {
       plot.brush(brush);
 
       // Blank for now, later may use this for a multiple selecting brush.
-      var startBrush = function () { };
+      function startBrush () { }
 
       // Do nothing for now.
-      var updateBrush = function (p) { };
+      function updateBrush (p) { }
 
-      var endBrush = function () {
+      function endBrush () {
         var matched = {};
 
         if (brush.empty()) {
@@ -85,7 +79,7 @@ Rna2D.components.brush = function() {
 
           plot.brush.update()(matched);
         }
-      };
+      }
 
       if (plot.brush.initial().length) {
         plot.brush.select(plot.brush.initial());

@@ -6,7 +6,7 @@ Rna2D.views.airport.coordinates = function(plot) {
 
     var data = plot.nucleotides(),
         width = plot.width(),
-        height = plot.height()
+        height = plot.height(),
         margin = plot.margin();
 
     // Compute the scales and ranges.
@@ -27,14 +27,14 @@ Rna2D.views.airport.coordinates = function(plot) {
     plot.__yCoordMax = yCoordMax;
 
     // Draw all nucleotides.
-    plot.vis.selectAll(plot.nucleotides.class())
+    plot.vis.selectAll(plot.nucleotides['class']())
       .data(data).enter().append('svg:text')
       .call(standard)
       .attr('x', function(d, i) { return xScale(plot.nucleotides.getX()(d, i)); })
       .attr('y', function(d, i) { return yScale(plot.nucleotides.getY()(d, i)); })
       .attr('font-size', plot.nucleotides.fontSize())
       .text(plot.nucleotides.getSequence())
-      .attr('fill', plot.nucleotides.color())
+      .attr('fill', plot.nucleotides.color());
 
     return plot;
   };
@@ -42,13 +42,15 @@ Rna2D.views.airport.coordinates = function(plot) {
   plot.nucleotides.highlight = function() {
     var obj = this;
     d3.select(obj).style('stroke', plot.nucleotides.highlightColor());
-    return plot.nucleotides.interactions(obj).style('stroke', plot.nucleotides.highlightColor());
+    return plot.nucleotides.interactions(obj)
+      .style('stroke', plot.nucleotides.highlightColor());
   };
 
   plot.nucleotides.normalize = function() {
     var obj = this;
     d3.select(obj).style('stroke', null);
-    return plot.nucleotides.interactions(obj).style('stroke', null);
+    return plot.nucleotides.interactions(obj)
+      .style('stroke', null);
   };
 
   return Rna2D;

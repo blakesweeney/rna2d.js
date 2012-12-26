@@ -1,13 +1,8 @@
 Rna2D.components.interactions = function () {
 
-  var interactions = [];
+  //var interactions = [];
 
   return {
-    self: function(x) {
-      if (!arguments.length) return interactions;
-      interactions = x;
-      return interactions;
-    },
 
     sideffects: function(plot) {
       // An interaction is valid if it is in the forward direction, it is not a
@@ -19,7 +14,7 @@ Rna2D.components.interactions = function () {
             getNts = plot.interactions.getNTs(),
             isForward = plot.interactions.isForward(),
             valid = [],
-            seen = [],
+            seen = {},
             orderedNts = plot.nucleotides.ordered();
 
         for(var i = 0; i < interactions.length; i++) {
@@ -28,7 +23,7 @@ Rna2D.components.interactions = function () {
               nts = getNts(current);
 
           if (isForward(current) && !seen[id] && nts.length &&
-              nts[0] in orderedNts && nts[1] in orderedNts) {
+              orderedNts[nts[0]] && orderedNts[nts[1]]) {
             seen[id] = true;
             valid.push(current);
           }
@@ -60,15 +55,21 @@ Rna2D.components.interactions = function () {
         return family == 'WW' || family == 'WH' || family == 'WS' ||
                family == 'HH' || family == 'HS' || family == 'SS';
       },
+      isSymmetric: function(d, i) {
+        var getFamily = plot.interactions.getFamily(),
+            family = getFamily(d);
+        return family[1] == family[2];
+      },
       getID: function(d) {
         var family = plot.interactions.getFamily()(d),
             nts = plot.interactions.getNTs()(d);
         if (plot.interactions.isSymmetric()(d)) {
           nts.sort();
         }
-        return nts.join(',') + ',' + family;
+        nts.push(family);
+        return nts.join(',');
       },
-      color: function(d, i) { return 'black'; }
+      color: 'black'
     },
 
     actions: function(plot) {
