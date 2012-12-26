@@ -71,18 +71,14 @@
       <script type='text/javascript'>
 
         var plot = Rna2D({ selection: '#rna-2d', width: 630, height: 795 });
+        plot.view('circular');
+        //plot.view('airport');
 
-        //plot.interactions.visible(function(obj) { return obj.family == 'cWW' })
-          //.interactions.mouseover('highlight')
-          //.nucleotides.mouseover('highlight')
-          //.nucleotides.click(function() { console.log('nucleotide', this); })
-          //plot.motifs.mouseover('highlight')
-          //.motifs.click(
-          //plot.jmol.overflow(function() { alert("Too many nts selected"); })
-          //.brush.enabled(true)
-          //.brush.update(plot.jmol.selection)
-          //<!--.interactions.click(plot.jmol.group);-->
-          ;
+        plot.jmol
+          .overflow(function() { alert("Too many nts selected"); });
+
+          plot.brush.enabled(true)
+            .update(plot.jmol.showSelection);
 
         d3.json('data/16S-ecoli.js', function(data) {
             plot.nucleotides(data)
@@ -92,7 +88,7 @@
 
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
             plot.interactions(data)
-              .click(plot.jmol.group)
+              .click(plot.jmol.showGroup)
               .mouseover('highlight')
               //.show(function(obj) { return obj.family == 'cWW' });
               ;
@@ -104,7 +100,7 @@
                 ;
 
               plot();
-            });
+           });
           });
         });
 
