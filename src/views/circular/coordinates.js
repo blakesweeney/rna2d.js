@@ -29,12 +29,14 @@ Rna2D.views.circular.coordinates = function(plot) {
     plot.__ntArc = arc;
     plot.__circleCenter = center;
     // TODO: Fix scales
-    plot.__xScale = d3.scale.linear()
-      .domain([0, plot.width()])
-      .range([-center.x, center.x + plot.width()]);
-    plot.__yScale = d3.scale.linear()
-      .domain([0, plot.height()])
-      .range([-center.x, center.y + plot.height()]);
+    var xScale = d3.scale.linear() 
+        .domain([0, plot.width()])
+        .range([-center.x, center.x + plot.width()]),
+      yScale = d3.scale.linear()
+        .domain([0, plot.height()])
+        .range([-center.x, center.y + plot.height()]);
+
+    plot.xScale(xScale).yScale(yScale);
 
     return plot;
   };

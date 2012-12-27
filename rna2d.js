@@ -1061,12 +1061,14 @@ Rna2D.views.circular.coordinates = function(plot) {
     plot.__ntArc = arc;
     plot.__circleCenter = center;
     // TODO: Fix scales
-    plot.__xScale = d3.scale.linear()
-      .domain([0, plot.width()])
-      .range([-center.x, center.x + plot.width()]);
-    plot.__yScale = d3.scale.linear()
-      .domain([0, plot.height()])
-      .range([-center.x, center.y + plot.height()]);
+    var xScale = d3.scale.linear() 
+        .domain([0, plot.width()])
+        .range([-center.x, center.x + plot.width()]),
+      yScale = d3.scale.linear()
+        .domain([0, plot.height()])
+        .range([-center.x, center.y + plot.height()]);
+
+    plot.xScale(xScale).yScale(yScale);
 
     return plot;
   };
@@ -1102,7 +1104,7 @@ Rna2D.views.circular.coordinates = function(plot) {
     letterPosition: function(obj) {
       var index = plot.nucleotides.indexOf(obj.getAttribute('id')),
           position = plot.__ntArc.centroid(null, index);
-      return { 
+      return {
         x: plot.__circleCenter.x + position[0],
         y: plot.__circleCenter.y + position[1]
       };
@@ -1118,6 +1120,7 @@ Rna2D.views.circular.coordinates = function(plot) {
         .attr('x', function(d) { return positionOf(d).x; })
         .attr('y', function(d) { return positionOf(d).y; })
         .attr('font-size', plot.pie.letterSize())
+        .attr("text-anchor", "middle")
         .attr('pointer-events', 'none')
         .text(function(d) { return d.getAttribute('data-sequence'); })
         .attr('fill', function(d) { return highlightColor(d); });
