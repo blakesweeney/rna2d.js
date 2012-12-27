@@ -70,7 +70,7 @@ Rna2D.views.circular.coordinates = function(plot) {
     letterPosition: function(obj) {
       var index = plot.nucleotides.indexOf(obj.getAttribute('id')),
           position = plot.__ntArc.centroid(null, index);
-      return { 
+      return {
         x: plot.__circleCenter.x + position[0],
         y: plot.__circleCenter.y + position[1]
       };
