@@ -18,6 +18,13 @@ Rna2D.views.circular.coordinates = function(plot) {
           .startAngle(startAngle)
           .endAngle(endAngle);
 
+    var nts = plot.nucleotides();
+    for(var i = 0; i < nts.length; i++) {
+      var centroid = arc.centroid(null, i);
+      nts[i].__x = center.x + centroid[0];
+      nts[i].__y = center.y + centroid[1];
+    }
+
     plot.vis.selectAll(plot.nucleotides['class']())
       .append('g')
       .data(plot.nucleotides()).enter().append('svg:path')
@@ -28,15 +35,8 @@ Rna2D.views.circular.coordinates = function(plot) {
 
     plot.__ntArc = arc;
     plot.__circleCenter = center;
-    // TODO: Fix scales
-    var xScale = d3.scale.linear() 
-        .domain([0, plot.width()])
-        .range([-center.x, center.x + plot.width()]),
-      yScale = d3.scale.linear()
-        .domain([0, plot.height()])
-        .range([-center.x, center.y + plot.height()]);
-
-    plot.xScale(xScale).yScale(yScale);
+    plot.xScale(d3.scale.identity().domain([0, plot.width()])) 
+        .yScale(d3.scale.identity().domain([0, plot.height()]));
 
     return plot;
   };

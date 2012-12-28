@@ -1,7 +1,5 @@
 Rna2D.components.brush = function() {
 
-  var brush = null;
-
   return {
 
     config: {
@@ -46,14 +44,12 @@ Rna2D.components.brush = function() {
     },
 
     generate: function(plot) {
-      var brush = d3.svg.brush()
+      plot.brush(d3.svg.brush()
         .on('brushstart', startBrush)
         .on('brush', updateBrush)
         .on('brushend', endBrush)
         .x(plot.xScale())
-        .y(plot.yScale());
-
-      plot.brush(brush);
+        .y(plot.yScale()));
 
       // Blank for now, later may use this for a multiple selecting brush.
       function startBrush () { }
@@ -64,16 +60,17 @@ Rna2D.components.brush = function() {
       function endBrush () {
         var matched = {};
 
-        if (brush.empty()) {
+        if (plot.brush().empty()) {
           plot.brush.clear();
         } else {
 
-          var e = plot.brush().extent();
+          var e = plot.brush().extent(),
+              getID = plot.nucleotides.getID();
           plot.vis.selectAll('.' + plot.nucleotides['class']())
             .attr("checked", function(d) {
-              if (e[0][0] <= d.x && d.x <= e[1][0] &&
-                  e[0][1] <= d.y && d.y <= e[1][1]) {
-                matched[d.id] = d;
+              if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
+                  e[0][1] <= d.__y && d.__y <= e[1][1]) {
+                matched[getID(d)] = d;
               }
             });
 
