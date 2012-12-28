@@ -16,7 +16,6 @@
 
   <body>
 
-      <!-- Side bar -->
       <div>
 
       <div id='mode'>
@@ -37,6 +36,13 @@
         <label for='cww-checkbox'>cWW</label>
         <div id='cww-toggle'>
           <input id='cww-checkbox' type='checkbox' value='v' checked='checked'>
+        </div>
+      </div>
+
+      <div id='view-controls'>
+        <label for='view-checkbox'>circular</label>
+        <div id='view-toggle'>
+          <input id='view-checkbox' type='checkbox' value='v' >
         </div>
       </div>
 
@@ -71,8 +77,7 @@
       <script type='text/javascript'>
 
         var plot = Rna2D({ selection: '#rna-2d', width: 630, height: 795 });
-        plot.view('circular');
-        //plot.view('airport');
+        plot.view('airport');
 
         plot.jmol
           .overflow(function() { alert("Too many nts selected"); });
@@ -90,7 +95,7 @@
             plot.interactions(data)
               .mouseover('highlight')
               .click(function() { plot.jmol.showGroup(this); })
-              .show(function(obj) { return obj.family == 'cWW' });
+              .visible(function(obj) { return obj.family == 'cWW' });
               ;
 
             d3.json('data/2AW7_motifs.json', function(data) {
@@ -107,6 +112,14 @@
       $('#mode-checkbox').click(function() { plot.brush.toggle(); });
       $('#cww-checkbox').click(function() { plot.interactions.toggle('cWW'); });
       $('#motif-checkbox').click(function() { plot.motifs.toggle(); });
+      $('#view-checkbox').click(function() {
+          if (plot.view() == 'airport') {
+            plot.view('circular');
+            } else {
+            plot.view('airport');
+            }
+            plot();
+          });
 
       </script>
   </body>

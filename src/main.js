@@ -18,6 +18,7 @@ var Rna2D = window.Rna2D || function(config) {
       // interactions.
       plot.nucleotides.computeOrder();
 
+      sel.select('svg').remove();
       plot.vis = sel.append('svg')
         .attr('width', plot.width())
         .attr('height', plot.height());
@@ -43,7 +44,7 @@ var Rna2D = window.Rna2D || function(config) {
       // ----------------------------------------------------------------------
       plot.connections(function(selection) {
         var ntsOf = plot.interactions.getNTs(),
-            visible = plot.interactions.show();
+            visible = plot.interactions.visible();
 
         selection.attr('id', plot.interactions.getID())
           .attr('class', function(d, i) {

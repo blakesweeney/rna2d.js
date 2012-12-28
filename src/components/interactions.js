@@ -5,7 +5,7 @@ Rna2D.components.interactions = function () {
     config: {
       getFamily: function(d) { return d.family; },
       getNTs: function(d) { return [d.nt1, d.nt2]; },
-      show: function(d) { return plot.interactions.getFamily()(d) == 'cWW'; },
+      visible: function(d) { return plot.interactions.getFamily()(d) == 'cWW'; },
       mouseover: null,
       mouseout: null,
       click: null,
@@ -89,7 +89,7 @@ Rna2D.components.interactions = function () {
         return plot.vis.selectAll(selector);
       };
 
-      plot.interactions.show =  function(family) {
+      plot.interactions.show = function(family) {
         return plot.interactions.all(family).attr('visibility', function(data) {
           data.__visibility = true;
           return 'visible';
@@ -106,7 +106,7 @@ Rna2D.components.interactions = function () {
       plot.interactions.toggle = function(family) {
         return plot.interactions.all(family).attr('visibility', function(data) {
           if (data.__visibility) {
-            data.visibility = false;
+            data.__visibility = false;
             return 'hidden';
           }
           data.__visibility = true;
