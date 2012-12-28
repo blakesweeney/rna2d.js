@@ -1,6 +1,7 @@
 Rna2D.config = function(plot, given) {
 
   var config = { 
+    labels: [],
     margin: { left: 10, right: 10, above: 10, below: 10 },
     view: 'circular',
     width:  500,

@@ -149,6 +149,7 @@ Rna2D.components = function(plot) {
 Rna2D.config = function(plot, given) {
 
   var config = { 
+    labels: [],
     margin: { left: 10, right: 10, above: 10, below: 10 },
     view: 'circular',
     width:  500,
@@ -556,6 +557,30 @@ Rna2D.components.jmol = {
 
   }
 
+};
+
+Rna2D.components.labels = {
+  config: {
+    majorTickClass: 'major-tick',
+    minorTickClass: 'minor-tick',
+    labelClass: 'label',
+    width: 5,
+    fontSize: 12,
+    majorTickCount: 30,
+    majorTickGenerator: function(length) {
+      var scale = d3.scale.identity()
+        .domain([1, plot.nucleotides().length + 1])
+        .range([1, plot.nucleotides().length + 1]);
+      return scale.ticks(plot.labels.majorTickCount());
+    },
+    minorTickCount: 150,
+    minorTickGenerator: function(length) {
+      var scale = d3.scale.identity()
+        .domain([1, plot.nucleotides().length + 1])
+        .range([1, plot.nucleotides().length + 1]);
+      return scale.ticks(plot.labels.minorTickCount());
+    }
+  }
 };
 
 Rna2D.components.motifs = function () {
@@ -1120,7 +1145,6 @@ Rna2D.views.circular.coordinates = function(plot) {
         .attr('x', function(d) { return positionOf(d).x; })
         .attr('y', function(d) { return positionOf(d).y; })
         .attr('font-size', plot.pie.letterSize())
-        .attr("text-anchor", "middle")
         .attr('pointer-events', 'none')
         .text(function(d) { return d.getAttribute('data-sequence'); })
         .attr('fill', function(d) { return highlightColor(d); });
