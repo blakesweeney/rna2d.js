@@ -49,7 +49,10 @@ var Rna2D = window.Rna2D || function(config) {
           .attr('class', function(d, i) {
             return plot.interactions['class']() + ' ' + plot.interactions.classOf()(d, i);
           })
-          .attr('visibility', function(d) { return (visible(d) ? 'visible' : 'hidden'); })
+          .attr('visibility', function(d) {
+                d.__visibility = visible(d);
+                return (visible(d) ? 'visible' : 'hidden'); 
+          })
           .attr('data-nts', function(d, i) { return ntsOf(d).join(','); })
           .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
           .attr('nt2', function(d, i) { return ntsOf(d)[1]; });

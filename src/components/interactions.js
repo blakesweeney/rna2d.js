@@ -91,25 +91,25 @@ Rna2D.components.interactions = function () {
 
       plot.interactions.show =  function(family) {
         return plot.interactions.all(family).attr('visibility', function(data) {
-          data.visibility = true;
+          data.__visibility = true;
           return 'visible';
         });
       };
 
       plot.interactions.hide = function(family) {
         return plot.interactions.all(family).attr('visibility', function(data) {
-          data.visibility = false;
+          data.__visibility = false;
           return 'hidden';
         });
       };
 
       plot.interactions.toggle = function(family) {
         return plot.interactions.all(family).attr('visibility', function(data) {
-          if (data.visibility) {
+          if (data.__visibility) {
             data.visibility = false;
             return 'hidden';
           }
-          data.visibility = true;
+          data.__visibility = true;
           return 'visible';
         });
       };

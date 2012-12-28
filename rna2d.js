@@ -52,7 +52,10 @@ var Rna2D = window.Rna2D || function(config) {
           .attr('class', function(d, i) {
             return plot.interactions['class']() + ' ' + plot.interactions.classOf()(d, i);
           })
-          .attr('visibility', function(d) { return (visible(d) ? 'visible' : 'hidden'); })
+          .attr('visibility', function(d) {
+                d.__visibility = visible(d);
+                return (visible(d) ? 'visible' : 'hidden'); 
+          })
           .attr('data-nts', function(d, i) { return ntsOf(d).join(','); })
           .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
           .attr('nt2', function(d, i) { return ntsOf(d)[1]; });
@@ -441,25 +444,25 @@ Rna2D.components.interactions = function () {
 
       plot.interactions.show =  function(family) {
         return plot.interactions.all(family).attr('visibility', function(data) {
-          data.visibility = true;
+          data.__visibility = true;
           return 'visible';
         });
       };
 
       plot.interactions.hide = function(family) {
         return plot.interactions.all(family).attr('visibility', function(data) {
-          data.visibility = false;
+          data.__visibility = false;
           return 'hidden';
         });
       };
 
       plot.interactions.toggle = function(family) {
         return plot.interactions.all(family).attr('visibility', function(data) {
-          if (data.visibility) {
+          if (data.__visibility) {
             data.visibility = false;
             return 'hidden';
           }
-          data.visibility = true;
+          data.__visibility = true;
           return 'visible';
         });
       };
@@ -879,8 +882,16 @@ Rna2D.views.airport.coordinates = function(plot) {
     plot.vis.selectAll(plot.nucleotides['class']())
       .data(data).enter().append('svg:text')
       .call(standard)
-      .attr('x', function(d, i) { return xScale(plot.nucleotides.getX()(d, i)); })
-      .attr('y', function(d, i) { return yScale(plot.nucleotides.getY()(d, i)); })
+      .attr('x', function(d, i) { 
+        var x = xScale(plot.nucleotides.getX()(d, i));
+        d.__x = x;
+        return x; 
+      })
+      .attr('y', function(d, i) { 
+        var y = yScale(plot.nucleotides.getY()(d, i));
+        d.__y = y;
+        return  y;
+      })
       .attr('font-size', plot.nucleotides.fontSize())
       .text(plot.nucleotides.getSequence())
       .attr('fill', plot.nucleotides.color());
