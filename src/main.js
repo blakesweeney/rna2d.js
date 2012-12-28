@@ -74,7 +74,10 @@ var Rna2D = window.Rna2D || function(config) {
             return plot.motifs['class']() + ' ' + plot.motifs.classOf()(d, i);
           })
           .attr('data-nts', function(d) { return plot.motifs.getNTs()(d).join(','); })
-          .attr('visibility', function(d) { return (d.visible ? 'visible' : 'hidden'); });
+          .datum(function(d, i) {
+            d.__visible = plot.motifs.visible()(d, i);
+            return d;
+          }).attr('visibility', function(d) { return (d.__visible ? 'visible' : 'hidden'); });
 
         Rna2D.utils.attachHandlers(selection, plot.motifs);
 
