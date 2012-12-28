@@ -2,11 +2,11 @@ Rna2D.views.airport.coordinates = function(plot) {
 
   // We make a chart function which draws the nucleotides in the given
   // coordinates.
-  var chart = function() {
+  plot.coordinates = function(standard) {
 
     var data = plot.nucleotides(),
         width = plot.width(),
-        height = plot.height()
+        height = plot.height(),
         margin = plot.margin();
 
     // Compute the scales and ranges.
@@ -21,58 +21,47 @@ Rna2D.views.airport.coordinates = function(plot) {
           .domain([-margin.above, yMax + margin.below])
           .range([0, height]);
 
-    plot.__xScale = xScale;
-    plot.__yScale = yScale;
+    plot.xScale(xScale);
+    plot.yScale(yScale);
     plot.__xCoordMax = xCoordMax;
     plot.__yCoordMax = yCoordMax;
 
     // Draw all nucleotides.
-    plot.vis.selectAll(plot.nucleotides.class())
+    plot.vis.selectAll(plot.nucleotides['class']())
       .data(data).enter().append('svg:text')
-      .attr('id', plot.nucleotides.getID())
-      .classed(plot.nucleotides.class(), true)
-      .attr('x', function(d, i) { return xScale(plot.nucleotides.getX()(d, i)); })
-      .attr('y', function(d, i) { return yScale(plot.nucleotides.getY()(d, i)); })
+      .call(standard)
+      .attr('x', function(d, i) { 
+        var x = xScale(plot.nucleotides.getX()(d, i));
+        d.__x = x;
+        return x; 
+      })
+      .attr('y', function(d, i) { 
+        var y = yScale(plot.nucleotides.getY()(d, i));
+        d.__y = y;
+        return  y;
+      })
       .attr('font-size', plot.nucleotides.fontSize())
       .attr('fill', plot.nucleotides.color())
       .text(plot.nucleotides.getSequence())
-      .on('click', plot.nucleotides.click())
-      .on('mouseover', plot.nucleotides.mouseover())
-      .on('mouseout', plot.nucleotides.mouseout());
+      .attr('fill', plot.nucleotides.color());
 
     return plot;
   };
 
-  plot.coordinates = chart;
+  plot.nucleotides.highlight(function() {
+    var obj = this,
+        highlightColor = plot.nucleotides.highlightColor();
+    d3.select(obj).style('stroke', highlightColor());
+    return plot.nucleotides.interactions(obj)
+      .style('stroke', highlightColor());
+  });
 
-  // --------------------------------------------------------------------------
-  // Define the common actions for a nucleotide in a plot.
-  // --------------------------------------------------------------------------
-  plot.nucleotides.all = function() {
-    return plot.vis.selectAll('.' + plot.nucleotides.class());
-  };
-
-  plot.nucleotides.interactions = function(obj) {
-    if (!arguments.length) obj = this;
-    var selector = '[nt1=' + obj.getAttribute('id') + '], [nt2=' + obj.getAttribute('id') + ']';
-    return plot.vis.selectAll(selector);
-  };
-
-  plot.nucleotides.highlight = function() {
-    var obj = this;
-    d3.select(obj).style('stroke', plot.nucleotides.highlightColor());
-    return plot.nucleotides.interactions(obj).style('stroke', plot.nucleotides.highlightColor());
-  };
-
-  plot.nucleotides.normalize = function() {
+  plot.nucleotides.normalize(function() {
     var obj = this;
     d3.select(obj).style('stroke', null);
-    return plot.nucleotides.interactions(obj).style('stroke', null);
-  };
-
-  plot.nucleotides.doColor = function() {
-    return plot.nucleotides.all().attr('fill', plot.nucleotides.color());
-  };
+    return plot.nucleotides.interactions(obj)
+      .style('stroke', null);
+  });
 
   return Rna2D;
 };

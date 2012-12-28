@@ -23,8 +23,7 @@ task :build do
     append(file)
   end
 
-  Dir['src/views/*.js'].each do |file|
-    append(file)
+  Dir['src/views/*'].each do |file|
     base = File.basename(file, '.js')
     Dir['src/views/%s/*.js' % base].each do |file|
       append(file)

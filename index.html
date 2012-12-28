@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang='en'>
   <head>
+    <title>Rna2D.js</title>
     <meta charset='utf-8'>
     <link href='static/css/main.css' rel='stylesheet'>
 
@@ -15,7 +16,6 @@
 
   <body>
 
-      <!-- Side bar -->
       <div>
 
       <div id='mode'>
@@ -36,6 +36,13 @@
         <label for='cww-checkbox'>cWW</label>
         <div id='cww-toggle'>
           <input id='cww-checkbox' type='checkbox' value='v' checked='checked'>
+        </div>
+      </div>
+
+      <div id='view-controls'>
+        <label for='view-checkbox'>circular</label>
+        <div id='view-toggle'>
+          <input id='view-checkbox' type='checkbox' value='v' >
         </div>
       </div>
 
@@ -70,37 +77,51 @@
       <script type='text/javascript'>
 
         var plot = Rna2D({ selection: '#rna-2d', width: 630, height: 795 });
+        plot.view('airport');
 
-        plot.interactions.visible(function(obj) { return obj.family == 'cWW' })
-          .interactions.mouseover('highlight')
-          .nucleotides.mouseover('highlight')
-          .nucleotides.click(function() { console.log('nucleotide', this); })
-          .motifs.mouseover('highlight')
-          .motifs.click(function() { console.log('motif', this); })
-          .jmol.overflow(function() { alert("Too many nts selected"); })
-          .brush.enabled(true)
-          .brush.update(plot.jmol.selection)
-          .interactions.click(plot.jmol.group);
+        plot.jmol
+          .overflow(function() { alert("Too many nts selected"); });
+
+          plot.brush.enabled(true)
+            .update(plot.jmol.showSelection);
 
         plot.brush.initial([[100, 36], [207, 132]]);
 
         d3.json('data/16S-ecoli.js', function(data) {
-          plot.nucleotides(data);
+            plot.nucleotides(data)
+              .mouseover('highlight')
+              .click(function() { console.log('nuclotide', this); })
+              ;
 
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
-            plot.interactions(data);
+            plot.interactions(data)
+              .mouseover('highlight')
+              .click(function() { plot.jmol.showGroup(this); })
+              .visible(function(obj) { return obj.family == 'cWW' });
+              ;
 
             d3.json('data/2AW7_motifs.json', function(data) {
-              plot.motifs(data);
+              plot.motifs(data)
+                .mouseover('highlight')
+                .click(function() { console.log('motif', this); })
+                ;
 
               plot();
-            });
+           });
           });
         });
 
       $('#mode-checkbox').click(function() { plot.brush.toggle(); });
       $('#cww-checkbox').click(function() { plot.interactions.toggle('cWW'); });
       $('#motif-checkbox').click(function() { plot.motifs.toggle(); });
+      $('#view-checkbox').click(function() {
+          if (plot.view() == 'airport') {
+            plot.view('circular');
+            } else {
+            plot.view('airport');
+            }
+            plot();
+          });
 
       </script>
   </body>
