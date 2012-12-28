@@ -30,8 +30,16 @@ Rna2D.views.airport.coordinates = function(plot) {
     plot.vis.selectAll(plot.nucleotides['class']())
       .data(data).enter().append('svg:text')
       .call(standard)
-      .attr('x', function(d, i) { return xScale(plot.nucleotides.getX()(d, i)); })
-      .attr('y', function(d, i) { return yScale(plot.nucleotides.getY()(d, i)); })
+      .attr('x', function(d, i) { 
+        var x = xScale(plot.nucleotides.getX()(d, i));
+        d.__x = x;
+        return x; 
+      })
+      .attr('y', function(d, i) { 
+        var y = yScale(plot.nucleotides.getY()(d, i));
+        d.__y = y;
+        return  y;
+      })
       .attr('font-size', plot.nucleotides.fontSize())
       .text(plot.nucleotides.getSequence())
       .attr('fill', plot.nucleotides.color());
