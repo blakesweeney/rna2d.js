@@ -27,18 +27,18 @@ $(document).ready(function() {
 
   var highlightNucleotide = function() {
     d3.select(this).style('font-size', plot.nucleotides.fontSize() + 4);
-    var inters = plot.nucleotides.interactions(this)
+    var inters = plot.nucleotides.interactions(this);
     inters.style('opacity', 1);
   };
 
   var normalizeNucleotide = function() {
     d3.select(this).style('font-size', plot.nucleotides.fontSize());
-    var inters = plot.nucleotides.interactions(this)
+    var inters = plot.nucleotides.interactions(this);
     inters.style('opacity', 0.4);
   };
 
   var motifClick = function() {
-    var id = this.id
+    var id = this.id;
     var link = '<a href="http://rna.bgsu.edu/rna3dhub/loops/view/' + id +
       '">' + id + '</a>';
     $('#about-selection').children().remove();
@@ -63,7 +63,7 @@ $(document).ready(function() {
   };
 
   var normalColor = function() {
-    plot.nucleotides.color(function(d, i) { return 'black'; })
+    plot.nucleotides.color(function(d, i) { return 'black'; });
     plot.nucleotides.doColor();
   };
 
@@ -76,35 +76,38 @@ $(document).ready(function() {
         return 'yellow';
       } else if (sequence == 'G') {
         return 'green';
-      };
+      }
       return 'blue';
     });
     plot.nucleotides.doColor();
-  }
+  };
 
   var plot = Rna2D({ width: 630, height: 795, selection: '#rna-2d' })
-    .motifs.visible(function() { return false; })
-    .motifs.click(motifClick)
-    .brush.enabled(true)
-    .brush.initial([[100, 36], [207, 132]])
-    .brush.update(brushShow)
-    .nucleotides.click(clickNucleotide)
-    .nucleotides.mouseover(highlightNucleotide)
-    .nucleotides.mouseout(normalizeNucleotide)
-    .interactions.click(clickInteraction)
-    .interactions.mouseover(highlightInteraction)
-    .interactions.mouseout(normalizeInteraction)
-    .jmol.overflow(function() { $("#overflow").show() })
-    .jmol.windowBuild(generateJmol)
+    .view('airport');
+
+    plot.brush.enabled(true)
+      //.initial([[100, 36], [207, 132]])
+      .update(brushShow);
+
+    plot.jmol.overflow(function() { $("#overflow").show(); })
+      .windowBuild(generateJmol);
 
   d3.json('static/data/16S-ecoli.js', function(data) {
-    plot.nucleotides(data);
+    plot.nucleotides(data)
+      .click(clickNucleotide)
+      .mouseover(highlightNucleotide)
+      .mouseout(normalizeNucleotide);
 
     d3.csv('static/data/16S-ecoli-interactions.csv', function(data) {
-      plot.interactions(data);
+      plot.interactions(data)
+        .click(clickInteraction)
+        .mouseover(highlightInteraction)
+        .mouseout(normalizeInteraction);
 
       d3.json('static/data/2AW7_motifs.json', function(data) {
-        plot.motifs(data);
+        plot.motifs(data)
+          .visible(function() { return false; })
+          .click(motifClick);
 
         plot();
         plot.interactions.toggle('ncWW');
@@ -120,8 +123,8 @@ $(document).ready(function() {
       colorBySequence();
     } else {
       normalColor();
-    };
-  })
+    }
+  });
 
   // Callback to execute when toggling the controls
   var buttonToggle = function($btn) {
