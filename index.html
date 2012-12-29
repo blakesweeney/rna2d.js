@@ -79,13 +79,12 @@
         var plot = Rna2D({ selection: '#rna-2d', width: 630, height: 795 });
         plot.view('airport');
 
-        plot.jmol
-          .overflow(function() { alert("Too many nts selected"); });
+        plot.jmol.overflow(function() { alert("Too many nts selected"); });
 
           plot.brush.enabled(true)
-            .update(plot.jmol.showSelection);
-
-        plot.brush.initial([[100, 36], [207, 132]]);
+            .update(plot.jmol.showSelection)
+  ;
+            //.initial([[100, 36], [207, 132]])
 
         d3.json('data/16S-ecoli.js', function(data) {
             plot.nucleotides(data)

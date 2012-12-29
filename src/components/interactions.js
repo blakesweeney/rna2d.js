@@ -72,6 +72,8 @@ Rna2D.components.interactions = function () {
     },
 
     actions: function(plot) {
+
+
       plot.interactions.all = function(family) {
         if (!arguments.length || !family) {
           family = plot.interactions['class']();
@@ -84,6 +86,9 @@ Rna2D.components.interactions = function () {
       };
 
       plot.interactions.nucleotides = function(obj) {
+        if (!arguments.length) {
+          obj = this;
+        }
         var nts = obj.getAttribute('data-nts').split(','),
             selector = '#' + nts.join(', #');
         return plot.vis.selectAll(selector);
