@@ -141,13 +141,10 @@ Rna2D.components = function(plot) {
       if ('actions' in obj) {
         obj.actions(plot);
       }
-      console.log(name, 'post-actions');
 
       if ('generate' in obj) {
-        console.log(name, 'generate');
         obj.generate(plot);
       }
-      console.log(name, 'post-generate');
     }
 
     return plot;
@@ -321,20 +318,13 @@ Rna2D.components.brush = function() {
         }
       }
 
-      console.log('making brush');
-
       if (plot.brush.initial().length) {
-        console.log('initial', plot.brush.initial(), plot.brush.initial()[0], plot.brush.initial()[1]);
         plot.brush.select(plot.brush.initial());
       }
-
-      console.log('making brush2');
 
       if (plot.brush.enabled()) {
         plot.brush.enable();
       }
-
-      console.log('making brush3');
 
       return plot.brush;
     }
@@ -440,7 +430,6 @@ Rna2D.components.interactions = function () {
 
     actions: function(plot) {
 
-      console.log('bob');
 
       plot.interactions.all = function(family) {
         if (!arguments.length || !family) {
@@ -453,17 +442,14 @@ Rna2D.components.interactions = function () {
         return obj.getAttribute('id').split(',')[2];
       };
 
-      console.log('hi');
       plot.interactions.nucleotides = function(obj) {
         if (!arguments.length) {
           obj = this;
         }
-        console.log(obj);
         var nts = obj.getAttribute('data-nts').split(','),
             selector = '#' + nts.join(', #');
         return plot.vis.selectAll(selector);
       };
-      console.log('hi2');
 
       plot.interactions.show = function(family) {
         return plot.interactions.all(family).attr('visibility', function(data) {
@@ -830,9 +816,6 @@ Rna2D.views.airport.connections = function(plot) {
   plot.interactions.normalize(function() {
     var obj = this;
     d3.select(obj).style('stroke', null);
-    for(var key in plot.interactions) {
-      console.log(key);
-    }
     return plot.interactions.nucleotides(obj).style('stroke', null);
   });
 
