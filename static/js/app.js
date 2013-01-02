@@ -126,6 +126,13 @@ $(document).ready(function() {
     }
   });
 
+  // View controls
+  $('.view-control').on('click', function(e) {
+    var $btn = $(e.target);
+    plot.view($btn.data('view'));
+    plot();
+  });
+
   // Callback to execute when toggling the controls
   var buttonToggle = function($btn) {
     var family = $btn.text();
