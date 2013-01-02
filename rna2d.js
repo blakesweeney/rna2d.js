@@ -127,6 +127,9 @@ Rna2D.components = function(plot) {
       };
     })(name);
 
+    if (typeof(obj.config) === "function") {
+      obj.config = obj.config(plot);
+    }
     Rna2D.utils.generateAccessors(plot[name], obj.config);
 
     if ('sideffects' in obj) {
@@ -362,44 +365,46 @@ Rna2D.components.interactions = function () {
 
   return {
 
-    config: {
-      getFamily: function(d) { return d.family; },
-      getNTs: function(d) { return [d.nt1, d.nt2]; },
-      visible: function(d) { return plot.interactions.getFamily()(d) == 'cWW'; },
-      mouseover: null,
-      mouseout: null,
-      click: null,
-      'class': 'interaction',
-      classOf: function(d) { return d.family; },
-      highlightColor: function() { return 'red'; },
-      highlight: Object,
-      normalize: Object,
-      isForward: function(d) {
-        var getFamily = plot.interactions.getFamily(),
-            family = getFamily(d);
-        if (family.length == 3) {
-          family = family.slice(1, 3).toUpperCase();
-        } else {
-          family = family.slice(2, 4).toUpperCase();
-        }
-        return family == 'WW' || family == 'WH' || family == 'WS' ||
-               family == 'HH' || family == 'HS' || family == 'SS';
-      },
-      isSymmetric: function(d, i) {
-        var getFamily = plot.interactions.getFamily(),
-            family = getFamily(d);
-        return family[1] == family[2];
-      },
-      getID: function(d) {
-        var family = plot.interactions.getFamily()(d),
-            nts = plot.interactions.getNTs()(d);
-        if (plot.interactions.isSymmetric()(d)) {
-          nts.sort();
-        }
-        nts.push(family);
-        return nts.join(',');
-      },
-      color: 'black'
+    config: function(plot) {
+      return {
+        getFamily: function(d) { return d.family; },
+        getNTs: function(d) { return [d.nt1, d.nt2]; },
+        visible: function(d) { return plot.interactions.getFamily()(d) == 'cWW'; },
+        mouseover: null,
+        mouseout: null,
+        click: null,
+        'class': 'interaction',
+        classOf: function(d) { return d.family; },
+        highlightColor: function() { return 'red'; },
+        highlight: Object,
+        normalize: Object,
+        isForward: function(d) {
+          var getFamily = plot.interactions.getFamily(),
+              family = getFamily(d);
+          if (family.length == 3) {
+            family = family.slice(1, 3).toUpperCase();
+          } else {
+            family = family.slice(2, 4).toUpperCase();
+          }
+          return family == 'WW' || family == 'WH' || family == 'WS' ||
+                 family == 'HH' || family == 'HS' || family == 'SS';
+        },
+        isSymmetric: function(d, i) {
+          var getFamily = plot.interactions.getFamily(),
+              family = getFamily(d);
+          return family[1] == family[2];
+        },
+        getID: function(d) {
+          var family = plot.interactions.getFamily()(d),
+              nts = plot.interactions.getNTs()(d);
+          if (plot.interactions.isSymmetric()(d)) {
+            nts.sort();
+          }
+          nts.push(family);
+          return nts.join(',');
+        },
+        color: 'black'
+      };
     },
 
     sideffects: function(plot) {

@@ -20,6 +20,9 @@ Rna2D.components = function(plot) {
       };
     })(name);
 
+    if (typeof(obj.config) === "function") {
+      obj.config = obj.config(plot);
+    }
     Rna2D.utils.generateAccessors(plot[name], obj.config);
 
     if ('sideffects' in obj) {
