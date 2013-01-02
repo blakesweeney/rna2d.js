@@ -73,10 +73,10 @@ $(document).ready(function() {
       if (sequence == 'A') {
         return 'red';
       } else if (sequence == 'C') {
-        return '#FF9500'
+        return '#FF9500';
       } else if (sequence == 'G') {
         return 'green';
-      };
+      }
       return '#0C5DA5';
     });
     plot.nucleotides.doColor();
