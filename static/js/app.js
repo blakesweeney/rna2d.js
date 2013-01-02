@@ -44,22 +44,22 @@ $(document).ready(function() {
     $('#about-selection').children().remove();
     $('#about-selection').append(link);
     $('#about-selection').show();
-    return plot.jmol.group({ 'data-nts': this.getAttribute('data-nts') });
+    return plot.jmol.showGroup({ 'data-nts': this.getAttribute('data-nts') });
   };
 
   var clickInteraction = function() {
     $('#about-selection').hide();
-    return plot.jmol.group({ 'data-nts': this.getAttribute('nt1') + ',' + this.getAttribute('nt2') });
+    return plot.jmol.showGroup({ 'data-nts': this.getAttribute('nt1') + ',' + this.getAttribute('nt2') });
   };
 
   var clickNucleotide = function() {
     $('#about-selection').hide();
-    return plot.jmol.group({ 'data-nts': this.id });
+    return plot.jmol.showGroup({ 'data-nts': this.id });
   };
 
   var brushShow = function(selection) {
     $('#about-selection').hide();
-    return plot.jmol.selection(selection);
+    return plot.jmol.showSelection(selection);
   };
 
   var normalColor = function() {
