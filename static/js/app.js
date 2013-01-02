@@ -86,7 +86,7 @@ $(document).ready(function() {
     .view('airport');
 
     plot.brush.enabled(true)
-      //.initial([[100, 36], [207, 132]])
+      .initial([[100, 36], [207, 132]])
       .update(brushShow);
 
     plot.jmol.overflow(function() { $("#overflow").show(); })

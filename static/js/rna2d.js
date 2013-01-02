@@ -240,6 +240,33 @@ Rna2D.views = {
 
 Rna2D.components.brush = function() {
 
+  // Blank for now, later may use this for a multiple selecting brush.
+  function startBrush () { console.log('hello'); }
+
+  // Do nothing for now.
+  function updateBrush (p) { console.log('update'); }
+
+  function endBrush () {
+    var matched = {};
+
+    if (plot.brush().empty()) {
+      plot.brush.clear();
+    } else {
+
+      var e = plot.brush().extent(),
+          getID = plot.nucleotides.getID();
+      plot.vis.selectAll('.' + plot.nucleotides['class']())
+        .attr("checked", function(d) {
+          if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
+              e[0][1] <= d.__y && d.__y <= e[1][1]) {
+            matched[getID(d)] = d;
+          }
+        });
+
+      plot.brush.update()(matched);
+    }
+  }
+
   return {
 
     config: {
@@ -253,8 +280,11 @@ Rna2D.components.brush = function() {
     actions: function(plot) {
       // Draw the brush around the given extent
       plot.brush.select = function(extent) {
+        startBrush();
         plot.brush().extent(extent);
-        plot.brush()(plot.selection());
+        updateBrush();
+        plot.vis.select('.' + plot.brush['class']()).call(plot.brush().extent(extent));
+        endBrush();
         return plot.brush;
       };
 
@@ -290,33 +320,6 @@ Rna2D.components.brush = function() {
         .on('brushend', endBrush)
         .x(plot.xScale())
         .y(plot.yScale()));
-
-      // Blank for now, later may use this for a multiple selecting brush.
-      function startBrush () { }
-
-      // Do nothing for now.
-      function updateBrush (p) { }
-
-      function endBrush () {
-        var matched = {};
-
-        if (plot.brush().empty()) {
-          plot.brush.clear();
-        } else {
-
-          var e = plot.brush().extent(),
-              getID = plot.nucleotides.getID();
-          plot.vis.selectAll('.' + plot.nucleotides['class']())
-            .attr("checked", function(d) {
-              if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
-                  e[0][1] <= d.__y && d.__y <= e[1][1]) {
-                matched[getID(d)] = d;
-              }
-            });
-
-          plot.brush.update()(matched);
-        }
-      }
 
       if (plot.brush.initial().length) {
         plot.brush.select(plot.brush.initial());
