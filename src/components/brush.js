@@ -14,7 +14,7 @@ Rna2D.components.brush = function() {
       // Draw the brush around the given extent
       plot.brush.select = function(extent) {
         plot.brush().extent(extent);
-        plot.brush()(plot.selection());
+        plot.brush()(d3.select(plot.selection()));
         return plot.brush;
       };
 

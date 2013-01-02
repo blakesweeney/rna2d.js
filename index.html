@@ -83,8 +83,7 @@
 
           plot.brush.enabled(true)
             .update(plot.jmol.showSelection)
-  ;
-            //.initial([[100, 36], [207, 132]])
+            .initial([[100, 36], [207, 132]]);
 
         d3.json('data/16S-ecoli.js', function(data) {
             plot.nucleotides(data)
