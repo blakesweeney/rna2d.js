@@ -241,10 +241,10 @@ Rna2D.views = {
 Rna2D.components.brush = function() {
 
   // Blank for now, later may use this for a multiple selecting brush.
-  function startBrush () { console.log('hello'); }
+  function startBrush () { }
 
   // Do nothing for now.
-  function updateBrush (p) { console.log('update'); }
+  function updateBrush (p) { }
 
   function endBrush () {
     var matched = {};
