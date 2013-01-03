@@ -4,3 +4,8 @@ task :update do
   sh "git add static/js/rna2d.js"
   sh "git commit -m 'Latest RNA2D.js'"
 end
+
+desc "Generate css from less"
+task :less do
+  sh 'lessc static/less/main.less > static/css/main.css'
+end
