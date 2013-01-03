@@ -2,121 +2,392 @@ body {
   position: relative;
   padding-top: 40px;
 }
-
-.frame {
-  fill: #fff;
-  fill-opacity: 0;
-  stroke: #aaa;
-}
-
-.jmol-viewer {
-  position: fixed;
-  left: 740px;
-  top: 180px;
-  overflow:auto;
-}
-
-.jmol {
-  border: 1px solid #ddd;
-}
-
-.brush {
-  fill: #000;
-  fill-opacity: .125;
-  stroke: #B0A2A8;
-}
-
-.nucleotide {
-  cursor: default;
-}
-
-.interaction {
+#rna-2d .interaction {
   stroke-width: 1.5;
   stroke: black;
   opacity: 0.4;
 }
-
-.toggle-control {
+#rna-2d .cWW,
+#rna-2d .ncWW {
+  stroke: #000000;
+}
+#rna-2d .tWW,
+#rna-2d .ntWW {
+  stroke: #663300;
+}
+#rna-2d .cWS,
+#rna-2d .ncWS {
+  stroke: #669900;
+}
+#rna-2d .tWS,
+#rna-2d .ntWS {
+  stroke: #3333cc;
+}
+#rna-2d .cWH,
+#rna-2d .ncWH {
+  stroke: #00cc00;
+}
+#rna-2d .tWH,
+#rna-2d .ntWH {
+  stroke: #cc00ff;
+}
+#rna-2d .cSH,
+#rna-2d .ncSH {
+  stroke: #ff9900;
+}
+#rna-2d .tSH,
+#rna-2d .ntSH {
+  stroke: #3333ff;
+}
+#rna-2d .cSS,
+#rna-2d .ncSS {
+  stroke: #cc9900;
+}
+#rna-2d .tSS,
+#rna-2d .ntSS {
+  stroke: #666699;
+}
+#rna-2d .cHH,
+#rna-2d .ncHH {
+  stroke: #009900;
+}
+#rna-2d .tHH,
+#rna-2d .ntHH {
+  stroke: #6600ff;
+}
+#rna-2d .motif {
+  fill: #000;
+  fill-opacity: .25;
+  stroke: #B0A2A8;
+}
+#rna-2d .IL {
+  fill: #5BB75B;
+  stroke: #387038;
+}
+#rna-2d .HL {
+  fill: #49AFCD;
+  stroke: #1f6377;
+}
+#rna-2d .frame {
+  fill: #fff;
+  fill-opacity: 0;
+  stroke: #aaa;
+}
+#rna-2d .brush {
+  fill: #000;
+  fill-opacity: .125;
+  stroke: #B0A2A8;
+}
+#rna-2d .nucleotide {
+  cursor: default;
+}
+.jmol-viewer {
+  position: fixed;
+  left: 740px;
+  top: 180px;
+  overflow: auto;
+}
+#jmol {
+  border: 1px solid #ddd;
+}
+/*var styleToggle = function($btn) {*/
+/*//var family = $('.' + $btn.text());*/
+/*var family = $btn.data('family');*/
+/*var background = "#FEFEFE";*/
+/*var gradient = "#E6E6E6";*/
+/*var color = family.css('stroke');*/
+/*if ($btn.hasClass('active')) {*/
+/*background = family.css('stroke');*/
+/*gradient = family.css('fill');*/
+/*color = "#FFFFFF";*/
+/*}*/
+/*$btn.css('color', color);*/
+/*$btn.css('background', background);*/
+/*$.each(['-webkit-', '-moz-', '-o-', ''], function(i, el) {*/
+/*var gradient_str = 'linear-gradient(top, ' + background +*/
+/*', ' + gradient + ')';*/
+/*$btn.css('background-image', el + gradient_str);*/
+/*});*/
+/*};*/
+#interaction-controls .toggle-control {
   width: 38px;
   font-size: 12px;
   position: relative;
   left: -5px;
 }
+#interaction-controls .cWW {
+  color: #000000;
+  /*color: @color;*/
 
-.motif {
-  fill: #000;
-  fill-opacity: .25;
-  stroke: #B0A2A8;
+  /*background: @stroke;*/
+
+  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: linear-gradient(top, @stroke, @fill);*/
+
 }
-
-.IL {
-  fill: #5BB75B;
-  fill-opacity: .25;
-  stroke: #387038;
+#interaction-controls .cWW.active {
+  color: #FFFFFF;
+  background: #000000;
+  background-image: -webkit-linear-gradient(top, #000000, #000000);
+  background-image: -moz-linear-gradient(top, #000000, #000000);
+  background-image: -o-linear-gradient(top, #000000, #000000);
+  background-image: linear-gradient(top, #000000, #000000);
 }
+#interaction-controls .tWW {
+  color: #3d1f00;
+  /*color: @color;*/
 
-.HL {
-  fill: #49AFCD;
-  fill-opacity: .25;
-  stroke: #1F6377
+  /*background: @stroke;*/
+
+  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: linear-gradient(top, @stroke, @fill);*/
+
 }
-
-.cWW, .ncWW {
-  stroke: black;
-  fill: black;
+#interaction-controls .tWW.active {
+  color: #FFFFFF;
+  background: #3d1f00;
+  background-image: -webkit-linear-gradient(top, #3d1f00, #663300);
+  background-image: -moz-linear-gradient(top, #3d1f00, #663300);
+  background-image: -o-linear-gradient(top, #3d1f00, #663300);
+  background-image: linear-gradient(top, #3d1f00, #663300);
 }
+#interaction-controls .cWH {
+  color: #007a00;
+  /*color: @color;*/
 
-.tWW, .ntWW {
-  stroke: #663300;
-  fill: #3D1F00;
+  /*background: @stroke;*/
+
+  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: linear-gradient(top, @stroke, @fill);*/
+
 }
-
-.cWH, .cHW, .ncWH, .ncWH {
-  stroke: #00CC00;
-  fill: #007A00;
+#interaction-controls .cWH.active {
+  color: #FFFFFF;
+  background: #007a00;
+  background-image: -webkit-linear-gradient(top, #007a00, #00cc00);
+  background-image: -moz-linear-gradient(top, #007a00, #00cc00);
+  background-image: -o-linear-gradient(top, #007a00, #00cc00);
+  background-image: linear-gradient(top, #007a00, #00cc00);
 }
+#interaction-controls .tWH {
+  color: #7a0099;
+  /*color: @color;*/
 
-.tWH, .tHW, .ntWH, .ntHW {
-  stroke: #CC00FF;
-  fill: #7A0099;
+  /*background: @stroke;*/
+
+  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: linear-gradient(top, @stroke, @fill);*/
+
 }
-
-.cWS, .ncWS {
-  stroke: #669900;
-  fill: #3D5C00;
+#interaction-controls .tWH.active {
+  color: #FFFFFF;
+  background: #7a0099;
+  background-image: -webkit-linear-gradient(top, #7a0099, #cc00ff);
+  background-image: -moz-linear-gradient(top, #7a0099, #cc00ff);
+  background-image: -o-linear-gradient(top, #7a0099, #cc00ff);
+  background-image: linear-gradient(top, #7a0099, #cc00ff);
 }
+#interaction-controls .cWS {
+  color: #3d5c00;
+  /*color: @color;*/
 
-.cHH, .ncHH {
-  stroke: #009900;
-  fill: #005C00;
+  /*background: @stroke;*/
+
+  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: linear-gradient(top, @stroke, @fill);*/
+
 }
-
-.tHH, .ntHH {
-  stroke: #6600FF;
-  fill: #3D0099;
+#interaction-controls .cWS.active {
+  color: #FFFFFF;
+  background: #3d5c00;
+  background-image: -webkit-linear-gradient(top, #3d5c00, #669900);
+  background-image: -moz-linear-gradient(top, #3d5c00, #669900);
+  background-image: -o-linear-gradient(top, #3d5c00, #669900);
+  background-image: linear-gradient(top, #3d5c00, #669900);
 }
+#interaction-controls .tWS {
+  color: #1f1f7a;
+  /*color: @color;*/
 
-.cHS, .cSH, .ncHS, .ncSH {
-  stroke: #FF9900;
-  fill: #995C00;
+  /*background: @stroke;*/
+
+  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: linear-gradient(top, @stroke, @fill);*/
+
 }
-
-.cSS, .ncSS {
-  stroke: #CC9900;
-  fill: #7A5C00;
+#interaction-controls .tWS.active {
+  color: #FFFFFF;
+  background: #1f1f7a;
+  background-image: -webkit-linear-gradient(top, #1f1f7a, #3333cc);
+  background-image: -moz-linear-gradient(top, #1f1f7a, #3333cc);
+  background-image: -o-linear-gradient(top, #1f1f7a, #3333cc);
+  background-image: linear-gradient(top, #1f1f7a, #3333cc);
 }
+#interaction-controls .cHH {
+  color: #005c00;
+  /*color: @color;*/
 
-.tSS, .ntSS {
-  stroke: #666699;
-  fill: #3D3D5C;
+  /*background: @stroke;*/
+
+  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: linear-gradient(top, @stroke, @fill);*/
+
 }
-
-.tHS, .tSH, .ntHS, .ntSH {
-  stroke: #3333FF;
-  fill: #1F1F99;
+#interaction-controls .cHH.active {
+  color: #FFFFFF;
+  background: #005c00;
+  background-image: -webkit-linear-gradient(top, #005c00, #009900);
+  background-image: -moz-linear-gradient(top, #005c00, #009900);
+  background-image: -o-linear-gradient(top, #005c00, #009900);
+  background-image: linear-gradient(top, #005c00, #009900);
 }
+#interaction-controls .tHH {
+  color: #3d0099;
+  /*color: @color;*/
 
-.tWS, .tSW .ntWS, .ntSW {
-  stroke: #3333CC;
-  fill: #1F1F7A;
+  /*background: @stroke;*/
+
+  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: linear-gradient(top, @stroke, @fill);*/
+
+}
+#interaction-controls .tHH.active {
+  color: #FFFFFF;
+  background: #3d0099;
+  background-image: -webkit-linear-gradient(top, #3d0099, #6600ff);
+  background-image: -moz-linear-gradient(top, #3d0099, #6600ff);
+  background-image: -o-linear-gradient(top, #3d0099, #6600ff);
+  background-image: linear-gradient(top, #3d0099, #6600ff);
+}
+#interaction-controls .cSH {
+  color: #995c00;
+  /*color: @color;*/
+
+  /*background: @stroke;*/
+
+  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: linear-gradient(top, @stroke, @fill);*/
+
+}
+#interaction-controls .cSH.active {
+  color: #FFFFFF;
+  background: #995c00;
+  background-image: -webkit-linear-gradient(top, #995c00, #ff9900);
+  background-image: -moz-linear-gradient(top, #995c00, #ff9900);
+  background-image: -o-linear-gradient(top, #995c00, #ff9900);
+  background-image: linear-gradient(top, #995c00, #ff9900);
+}
+#interaction-controls .tSH {
+  color: #1f1f99;
+  /*color: @color;*/
+
+  /*background: @stroke;*/
+
+  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: linear-gradient(top, @stroke, @fill);*/
+
+}
+#interaction-controls .tSH.active {
+  color: #FFFFFF;
+  background: #1f1f99;
+  background-image: -webkit-linear-gradient(top, #1f1f99, #3333ff);
+  background-image: -moz-linear-gradient(top, #1f1f99, #3333ff);
+  background-image: -o-linear-gradient(top, #1f1f99, #3333ff);
+  background-image: linear-gradient(top, #1f1f99, #3333ff);
+}
+#interaction-controls .cSS {
+  color: #7a5c00;
+  /*color: @color;*/
+
+  /*background: @stroke;*/
+
+  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: linear-gradient(top, @stroke, @fill);*/
+
+}
+#interaction-controls .cSS.active {
+  color: #FFFFFF;
+  background: #7a5c00;
+  background-image: -webkit-linear-gradient(top, #7a5c00, #cc9900);
+  background-image: -moz-linear-gradient(top, #7a5c00, #cc9900);
+  background-image: -o-linear-gradient(top, #7a5c00, #cc9900);
+  background-image: linear-gradient(top, #7a5c00, #cc9900);
+}
+#interaction-controls .tSS {
+  color: #3d3d5c;
+  /*color: @color;*/
+
+  /*background: @stroke;*/
+
+  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
+
+  /*background-image: linear-gradient(top, @stroke, @fill);*/
+
+}
+#interaction-controls .tSS.active {
+  color: #FFFFFF;
+  background: #3d3d5c;
+  background-image: -webkit-linear-gradient(top, #3d3d5c, #666699);
+  background-image: -moz-linear-gradient(top, #3d3d5c, #666699);
+  background-image: -o-linear-gradient(top, #3d3d5c, #666699);
+  background-image: linear-gradient(top, #3d3d5c, #666699);
 }

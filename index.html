@@ -57,12 +57,13 @@
 
           <!-- <h5>Mode</h5> -->
           <button type="button" id="mode-toggle" class="btn btn-block"
-            data-normal-text="Select" data-loading-text="Click">Select</button>
+            autocomplete="off" data-normal-text="Select"
+            data-loading-text="Click">Select</button>
 
           <div class="btn-toolbar">
             <button id="motif-toggle" type="button" class="btn btn-block">Motifs</button>
           </div>
-          
+
 
           <!-- <button id="near-toggle" type="button" class="btn btn-block" data-toggle="button">Near</button> -->
 
@@ -96,56 +97,68 @@
               </div>
 
               <div id="interaction-control-buttons" class="accordion-body collapse in">
-                <div class="accordion-inner">
+                <div class="accordion-inner" data-toggle="buttons-checkbox">
                   <div class="btn-toolbar">
-                    <button type="button" id='cWW-toggle' class="btn btn-block cWW toggle-control">cWW</button>
+                    <button type="button" id='cWW-toggle' class="btn btn-block
+                      toggle-control active" data-family='cWW'>cWW</button>
                   </div>
 
                   <div class="btn-toolbar">
-                    <button type="button" id='tWW-toggle' class="btn btn-block tWW toggle-control">tWW</button>
+                    <button type="button" id='tWW-toggle' class="btn btn-block
+                      tWW toggle-control" data-family='tWW'>tWW</button>
                   </div>
 
                   <div class="btn-toolbar">
-                    <button type="button" id="cWS-toggle" class="btn btn-block cWS toggle-control">cWS</button>
+                    <button type="button" id="cWS-toggle" class="btn btn-block
+                      cWS toggle-control" data-family='cWS'>cWS</button>
                   </div>
 
                   <div class="btn-toolbar">
-                    <button type="button" id="tWS-toggle" class="btn btn-block tWS toggle-control">tWS</button>
+                    <button type="button" id="tWS-toggle" class="btn btn-block
+                      tWS toggle-control" data-family='tWS'>tWS</button>
                   </div>
 
                   <div class="btn-toolbar">
-                    <button type="button" id="cWH-toggle" class="btn btn-block cWH toggle-control">cWH</button>
+                    <button type="button" id="cWH-toggle" class="btn btn-block
+                      cWH toggle-control" data-family='cWH'>cWH</button>
                   </div>
 
                   <div class="btn-toolbar">
-                    <button type="button" id="tWH-toggle" class="btn btn-block tWH toggle-control">tWH</button>
+                    <button type="button" id="tWH-toggle" class="btn btn-block
+                      tWH toggle-control" data-family='tWH'>tWH</button>
                   </div>
 
                   <div class="btn-toolbar">
-                    <button type="button" id="cSH-toggle" class="btn btn-block cSH toggle-control">cSH</button>
+                    <button type="button" id="cSH-toggle" class="btn btn-block
+                      cSH toggle-control" data-family='cSH'>cSH</button>
                   </div>
 
                   <div class="btn-toolbar">
-                    <button type="button" id="tSH-toggle" class="btn btn-block tSH toggle-control">tSH</button>
+                    <button type="button" id="tSH-toggle" class="btn btn-block
+                      tSH toggle-control" data-family='tSH'>tSH</button>
                   </div>
 
                   <div class="btn-toolbar">
-                    <button type="button" id="cSS-toggle" class="btn btn-block cSS toggle-control">cSS</button>
+                    <button type="button" id="cSS-toggle" class="btn btn-block
+                      cSS toggle-control" data-family='cSS'>cSS</button>
                   </div>
 
                   <div class="btn-toolbar">
-                    <button type="button" id="tSS-toggle" class="btn btn-block tSS toggle-control">tSS</button>
+                    <button type="button" id="tSS-toggle" class="btn btn-block
+                      tSS toggle-control" data-family='tSS'>tSS</button>
                   </div>
 
                   <div class="btn-toolbar">
-                    <button type="button" id="cHH-toggle" class="btn btn-block cHH toggle-control">cHH</button>
+                    <button type="button" id="cHH-toggle" class="btn btn-block
+                      cHH toggle-control" data-family='cHH'>cHH</button>
                   </div>
 
                   <div class="btn-toolbar">
-                    <button type="button" id="tHH-toggle" class="btn btn-block tHH toggle-control">tHH</button>
+                    <button type="button" id="tHH-toggle" class="btn btn-block
+                      tHH toggle-control" data-family='tHH'>tHH</button>
                   </div>
                 </div>
-                
+
               </div>
             </div>
           </div>
@@ -218,7 +231,7 @@
           </div>
 
           <div class="modal-footer">
-            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button> 
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
           </div>
         </div>
 

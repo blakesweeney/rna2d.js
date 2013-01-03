@@ -85,12 +85,12 @@ $(document).ready(function() {
   var plot = Rna2D({ width: 630, height: 795, selection: '#rna-2d' })
     .view('airport');
 
-    plot.brush.enabled(true)
-      .initial([[100, 36], [207, 132]])
-      .update(brushShow);
+  plot.brush.enabled(true)
+    .initial([[100, 36], [207, 132]])
+    .update(brushShow);
 
-    plot.jmol.overflow(function() { $("#overflow").show(); })
-      .windowBuild(generateJmol);
+  plot.jmol.overflow(function() { $("#overflow").show(); })
+    .windowBuild(generateJmol);
 
   d3.json('static/data/16S-ecoli.js', function(data) {
     plot.nucleotides(data)
@@ -133,56 +133,11 @@ $(document).ready(function() {
     plot();
   });
 
-  // Callback to execute when toggling the controls
-  var buttonToggle = function($btn) {
-    var family = $btn.text();
-
-    // Toggle interactions
+  $('.toggle-control').on('click', function(e) {
+    var $btn = $(e.target),
+      family = $btn.data('family');
     plot.interactions.toggle(family);
     plot.interactions.toggle('n' + family);
-  };
-
-  var styleToggle = function($btn) {
-    var family = $('.' + $btn.text());
-    var background = "#FEFEFE";
-    var gradient = "#E6E6E6";
-    var color = family.css('stroke');
-
-    if ($btn.hasClass('active')) {
-      background = family.css('stroke');
-      gradient = family.css('fill');
-      color = "#FFFFFF";
-    }
-
-    $btn.css('color', color);
-    $btn.css('background', background);
-    $.each(['-webkit-', '-moz-', '-o-', ''], function(i, el) {
-      var gradient_str = 'linear-gradient(top, ' + background +
-        ', ' + gradient + ')';
-      $btn.css('background-image', el + gradient_str);
-    });
-  };
-
-  $('#cWW-toggle').button('toggle');
-
-  styleToggle($('#cWW-toggle'));
-  styleToggle($('#tWW-toggle'));
-  styleToggle($('#cWS-toggle'));
-  styleToggle($('#tWS-toggle'));
-  styleToggle($('#cWH-toggle'));
-  styleToggle($('#tWH-toggle'));
-  styleToggle($('#cSH-toggle'));
-  styleToggle($('#tSH-toggle'));
-  styleToggle($('#cSS-toggle'));
-  styleToggle($('#tSS-toggle'));
-  styleToggle($('#cHH-toggle'));
-  styleToggle($('#tHH-toggle'));
-
-  $('.toggle-control').on('click', function(e) {
-    var $btn = $(e.target);
-    $btn.button('toggle');
-    buttonToggle($btn);
-    styleToggle($btn);
   });
 
   $('#mode-toggle').on('click', function(e) {
@@ -209,4 +164,5 @@ $(document).ready(function() {
       }
     }
   });
+
 });
