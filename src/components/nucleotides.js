@@ -49,7 +49,7 @@ Rna2D.components.nucleotides = function() {
 
     actions: function(plot) {
       plot.nucleotides.all = function() {
-        return plot.vis.selectAll('.' + plot.nucleotide['class']());
+        return plot.vis.selectAll('.' + plot.nucleotides['class']());
       };
 
       plot.nucleotides.interactions = function(obj) {
