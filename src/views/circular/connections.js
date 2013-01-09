@@ -25,12 +25,17 @@ Rna2D.views.circular.connections = function(plot) {
           distance = Rna2D.utils.distance(from, to),
           angleDiff = startAngle(null, plot.nucleotides.indexOf(nts[0])) -
                       startAngle(null, plot.nucleotides.indexOf(nts[1])),
-          radius = Math.abs(angleDiff) * distance;
+          radius = Math.abs(angleDiff) * distance,
+          sweep  = 0;
+
+      if (plot.nucleotides.indexOf(nts[0]) > plot.nucleotides.indexOf(nts[1])) {
+        sweep = 1;
+      }
 
       return "M "  + from.x + " " + from.y +     // Start point
              " A " + radius + "," + radius +     // Radii of elpise
              " " + 0 +                           // Rotation
-             " " + 0 + " " + 0 +                 // Large Arc and Sweep flag
+             " " + 0 + " " + sweep +             // Large Arc and Sweep flag
              " " + to.x + "," + to.y;            // End point
 
     };
