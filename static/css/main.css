@@ -1,11 +1,51 @@
+.frame {
+  fill: #fff;
+  fill-opacity: 0;
+  stroke: #aaa;
+}
+
 .brush {
   fill: #000;
   fill-opacity: .125;
   stroke: #B0A2A8;
 }
 
+.nucleotide {
+  cursor: default;
+}
+
 .interaction {
-  stroke-width: 1;
+  stroke-width: 2;
   stroke: black;
-  opacity: 1;
+  opacity: 0.7;
+}
+
+.jmol-viewer {
+  position: fixed;
+  left: 760px;
+  top: 380px;
+  resize:both;
+  overflow:auto;
+}
+
+#jmol {
+  border: 1px solid #ddd;
+}
+
+.motif {
+  fill: #000;
+  fill-opacity: .25;
+  stroke: #B0A2A8;
+}
+
+.HL {
+  fill: #5BB75B;
+  fill-opacity: .25;
+  stroke: #387038;
+}
+
+.IL {
+  fill: #49AFCD;
+  fill-opacity: .25;
+  stroke: #1F6377
 }

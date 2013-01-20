@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang='en'>
   <head>
+    <title>Rna2D.js</title>
     <meta charset='utf-8'>
     <link href='static/css/main.css' rel='stylesheet'>
 
     <script src='static/jmol/jmol.js'></script>
     <script src='static/js/jquery.min.js'></script>
     <script src='static/js/jquery.jmolTools.js'></script>
+    <script src='static/js/sizzle.js'></script>
     <script src='static/js/d3.js'></script>
 
-    <script src='rna-2d.js'></script>
-    <script src='rna-2d-jmol.js'></script>
+    <script src='rna2d.js'></script>
   </head>
 
   <body>
 
-      <!-- Side bar -->
       <div>
 
       <div id='mode'>
@@ -25,10 +25,24 @@
         </div>
       </div>
 
+      <div id='motifs'>
+        <label for='motif-checkbox'>Show Motifs</label>
+        <div id='motif-button'>
+          <input id='motif-checkbox' type='checkbox' value='v' checked='checked'>
+        </div>
+      </div>
+
       <div id='interaction-controls'>
         <label for='cww-checkbox'>cWW</label>
         <div id='cww-toggle'>
           <input id='cww-checkbox' type='checkbox' value='v' checked='checked'>
+        </div>
+      </div>
+
+      <div id='view-controls'>
+        <label for='view-checkbox'>circular</label>
+        <div id='view-toggle'>
+          <input id='view-checkbox' type='checkbox' value='v' >
         </div>
       </div>
 
@@ -46,7 +60,7 @@
         </div>
 
         <!-- Jmol Viewer -->
-        <div class='span2'>
+        <div class='span4 jmol-viewer'>
           <div id='jmol'>
             <script type="text/javascript">
               jmolInitialize("./static/jmol");
@@ -61,26 +75,51 @@
 
       <!-- Code to generate 2D structure and toggle buttons -->
       <script type='text/javascript'>
-        var plot = plot2D({
-          width: 630, 
-          height: 1200, 
-          onBrushUpdate: jmolShowSelection,
-          onInteractionClick: jmolShowInteraction
-        });
+
+        var plot = Rna2D({ selection: '#rna-2d', width: 630, height: 795 });
+        plot.view('airport');
+
+        plot.jmol.overflow(function() { alert("Too many nts selected"); });
+
+          plot.brush.enabled(true)
+            .update(plot.jmol.showSelection)
+            .initial([[100, 36], [207, 132]]);
 
         d3.json('data/16S-ecoli.js', function(data) {
-            // data = data.slice(1, 10);
-          plot.coordinates(data);
+            plot.nucleotides(data)
+              .mouseover('highlight')
+              .click(function() { console.log('nuclotide', this); })
+              ;
 
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
-            plot.connections(data);
-            d3.select('#rna-2d').call(plot);
-            plot.brush.enable();
+            plot.interactions(data)
+              .mouseover('highlight')
+              .click(function() { plot.jmol.showGroup(this); })
+              .visible(function(obj) { return obj.family == 'cWW' });
+              ;
+
+            d3.json('data/2AW7_motifs.json', function(data) {
+              plot.motifs(data)
+                .mouseover('highlight')
+                .click(function() { console.log('motif', this); })
+                ;
+
+              plot();
+           });
           });
         });
 
       $('#mode-checkbox').click(function() { plot.brush.toggle(); });
       $('#cww-checkbox').click(function() { plot.interactions.toggle('cWW'); });
+      $('#motif-checkbox').click(function() { plot.motifs.toggle(); });
+      $('#view-checkbox').click(function() {
+          if (plot.view() == 'airport') {
+            plot.view('circular');
+            } else {
+            plot.view('airport');
+            }
+            plot();
+          });
 
       </script>
   </body>
