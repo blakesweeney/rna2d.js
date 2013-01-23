@@ -130,6 +130,8 @@ $(document).ready(function() {
   $('.view-control').on('click', function(e) {
     var $btn = $(e.target);
     plot.view($btn.data('view'));
+    $('.toggle-control').removeClass('active');
+    $('#cWW-toggle').addClass('active');
     plot();
   });
 
