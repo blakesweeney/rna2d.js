@@ -1005,7 +1005,8 @@ Rna2D.views.circular.connections = function(plot) {
           distance = Rna2D.utils.distance(from, to),
           angleDiff = startAngle(null, plot.nucleotides.indexOf(nts[0])) -
                       startAngle(null, plot.nucleotides.indexOf(nts[1])),
-          radius = Math.abs(angleDiff) * distance,
+          radius = innerArc.innerRadius()() * Math.tan(angleDiff/2),
+          //radius = Math.abs(angleDiff) * distance,
           sweep  = 0;
 
       if (plot.nucleotides.indexOf(nts[0]) > plot.nucleotides.indexOf(nts[1])) {
