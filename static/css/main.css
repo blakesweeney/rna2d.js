@@ -2,6 +2,9 @@ body {
   position: relative;
   padding-top: 40px;
 }
+#view-div {
+  padding-bottom: 10px;
+}
 #rna-2d .interaction {
   stroke-width: 1.5;
   stroke: black;
@@ -84,31 +87,12 @@ body {
 .jmol-viewer {
   position: fixed;
   left: 740px;
-  top: 180px;
+  top: 190px;
   overflow: auto;
 }
 #jmol {
   border: 1px solid #ddd;
 }
-/*var styleToggle = function($btn) {*/
-/*//var family = $('.' + $btn.text());*/
-/*var family = $btn.data('family');*/
-/*var background = "#FEFEFE";*/
-/*var gradient = "#E6E6E6";*/
-/*var color = family.css('stroke');*/
-/*if ($btn.hasClass('active')) {*/
-/*background = family.css('stroke');*/
-/*gradient = family.css('fill');*/
-/*color = "#FFFFFF";*/
-/*}*/
-/*$btn.css('color', color);*/
-/*$btn.css('background', background);*/
-/*$.each(['-webkit-', '-moz-', '-o-', ''], function(i, el) {*/
-/*var gradient_str = 'linear-gradient(top, ' + background +*/
-/*', ' + gradient + ')';*/
-/*$btn.css('background-image', el + gradient_str);*/
-/*});*/
-/*};*/
 #interaction-controls .toggle-control {
   width: 38px;
   font-size: 12px;
@@ -117,18 +101,6 @@ body {
 }
 #interaction-controls .cWW {
   color: #000000;
-  /*color: @color;*/
-
-  /*background: @stroke;*/
-
-  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: linear-gradient(top, @stroke, @fill);*/
-
 }
 #interaction-controls .cWW.active {
   color: #FFFFFF;
@@ -140,18 +112,6 @@ body {
 }
 #interaction-controls .tWW {
   color: #3d1f00;
-  /*color: @color;*/
-
-  /*background: @stroke;*/
-
-  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: linear-gradient(top, @stroke, @fill);*/
-
 }
 #interaction-controls .tWW.active {
   color: #FFFFFF;
@@ -163,18 +123,6 @@ body {
 }
 #interaction-controls .cWH {
   color: #007a00;
-  /*color: @color;*/
-
-  /*background: @stroke;*/
-
-  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: linear-gradient(top, @stroke, @fill);*/
-
 }
 #interaction-controls .cWH.active {
   color: #FFFFFF;
@@ -186,18 +134,6 @@ body {
 }
 #interaction-controls .tWH {
   color: #7a0099;
-  /*color: @color;*/
-
-  /*background: @stroke;*/
-
-  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: linear-gradient(top, @stroke, @fill);*/
-
 }
 #interaction-controls .tWH.active {
   color: #FFFFFF;
@@ -209,18 +145,6 @@ body {
 }
 #interaction-controls .cWS {
   color: #3d5c00;
-  /*color: @color;*/
-
-  /*background: @stroke;*/
-
-  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: linear-gradient(top, @stroke, @fill);*/
-
 }
 #interaction-controls .cWS.active {
   color: #FFFFFF;
@@ -232,18 +156,6 @@ body {
 }
 #interaction-controls .tWS {
   color: #1f1f7a;
-  /*color: @color;*/
-
-  /*background: @stroke;*/
-
-  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: linear-gradient(top, @stroke, @fill);*/
-
 }
 #interaction-controls .tWS.active {
   color: #FFFFFF;
@@ -255,18 +167,6 @@ body {
 }
 #interaction-controls .cHH {
   color: #005c00;
-  /*color: @color;*/
-
-  /*background: @stroke;*/
-
-  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: linear-gradient(top, @stroke, @fill);*/
-
 }
 #interaction-controls .cHH.active {
   color: #FFFFFF;
@@ -278,18 +178,6 @@ body {
 }
 #interaction-controls .tHH {
   color: #3d0099;
-  /*color: @color;*/
-
-  /*background: @stroke;*/
-
-  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: linear-gradient(top, @stroke, @fill);*/
-
 }
 #interaction-controls .tHH.active {
   color: #FFFFFF;
@@ -301,18 +189,6 @@ body {
 }
 #interaction-controls .cSH {
   color: #995c00;
-  /*color: @color;*/
-
-  /*background: @stroke;*/
-
-  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: linear-gradient(top, @stroke, @fill);*/
-
 }
 #interaction-controls .cSH.active {
   color: #FFFFFF;
@@ -324,18 +200,6 @@ body {
 }
 #interaction-controls .tSH {
   color: #1f1f99;
-  /*color: @color;*/
-
-  /*background: @stroke;*/
-
-  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: linear-gradient(top, @stroke, @fill);*/
-
 }
 #interaction-controls .tSH.active {
   color: #FFFFFF;
@@ -347,18 +211,6 @@ body {
 }
 #interaction-controls .cSS {
   color: #7a5c00;
-  /*color: @color;*/
-
-  /*background: @stroke;*/
-
-  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: linear-gradient(top, @stroke, @fill);*/
-
 }
 #interaction-controls .cSS.active {
   color: #FFFFFF;
@@ -370,18 +222,6 @@ body {
 }
 #interaction-controls .tSS {
   color: #3d3d5c;
-  /*color: @color;*/
-
-  /*background: @stroke;*/
-
-  /*background-image: -webkit-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -moz-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: -o-linear-gradient(top, @stroke, @fill);*/
-
-  /*background-image: linear-gradient(top, @stroke, @fill);*/
-
 }
 #interaction-controls .tSS.active {
   color: #FFFFFF;
