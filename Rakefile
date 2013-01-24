@@ -25,8 +25,8 @@ task :build do
 
   Dir['src/views/*'].each do |file|
     base = File.basename(file, '.js')
-    Dir['src/views/%s/*.js' % base].each do |file|
-      append(file)
+    Dir['src/views/%s/*.js' % base].each do |sub|
+      append(sub)
     end
   end
 
@@ -40,5 +40,13 @@ end
 
 desc "Build and compress"
 task :release => [:build, :compress]
+
+desc "Merge and push to github"
+task :deploy do
+  sh('git push origin develop')
+  sh('git checkout master')
+  sh('git merge master develop')
+  sh('git push origin master')
+end
 
 task :default => :build
