@@ -44,7 +44,7 @@ $(document).ready(function() {
     $('#about-selection').children().remove();
     $('#about-selection').append(link);
     $('#about-selection').show();
-    return plot.jmol.showGroup({ 'data-nts': this.getAttribute('data-nts') });
+    return plot.jmol.showGroup(this);
   };
 
   var clickInteraction = function() {
