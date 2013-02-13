@@ -38,7 +38,7 @@ Rna2D.components.interactions = function () {
             nts.sort();
           }
           nts.push(family);
-          return nts.join(',');
+          return nts.join('-');
         },
         color: 'black'
       };
