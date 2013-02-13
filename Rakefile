@@ -47,6 +47,7 @@ task :deploy do
   sh('git checkout master')
   sh('git merge master develop')
   sh('git push origin master')
+  sh('git checkout develop')
 end
 
 task :default => :build
