@@ -393,7 +393,7 @@ Rna2D.components.interactions = function () {
             family = family.slice(2, 4).toUpperCase();
           }
           return family == 'WW' || family == 'WH' || family == 'WS' ||
-                 family == 'HH' || family == 'HS' || family == 'SS';
+                 family == 'HH' || family == 'SH' || family == 'SS';
         },
         isSymmetric: function(d, i) {
           var getFamily = plot.interactions.getFamily(),
