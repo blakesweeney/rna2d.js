@@ -61,7 +61,7 @@ Rna2D.components.interactions = function () {
             orderedNts = plot.nucleotides.ordered();
 
         for(var i = 0; i < interactions.length; i++) {
-          var current = interactions[i].replace(/^n/, ''),
+          var current = interactions[i],
               id = getID(current, i),
               nts = getNts(current);
 
