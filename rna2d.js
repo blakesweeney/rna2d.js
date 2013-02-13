@@ -453,7 +453,7 @@ Rna2D.components.interactions = function () {
       };
 
       plot.interactions.family = function(obj) {
-        return obj.getAttribute('id').split(',')[2];
+        return plot.interactions.getFamily()(d3.select(obj).datum());
       };
 
       plot.interactions.nucleotides = function(obj) {
