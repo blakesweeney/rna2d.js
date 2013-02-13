@@ -372,7 +372,10 @@ Rna2D.components.interactions = function () {
       return {
         getFamily: function(d) { return d.family; },
         getNTs: function(d) { return [d.nt1, d.nt2]; },
-        visible: function(d) { return plot.interactions.getFamily()(d) == 'cWW'; },
+        visible: function(d) { 
+          var family = plot.interactions.getFamily()(d);
+          return family === 'cWW' || family === 'ncWW'; 
+        },
         mouseover: null,
         mouseout: null,
         click: null,
@@ -404,7 +407,7 @@ Rna2D.components.interactions = function () {
             nts.sort();
           }
           nts.push(family);
-          return nts.join(',');
+          return nts.join('-');
         },
         color: 'black'
       };
