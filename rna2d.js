@@ -909,6 +909,11 @@ Rna2D.views.airport.groups = function(plot) {
   plot.groups = function(standard) {
       // Compute a box around the motif
       var motifs = plot.motifs();
+
+      if (!motifs || !motifs.length) {
+        return plot;
+      }
+
       for(var i = 0; i < motifs.length; i++) {
         var current = motifs[i], 
             left = 0,
