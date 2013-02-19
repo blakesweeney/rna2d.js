@@ -5,11 +5,6 @@ def append(file)
   sh("cat #{file} >> #{$file}")
 end
 
-desc "Run a jsl over the RNA2D library"
-task :lint do
-  sh "jsl -process %s", $file
-end
-
 desc "Generate the RNA2D library"
 task :build do
   sh('cat src/intro.js src/main.js > %s' % $file)
