@@ -37,6 +37,11 @@
         <div id='cww-toggle'>
           <input id='cww-checkbox' type='checkbox' value='v' checked='checked'>
         </div>
+
+        <label for='css-checkbox'>cSS</label>
+        <div id='css-toggle'>
+          <input id='css-checkbox' type='checkbox' value='v'>
+        </div>
       </div>
 
       <div id='view-controls'>
@@ -111,6 +116,7 @@
 
       $('#mode-checkbox').click(function() { plot.brush.toggle(); });
       $('#cww-checkbox').click(function() { plot.interactions.toggle('cWW'); });
+      $('#css-checkbox').click(function() { plot.interactions.toggle('cSS'); });
       $('#motif-checkbox').click(function() { plot.motifs.toggle(); });
       $('#view-checkbox').click(function() {
           if (plot.view() == 'airport') {
