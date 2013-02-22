@@ -97,7 +97,6 @@
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
             plot.interactions(data)
               .mouseover('highlight')
-              .click(function() { plot.jmol.showGroup(this); })
               .visible(function(obj) { return obj.family == 'cWW' });
               ;
 
