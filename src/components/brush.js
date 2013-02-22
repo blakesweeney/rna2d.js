@@ -64,8 +64,7 @@ Rna2D.components.brush = function() {
           plot.brush.clear();
         } else {
 
-          var e = plot.brush().extent(),
-              getID = plot.nucleotides.getID();
+          var e = plot.brush().extent();
           plot.vis.selectAll('.' + plot.nucleotides['class']())
             .attr("checked", function(d) {
               if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
