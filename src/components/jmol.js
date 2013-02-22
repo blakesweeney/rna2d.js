@@ -69,15 +69,6 @@ Rna2D.components.jmol = {
       return plot.jmol;
     };
 
-    // Show the given group. The group should have a data-nts property which is
-    // a string of nt ids to show.
-    plot.jmol.showGroup = function(group) {
-      if (!arguments.length || !group) {
-        group = this;
-      }
-      plot.jmol.showSelection(group.getAttribute('data-nts'));
-    };
-
   }
 
 };
