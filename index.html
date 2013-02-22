@@ -92,9 +92,7 @@
 
         d3.json('data/16S-ecoli.js', function(data) {
             plot.nucleotides(data)
-              .mouseover('highlight')
-              .click(function() { console.log('nuclotide', this); })
-              ;
+              .mouseover('highlight');
 
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
             plot.interactions(data)
