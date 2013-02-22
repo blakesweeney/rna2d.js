@@ -294,32 +294,32 @@ Rna2D.components.brush = function() {
 
     generate: function(plot) {
 
-    // Blank for now, later may use this for a multiple selecting brush.
-    startBrush = function () { return 'bobo'; };
+      // Blank for now, later may use this for a multiple selecting brush.
+      startBrush = function () { return 'bobo'; };
 
-    // Do nothing for now.
-    updateBrush = function (p) { };
+      // Do nothing for now.
+      updateBrush = function (p) { };
 
-    endBrush = function () {
-      var matched = {};
+      endBrush = function () {
+        var matched = [];
 
-      if (plot.brush().empty()) {
-        plot.brush.clear();
-      } else {
+        if (plot.brush().empty()) {
+          plot.brush.clear();
+        } else {
 
-        var e = plot.brush().extent(),
-            getID = plot.nucleotides.getID();
-        plot.vis.selectAll('.' + plot.nucleotides['class']())
-          .attr("checked", function(d) {
-            if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
-                e[0][1] <= d.__y && d.__y <= e[1][1]) {
-              matched[getID(d)] = d;
-            }
-          });
+          var e = plot.brush().extent();
+          plot.vis.selectAll('.' + plot.nucleotides['class']())
+            .attr("checked", function(d) {
+              if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
+                  e[0][1] <= d.__y && d.__y <= e[1][1]) {
+                matched.push(d);
+              }
+            });
 
-        plot.brush.update()(matched);
-      }
-    };
+          plot.brush.update()(matched);
+        }
+      };
+
       plot.brush(d3.svg.brush()
         .on('brushstart', startBrush)
         .on('brush', updateBrush)
@@ -378,7 +378,10 @@ Rna2D.components.interactions = function () {
         },
         mouseover: null,
         mouseout: null,
-        click: null,
+        click: function(d) {
+          var nts = plot.interactions.nucleotides(this);
+          plot.jmol.showSelection(nts.data());
+        },
         'class': 'interaction',
         classOf: function(d) { return d.family; },
         highlightColor: function() { return 'red'; },
@@ -444,7 +447,6 @@ Rna2D.components.interactions = function () {
 
     actions: function(plot) {
 
-
       plot.interactions.all = function(family) {
         if (!arguments.length || !family) {
           family = plot.interactions['class']();
@@ -460,7 +462,8 @@ Rna2D.components.interactions = function () {
         if (!arguments.length) {
           obj = this;
         }
-        var nts = obj.getAttribute('data-nts').split(','),
+        var data = d3.select(obj).datum(),
+            nts = plot.interactions.getNTs()(data),
             selector = '#' + nts.join(', #');
         return plot.vis.selectAll(selector);
       };
@@ -545,16 +548,12 @@ Rna2D.components.jmol = {
     plot.jmol.showSelection = function(matched) {
       plot.jmol.setup();
 
-      var data = matched;
-      if (typeof(matched) == 'object') {
-        var ids = $.map(matched, function(value, key) { return key; });
-        data = ids.join(',');
-      }
-
-      var count = data.split(',').length;
-      if (count > plot.jmol.maxSize()) {
+      if (matched.length > plot.jmol.maxSize()) {
         return plot.jmol.overflow();
       }
+
+      var data = $.map(matched, plot.nucleotides.getID());
+      data = data.join(',');
 
       $('#' + plot.jmol.tmpID()).remove();
       $('body').append("<input type='radio' id='" + plot.jmol.tmpID() +
@@ -567,15 +566,6 @@ Rna2D.components.jmol = {
       }).jmolToggle();
 
       return plot.jmol;
-    };
-
-    // Show the given group. The group should have a data-nts property which is
-    // a string of nt ids to show.
-    plot.jmol.showGroup = function(group) {
-      if (!arguments.length || !group) {
-        group = this;
-      }
-      plot.jmol.showSelection(group.getAttribute('data-nts'));
     };
 
   }
@@ -683,7 +673,7 @@ Rna2D.components.nucleotides = function() {
       color: 'black',
       fontSize: 11,
       gap: 1,
-      click: null,
+      click: function(d, i) { return plot.jmol.showSelection([d]); },
       mouseover: null,
       mouseout: null,
       getID: function(d) { return d.id; },
