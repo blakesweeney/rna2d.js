@@ -58,7 +58,7 @@ Rna2D.components.brush = function() {
       updateBrush = function (p) { };
 
       endBrush = function () {
-        var matched = {};
+        var matched = [];
 
         if (plot.brush().empty()) {
           plot.brush.clear();
@@ -70,7 +70,7 @@ Rna2D.components.brush = function() {
             .attr("checked", function(d) {
               if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
                   e[0][1] <= d.__y && d.__y <= e[1][1]) {
-                matched[getID(d)] = d;
+                matched.push(d);
               }
             });
 
