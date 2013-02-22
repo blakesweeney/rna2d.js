@@ -103,7 +103,6 @@
             d3.json('data/2AW7_motifs.json', function(data) {
               plot.motifs(data)
                 .mouseover('highlight')
-                .click(function() { console.log('motif', this); })
                 ;
 
               plot();
