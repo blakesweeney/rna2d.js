@@ -12,7 +12,10 @@ Rna2D.components.interactions = function () {
         },
         mouseover: null,
         mouseout: null,
-        click: null,
+        click: function(d) {
+          var nts = plot.interactions.nucleotides(this);
+          plot.jmol.showSelection(nts.data());
+        },
         'class': 'interaction',
         classOf: function(d) { return d.family; },
         highlightColor: function() { return 'red'; },
@@ -78,7 +81,6 @@ Rna2D.components.interactions = function () {
 
     actions: function(plot) {
 
-
       plot.interactions.all = function(family) {
         if (!arguments.length || !family) {
           family = plot.interactions['class']();
@@ -94,7 +96,8 @@ Rna2D.components.interactions = function () {
         if (!arguments.length) {
           obj = this;
         }
-        var nts = obj.getAttribute('data-nts').split(','),
+        var data = d3.select(obj).datum(),
+            nts = plot.interactions.getNTs()(data),
             selector = '#' + nts.join(', #');
         return plot.vis.selectAll(selector);
       };
