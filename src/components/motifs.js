@@ -1,4 +1,4 @@
-Rna2D.components.motifs = function () {
+Rna2D.components.motifs = (function () {
 
   return {
 
@@ -66,5 +66,5 @@ Rna2D.components.motifs = function () {
     }
   };
 
-}();
+}());
 
