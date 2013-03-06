@@ -34,7 +34,7 @@ Rna2D.utils = (function() {
     }
 
     _.each(handlers, function(handler) {
-      selection.on(handler, obj[handler] || Object);
+      selection.on(handler, obj[handler]);
     });
 
     return selection;
