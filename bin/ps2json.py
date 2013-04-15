@@ -32,9 +32,9 @@ def to_num(arr):
 def sequence_data(data, trans):
     num = to_num(data[1:3])
 
-    # We need to compute the actual position of the letters. In the PS files the
-    # origin is translated, coordinates are scaled and then translated again.
-    # This should undo those operations to give us a reasonable set of
+    # We need to compute the actual position of the letters. In the PS files
+    # the origin is translated, coordinates are scaled and then translated
+    # again.  This should undo those operations to give us a reasonable set of
     # coordinates.
     value = lambda i: (num[i] * trans['scale'][i] + trans['translate'][i])
     x = value(0) - 60
