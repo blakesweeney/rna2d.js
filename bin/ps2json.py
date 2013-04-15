@@ -2,8 +2,7 @@
 
 import re
 import sys
-
-import simplejson as json
+import json
 
 
 SEQUENCE_PATTERN = re.compile('^\((\w)\) (-?\d+\.\d+) (-?\d+\.\d+) lwstring$')
@@ -23,7 +22,7 @@ def point2pixel(number):
 
 
 def make_id(data, index):
-    return '2AW7_AU_1_A_%s_%s_' % (index, data['sequence'])
+    return '1VS7_AU_1_A_%s_%s_' % (index, data['sequence'])
 
 
 def to_num(arr):
