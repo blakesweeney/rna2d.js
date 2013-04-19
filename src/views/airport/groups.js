@@ -50,7 +50,7 @@ Rna2D.views.airport.groups = function(plot) {
 
         // Store bounding box. It is very odd to get a bounding box that
         // involves the outer edges. In this case we think that we have not
-        // actually found all the nts so we log this and use a box that cannot
+        // actually found the nts so we log this and use a box that cannot
         // be seen. This prevents bugs where we stop drawing boxes too early.
         if (bottom === 0 || left === 0 || right === plot.__xCoordMax || top === plot.__yCoordMax) {
           console.log("Unlikely bounding box found for " + current.id);
