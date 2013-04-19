@@ -20,7 +20,7 @@ Rna2D.views.airport.groups = function(plot) {
 
         // Mark motif as visible or not
         current.visible = visible(current);
-        current.found = true;
+        current.missing = [];
 
         // Find the outer points.
         var nts = plot.motifs.getNTs()(current);
@@ -30,21 +30,21 @@ Rna2D.views.airport.groups = function(plot) {
 
           if (elem === null) {
             console.log('Missing nt ' + id + ' in motif: ', current);
-            break;
-          }
-
-          var bbox = elem.getBBox();
-          if (bbox.x < right) {
-            right = bbox.x;
-          }
-          if (bbox.x + bbox.width > left) {
-            left = bbox.x + bbox.width;
-          }
-          if (bbox.y + bbox.height > bottom) {
-            bottom = bbox.y + bbox.height;
-          }
-          if (bbox.y < top) {
-            top = bbox.y;
+            current.missing = id;
+          } else {
+            var bbox = elem.getBBox();
+            if (bbox.x < right) {
+              right = bbox.x;
+            }
+            if (bbox.x + bbox.width > left) {
+              left = bbox.x + bbox.width;
+            }
+            if (bbox.y + bbox.height > bottom) {
+              bottom = bbox.y + bbox.height;
+            }
+            if (bbox.y < top) {
+              top = bbox.y;
+            }
           }
         }
 
@@ -74,6 +74,7 @@ Rna2D.views.airport.groups = function(plot) {
       plot.vis.selectAll(plot.motifs['class']())
         .data(plot.motifs()).enter().append('svg:path')
         .call(standard)
+        .attr('missing-nts', function(d) { return d.missing.join(' '); })
         .attr('d', function(d) { return motifLine(d.bounding) + "Z"; });
 
      return plot;
