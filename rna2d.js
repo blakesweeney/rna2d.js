@@ -17,14 +17,19 @@ var Rna2D = window.Rna2D || function(config) {
 
     d3.select(plot.selection()).call(function(sel) {
 
+      var margin = plot.margin();
+
       // Compute the nucleotide ordering. This is often used when drawing
       // interactions.
       plot.nucleotides.computeOrder();
 
       sel.select('svg').remove();
       plot.vis = sel.append('svg')
-        .attr('width', plot.width())
-        .attr('height', plot.height());
+        .attr('width', plot.width() - margin.left - margin.right)
+        .attr('height', plot.height() - margin.top - margin.bottom);
+
+      plot.g = plot.vis.append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
       // ----------------------------------------------------------------------
       // Draw all coordinates and attach all standard data
@@ -109,56 +114,64 @@ Rna2D.components = function(plot) {
 
   // Create the toplevel component which calls each subcomponent component
   plot.components = function() {
+    console.log(_.functions(plot.components));
+
     _.chain(plot.components)
-      .functions()
-      .each(function(funcName) { plot.components[funcName](plot); });
+    .functions()
+    .each(function(funcName) { plot.components[funcName](plot); });
   };
 
   // Create each subcomponent with its accessor function, config, side 
   // effects, and rendering function.
   _.chain(Rna2D.components)
-    .keys()
-    .each(function(name) {
-      var obj = Rna2D.components[name];
+  .keys()
+  .each(function(name) {
+    var obj = Rna2D.components[name];
 
-      // Generate the accessor function
-      (function(prop) {
-        var data = null;
-        plot[prop] = function(x) {
-          if (!arguments.length) {
-            return data;
-          }
-          data = x;
-          return plot[prop];
-        };
-      }(name));
-
-      // Attach config if needed.
-      if (typeof(obj.config) === "function") {
-        obj.config = obj.config(plot);
-      }
-      Rna2D.utils.generateAccessors(plot[name], obj.config);
-
-      // Perform the side effects. These often create functions which need to be
-      // created before the plot is drawn.
-      if (obj.hasOwnProperty('sideffects')) {
-        obj.sideffects(plot);
-      }
-
-      // Generate the rendering function, which creates the actions and then runs
-      // generate if needed.
-      plot.components[name] = function(plot) {
-        if (obj.hasOwnProperty('actions')) {
-          obj.actions(plot);
+    // Generate the accessor function
+    (function(prop) {
+      var data = null;
+      plot[prop] = function(x) {
+        if (!arguments.length) {
+          return data;
         }
-        if (obj.hasOwnProperty('generate')) {
-          obj.generate(plot);
-        }
-
-        return plot;
+        data = x;
+        return plot[prop];
       };
+    }(name));
 
-    });
+    // Attach config if needed.
+    if (typeof(obj.config) === "function") {
+      obj.config = obj.config(plot);
+    }
+    Rna2D.utils.generateAccessors(plot[name], obj.config);
+
+    // Perform the side effects. These often create functions which need to be
+    // created before the plot is drawn.
+    if (obj.hasOwnProperty('sideffects')) {
+      obj.sideffects(plot);
+    }
+
+    console.log('creating drawing fn ' +  name);
+
+    // Generate the rendering function, which creates the actions and then runs
+    // generate if needed.
+    plot.components[name] = function(plot) {
+      console.log('generic', name);
+      if (obj.hasOwnProperty('actions')) {
+        console.log(name, 'actions');
+        obj.actions(plot);
+      }
+
+      if (obj.hasOwnProperty('generate')) {
+        console.log('generate', name);
+        obj.generate(plot);
+      }
+
+      return plot;
+    };
+
+  });
 
   return Rna2D;
 };
@@ -836,8 +849,7 @@ Rna2D.views.airport.coordinates = function(plot) {
 
     var data = plot.nucleotides(),
         width = plot.width(),
-        height = plot.height(),
-        margin = plot.margin();
+        height = plot.height();
 
     // Compute the scales and ranges.
     var xCoordMax = d3.max(data, function(d) { return d.x; }),
@@ -845,10 +857,10 @@ Rna2D.views.airport.coordinates = function(plot) {
         xMax = d3.max([width, xCoordMax]),
         yMax = d3.max([height, yCoordMax]),
         xScale = d3.scale.linear()
-          .domain([-margin.right, xMax + margin.left])
+          .domain([0, xMax])
           .range([0, width]),
         yScale = d3.scale.linear()
-          .domain([-margin.above, yMax + margin.below])
+          .domain([0, yMax])
           .range([0, height]);
 
     plot.xScale(xScale);
@@ -857,7 +869,7 @@ Rna2D.views.airport.coordinates = function(plot) {
     plot.__yCoordMax = yCoordMax;
 
     // Draw all nucleotides.
-    plot.vis.selectAll(plot.nucleotides['class']())
+    plot.g.selectAll(plot.nucleotides['class']())
       .data(data).enter().append('svg:text')
       .call(standard)
       .attr('x', function(d, i) { 
@@ -1070,8 +1082,7 @@ Rna2D.views.circular.coordinates = function(plot) {
 
   plot.coordinates = function(standard) {
 
-    var margin = 10 * Math.min(plot.margin().left, plot.margin().right),
-        outer = plot.width() / 2 - margin,
+    var outer = plot.width() / 2,
         inner = outer - plot.pie.width(),
         center = { x: plot.width() / 2, y: plot.height() / 2},
         count = plot.nucleotides().length,
@@ -1086,14 +1097,14 @@ Rna2D.views.circular.coordinates = function(plot) {
           .startAngle(startAngle)
           .endAngle(endAngle);
 
-    var nts = plot.nucleotides();
-    for(var i = 0; i < nts.length; i++) {
+    // Compute centers for each nucleotide
+    _.each(plot.nucleotides(), function(nt) { 
       var centroid = arc.centroid(null, i);
       nts[i].__x = center.x + centroid[0];
       nts[i].__y = center.y + centroid[1];
-    }
+    });
 
-    plot.vis.selectAll(plot.nucleotides['class']())
+    plot.g.selectAll(plot.nucleotides['class']())
       .append('g')
       .data(plot.nucleotides()).enter().append('svg:path')
       .call(standard)
@@ -1149,7 +1160,7 @@ Rna2D.views.circular.coordinates = function(plot) {
       var positionOf = plot.pie.letterPosition(),
           highlightColor = plot.nucleotides.highlightColor();
 
-      plot.vis.selectAll(plot.pie.letterClass())
+      plot.g.selectAll(plot.pie.letterClass())
         .data(nts).enter().append('svg:text')
         .attr('id', plot.pie.letterID())
         .attr('class', plot.pie.letterClass())
@@ -1163,7 +1174,7 @@ Rna2D.views.circular.coordinates = function(plot) {
         return plot.pie;
     },
     clearLetters: function() {
-      plot.vis.selectAll('.' + plot.pie.letterClass()).remove();
+      plot.g.selectAll('.' + plot.pie.letterClass()).remove();
     }
   };
   Rna2D.utils.generateAccessors(plot.pie, config);
