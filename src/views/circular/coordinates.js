@@ -2,8 +2,7 @@ Rna2D.views.circular.coordinates = function(plot) {
 
   plot.coordinates = function(standard) {
 
-    var margin = 10 * Math.min(plot.margin().left, plot.margin().right),
-        outer = plot.width() / 2 - margin,
+    var outer = plot.width() / 2,
         inner = outer - plot.pie.width(),
         center = { x: plot.width() / 2, y: plot.height() / 2},
         count = plot.nucleotides().length,
@@ -18,14 +17,14 @@ Rna2D.views.circular.coordinates = function(plot) {
           .startAngle(startAngle)
           .endAngle(endAngle);
 
-    var nts = plot.nucleotides();
-    for(var i = 0; i < nts.length; i++) {
+    // Compute centers for each nucleotide
+    _.each(plot.nucleotides(), function(nt) { 
       var centroid = arc.centroid(null, i);
       nts[i].__x = center.x + centroid[0];
       nts[i].__y = center.y + centroid[1];
-    }
+    });
 
-    plot.vis.selectAll(plot.nucleotides['class']())
+    plot.g.selectAll(plot.nucleotides['class']())
       .append('g')
       .data(plot.nucleotides()).enter().append('svg:path')
       .call(standard)
@@ -81,7 +80,7 @@ Rna2D.views.circular.coordinates = function(plot) {
       var positionOf = plot.pie.letterPosition(),
           highlightColor = plot.nucleotides.highlightColor();
 
-      plot.vis.selectAll(plot.pie.letterClass())
+      plot.g.selectAll(plot.pie.letterClass())
         .data(nts).enter().append('svg:text')
         .attr('id', plot.pie.letterID())
         .attr('class', plot.pie.letterClass())
@@ -95,7 +94,7 @@ Rna2D.views.circular.coordinates = function(plot) {
         return plot.pie;
     },
     clearLetters: function() {
-      plot.vis.selectAll('.' + plot.pie.letterClass()).remove();
+      plot.g.selectAll('.' + plot.pie.letterClass()).remove();
     }
   };
   Rna2D.utils.generateAccessors(plot.pie, config);

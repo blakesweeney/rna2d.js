@@ -14,14 +14,19 @@ var Rna2D = window.Rna2D || function(config) {
 
     d3.select(plot.selection()).call(function(sel) {
 
+      var margin = plot.margin();
+
       // Compute the nucleotide ordering. This is often used when drawing
       // interactions.
       plot.nucleotides.computeOrder();
 
       sel.select('svg').remove();
       plot.vis = sel.append('svg')
-        .attr('width', plot.width())
-        .attr('height', plot.height());
+        .attr('width', plot.width() - margin.left - margin.right)
+        .attr('height', plot.height() - margin.top - margin.bottom);
+
+      plot.g = plot.vis.append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
       // ----------------------------------------------------------------------
       // Draw all coordinates and attach all standard data

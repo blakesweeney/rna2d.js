@@ -6,8 +6,7 @@ Rna2D.views.airport.coordinates = function(plot) {
 
     var data = plot.nucleotides(),
         width = plot.width(),
-        height = plot.height(),
-        margin = plot.margin();
+        height = plot.height();
 
     // Compute the scales and ranges.
     var xCoordMax = d3.max(data, function(d) { return d.x; }),
@@ -15,10 +14,10 @@ Rna2D.views.airport.coordinates = function(plot) {
         xMax = d3.max([width, xCoordMax]),
         yMax = d3.max([height, yCoordMax]),
         xScale = d3.scale.linear()
-          .domain([-margin.right, xMax + margin.left])
+          .domain([0, xMax])
           .range([0, width]),
         yScale = d3.scale.linear()
-          .domain([-margin.above, yMax + margin.below])
+          .domain([0, yMax])
           .range([0, height]);
 
     plot.xScale(xScale);
@@ -27,7 +26,7 @@ Rna2D.views.airport.coordinates = function(plot) {
     plot.__yCoordMax = yCoordMax;
 
     // Draw all nucleotides.
-    plot.vis.selectAll(plot.nucleotides['class']())
+    plot.g.selectAll(plot.nucleotides['class']())
       .data(data).enter().append('svg:text')
       .call(standard)
       .attr('x', function(d, i) { 
