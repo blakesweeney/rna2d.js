@@ -49,16 +49,12 @@ Rna2D.components.jmol = {
     plot.jmol.showSelection = function(matched) {
       plot.jmol.setup();
 
-      var data = matched;
-      if (typeof(matched) == 'object') {
-        var ids = $.map(matched, function(value, key) { return key; });
-        data = ids.join(',');
-      }
-
-      var count = data.split(',').length;
-      if (count > plot.jmol.maxSize()) {
+      if (matched.length > plot.jmol.maxSize()) {
         return plot.jmol.overflow();
       }
+
+      var data = $.map(matched, plot.nucleotides.getID());
+      data = data.join(',');
 
       $('#' + plot.jmol.tmpID()).remove();
       $('body').append("<input type='radio' id='" + plot.jmol.tmpID() +
@@ -71,15 +67,6 @@ Rna2D.components.jmol = {
       }).jmolToggle();
 
       return plot.jmol;
-    };
-
-    // Show the given group. The group should have a data-nts property which is
-    // a string of nt ids to show.
-    plot.jmol.showGroup = function(group) {
-      if (!arguments.length || !group) {
-        group = this;
-      }
-      plot.jmol.showSelection(group.getAttribute('data-nts'));
     };
 
   }

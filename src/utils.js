@@ -1,4 +1,4 @@
-Rna2D.utils = function() {
+Rna2D.utils = (function() {
   var my = {};
 
   my.distance = function(a, b) {
@@ -6,9 +6,8 @@ Rna2D.utils = function() {
   };
 
   my.generateAccessors = function(obj, state, callback) {
-    d3.keys(state).forEach(function(key) {
-
-      obj[key] = function() {
+    _.each(state, function(value, key) {
+      obj[key] = (function() {
         return function(x) {
           if (!arguments.length) {
             return state[key];
@@ -20,8 +19,7 @@ Rna2D.utils = function() {
           }
           return obj;
         };
-      }();
-
+      }());
     });
   };
 
@@ -30,24 +28,16 @@ Rna2D.utils = function() {
 
     if (obj.mouseover() === 'highlight') {
       handlers = [handlers[0]];
-      selection.on('mouseover', obj.highlight())
+      selection
+        .on('mouseover', obj.highlight())
         .on('mouseout', obj.normalize());
     }
 
-    handlers.forEach(function(handler) {
-      if (obj[handler]) {
-        selection.on(handler, obj[handler]());
-      }
+    _.each(handlers, function(handler) {
+      selection.on(handler, obj[handler]);
     });
 
     return selection;
-  };
-
-  my.extend = function(update, old) {
-    for(var key in old) {
-      update[key] = old[key];
-    }
-    return update;
   };
 
   my.element = function(id) {
@@ -55,5 +45,5 @@ Rna2D.utils = function() {
   };
 
   return my;
-}();
+}());
 

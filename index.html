@@ -8,6 +8,7 @@
     <script src='static/jmol/jmol.js'></script>
     <script src='static/js/jquery.min.js'></script>
     <script src='static/js/jquery.jmolTools.js'></script>
+    <script src='static/js/underscore.min.js'></script>
     <script src='static/js/sizzle.js'></script>
     <script src='static/js/d3.js'></script>
 
@@ -36,6 +37,11 @@
         <label for='cww-checkbox'>cWW</label>
         <div id='cww-toggle'>
           <input id='cww-checkbox' type='checkbox' value='v' checked='checked'>
+        </div>
+
+        <label for='css-checkbox'>cSS</label>
+        <div id='css-toggle'>
+          <input id='css-checkbox' type='checkbox' value='v'>
         </div>
       </div>
 
@@ -87,21 +93,17 @@
 
         d3.json('data/16S-ecoli.js', function(data) {
             plot.nucleotides(data)
-              .mouseover('highlight')
-              .click(function() { console.log('nuclotide', this); })
-              ;
+              .mouseover('highlight');
 
           d3.csv('data/16S-ecoli-interactions.csv', function(data) {
             plot.interactions(data)
               .mouseover('highlight')
-              .click(function() { plot.jmol.showGroup(this); })
               .visible(function(obj) { return obj.family == 'cWW' });
               ;
 
             d3.json('data/2AW7_motifs.json', function(data) {
               plot.motifs(data)
                 .mouseover('highlight')
-                .click(function() { console.log('motif', this); })
                 ;
 
               plot();
@@ -111,6 +113,7 @@
 
       $('#mode-checkbox').click(function() { plot.brush.toggle(); });
       $('#cww-checkbox').click(function() { plot.interactions.toggle('cWW'); });
+      $('#css-checkbox').click(function() { plot.interactions.toggle('cSS'); });
       $('#motif-checkbox').click(function() { plot.motifs.toggle(); });
       $('#view-checkbox').click(function() {
           if (plot.view() == 'airport') {

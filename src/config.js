@@ -11,8 +11,7 @@ Rna2D.config = function(plot, given) {
     yScale: null
   };
 
-  Rna2D.utils.extend(config, given);
-  Rna2D.utils.generateAccessors(plot, config);
+  Rna2D.utils.generateAccessors(plot, _.extend(config, given));
 
   return plot;
 };

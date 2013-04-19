@@ -51,32 +51,32 @@ Rna2D.components.brush = function() {
 
     generate: function(plot) {
 
-    // Blank for now, later may use this for a multiple selecting brush.
-    startBrush = function () { return 'bobo'; };
+      // Blank for now, later may use this for a multiple selecting brush.
+      startBrush = function () { return 'bobo'; };
 
-    // Do nothing for now.
-    updateBrush = function (p) { };
+      // Do nothing for now.
+      updateBrush = function (p) { };
 
-    endBrush = function () {
-      var matched = {};
+      endBrush = function () {
+        var matched = [];
 
-      if (plot.brush().empty()) {
-        plot.brush.clear();
-      } else {
+        if (plot.brush().empty()) {
+          plot.brush.clear();
+        } else {
 
-        var e = plot.brush().extent(),
-            getID = plot.nucleotides.getID();
-        plot.vis.selectAll('.' + plot.nucleotides['class']())
-          .attr("checked", function(d) {
-            if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
-                e[0][1] <= d.__y && d.__y <= e[1][1]) {
-              matched[getID(d)] = d;
-            }
-          });
+          var e = plot.brush().extent();
+          plot.vis.selectAll('.' + plot.nucleotides['class']())
+            .attr("checked", function(d) {
+              if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
+                  e[0][1] <= d.__y && d.__y <= e[1][1]) {
+                matched.push(d);
+              }
+            });
 
-        plot.brush.update()(matched);
-      }
-    };
+          plot.brush.update()(matched);
+        }
+      };
+
       plot.brush(d3.svg.brush()
         .on('brushstart', startBrush)
         .on('brush', updateBrush)

@@ -36,7 +36,7 @@ end
 desc "Build and compress"
 task :release => [:build, :compress] do
   sh("git add rna2d.js rna2d.min.js")
-  sh("git commit -m 'Update'")
+  sh("git commit -m 'Update libs'")
 end
 
 desc "Merge and push to github"

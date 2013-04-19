@@ -11,7 +11,7 @@ Rna2D.components.nucleotides = function() {
       color: 'black',
       fontSize: 11,
       gap: 1,
-      click: null,
+      click: function(d, i) { return plot.jmol.showSelection([d]); },
       mouseover: null,
       mouseout: null,
       getID: function(d) { return d.id; },

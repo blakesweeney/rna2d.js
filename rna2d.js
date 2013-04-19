@@ -107,51 +107,58 @@ window.Rna2D = Rna2D;
 
 Rna2D.components = function(plot) {
 
+  // Create the toplevel component which calls each subcomponent component
   plot.components = function() {
-    for(var name in plot.components) {
-      plot.components[name](plot);
-    }
+    _.chain(plot.components)
+      .functions()
+      .each(function(funcName) { plot.components[funcName](plot); });
   };
 
-  for(var name in Rna2D.components) {
-    var obj = Rna2D.components[name];
-
-    (function(name) {
-      var data = null;
-      plot[name] = function(x) {
-        if (!arguments.length) {
-          return data;
-        }
-        data = x;
-        return plot[name];
-      };
-    })(name);
-
-    if (typeof(obj.config) === "function") {
-      obj.config = obj.config(plot);
-    }
-    Rna2D.utils.generateAccessors(plot[name], obj.config);
-
-    if ('sideffects' in obj) {
-      obj.sideffects(plot);
-    }
-  }
-
-  plot.components[name] = function(plot) {
-    for(var name in Rna2D.components) {
+  // Create each subcomponent with its accessor function, config, side 
+  // effects, and rendering function.
+  _.chain(Rna2D.components)
+    .keys()
+    .each(function(name) {
       var obj = Rna2D.components[name];
 
-      if ('actions' in obj) {
-        obj.actions(plot);
+      // Generate the accessor function
+      (function(prop) {
+        var data = null;
+        plot[prop] = function(x) {
+          if (!arguments.length) {
+            return data;
+          }
+          data = x;
+          return plot[prop];
+        };
+      }(name));
+
+      // Attach config if needed.
+      if (typeof(obj.config) === "function") {
+        obj.config = obj.config(plot);
+      }
+      Rna2D.utils.generateAccessors(plot[name], obj.config);
+
+      // Perform the side effects. These often create functions which need to be
+      // created before the plot is drawn.
+      if (obj.hasOwnProperty('sideffects')) {
+        obj.sideffects(plot);
       }
 
-      if ('generate' in obj) {
-        obj.generate(plot);
-      }
-    }
+      // Generate the rendering function, which creates the actions and then runs
+      // generate if needed.
+      plot.components[name] = function(plot) {
+        if (obj.hasOwnProperty('actions')) {
+          obj.actions(plot);
+        }
+        if (obj.hasOwnProperty('generate')) {
+          obj.generate(plot);
+        }
 
-    return plot;
-  };
+        return plot;
+      };
+
+    });
 
   return Rna2D;
 };
@@ -169,13 +176,12 @@ Rna2D.config = function(plot, given) {
     yScale: null
   };
 
-  Rna2D.utils.extend(config, given);
-  Rna2D.utils.generateAccessors(plot, config);
+  Rna2D.utils.generateAccessors(plot, _.extend(config, given));
 
   return plot;
 };
 
-Rna2D.utils = function() {
+Rna2D.utils = (function() {
   var my = {};
 
   my.distance = function(a, b) {
@@ -183,9 +189,8 @@ Rna2D.utils = function() {
   };
 
   my.generateAccessors = function(obj, state, callback) {
-    d3.keys(state).forEach(function(key) {
-
-      obj[key] = function() {
+    _.each(state, function(value, key) {
+      obj[key] = (function() {
         return function(x) {
           if (!arguments.length) {
             return state[key];
@@ -197,8 +202,7 @@ Rna2D.utils = function() {
           }
           return obj;
         };
-      }();
-
+      }());
     });
   };
 
@@ -207,24 +211,16 @@ Rna2D.utils = function() {
 
     if (obj.mouseover() === 'highlight') {
       handlers = [handlers[0]];
-      selection.on('mouseover', obj.highlight())
+      selection
+        .on('mouseover', obj.highlight())
         .on('mouseout', obj.normalize());
     }
 
-    handlers.forEach(function(handler) {
-      if (obj[handler]) {
-        selection.on(handler, obj[handler]());
-      }
+    _.each(handlers, function(handler) {
+      selection.on(handler, obj[handler]);
     });
 
     return selection;
-  };
-
-  my.extend = function(update, old) {
-    for(var key in old) {
-      update[key] = old[key];
-    }
-    return update;
   };
 
   my.element = function(id) {
@@ -232,7 +228,7 @@ Rna2D.utils = function() {
   };
 
   return my;
-}();
+}());
 
 // TODO: Organize so we don't have to add this silly setup.
 // Some builtin views.
@@ -294,32 +290,32 @@ Rna2D.components.brush = function() {
 
     generate: function(plot) {
 
-    // Blank for now, later may use this for a multiple selecting brush.
-    startBrush = function () { return 'bobo'; };
+      // Blank for now, later may use this for a multiple selecting brush.
+      startBrush = function () { return 'bobo'; };
 
-    // Do nothing for now.
-    updateBrush = function (p) { };
+      // Do nothing for now.
+      updateBrush = function (p) { };
 
-    endBrush = function () {
-      var matched = {};
+      endBrush = function () {
+        var matched = [];
 
-      if (plot.brush().empty()) {
-        plot.brush.clear();
-      } else {
+        if (plot.brush().empty()) {
+          plot.brush.clear();
+        } else {
 
-        var e = plot.brush().extent(),
-            getID = plot.nucleotides.getID();
-        plot.vis.selectAll('.' + plot.nucleotides['class']())
-          .attr("checked", function(d) {
-            if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
-                e[0][1] <= d.__y && d.__y <= e[1][1]) {
-              matched[getID(d)] = d;
-            }
-          });
+          var e = plot.brush().extent();
+          plot.vis.selectAll('.' + plot.nucleotides['class']())
+            .attr("checked", function(d) {
+              if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
+                  e[0][1] <= d.__y && d.__y <= e[1][1]) {
+                matched.push(d);
+              }
+            });
 
-        plot.brush.update()(matched);
-      }
-    };
+          plot.brush.update()(matched);
+        }
+      };
+
       plot.brush(d3.svg.brush()
         .on('brushstart', startBrush)
         .on('brush', updateBrush)
@@ -378,7 +374,10 @@ Rna2D.components.interactions = function () {
         },
         mouseover: null,
         mouseout: null,
-        click: null,
+        click: function(d) {
+          var nts = plot.interactions.nucleotides(this);
+          plot.jmol.showSelection(nts.data());
+        },
         'class': 'interaction',
         classOf: function(d) { return d.family; },
         highlightColor: function() { return 'red'; },
@@ -444,7 +443,6 @@ Rna2D.components.interactions = function () {
 
     actions: function(plot) {
 
-
       plot.interactions.all = function(family) {
         if (!arguments.length || !family) {
           family = plot.interactions['class']();
@@ -460,7 +458,8 @@ Rna2D.components.interactions = function () {
         if (!arguments.length) {
           obj = this;
         }
-        var nts = obj.getAttribute('data-nts').split(','),
+        var data = d3.select(obj).datum(),
+            nts = plot.interactions.getNTs()(data),
             selector = '#' + nts.join(', #');
         return plot.vis.selectAll(selector);
       };
@@ -545,16 +544,12 @@ Rna2D.components.jmol = {
     plot.jmol.showSelection = function(matched) {
       plot.jmol.setup();
 
-      var data = matched;
-      if (typeof(matched) == 'object') {
-        var ids = $.map(matched, function(value, key) { return key; });
-        data = ids.join(',');
-      }
-
-      var count = data.split(',').length;
-      if (count > plot.jmol.maxSize()) {
+      if (matched.length > plot.jmol.maxSize()) {
         return plot.jmol.overflow();
       }
+
+      var data = $.map(matched, plot.nucleotides.getID());
+      data = data.join(',');
 
       $('#' + plot.jmol.tmpID()).remove();
       $('body').append("<input type='radio' id='" + plot.jmol.tmpID() +
@@ -567,15 +562,6 @@ Rna2D.components.jmol = {
       }).jmolToggle();
 
       return plot.jmol;
-    };
-
-    // Show the given group. The group should have a data-nts property which is
-    // a string of nt ids to show.
-    plot.jmol.showGroup = function(group) {
-      if (!arguments.length || !group) {
-        group = this;
-      }
-      plot.jmol.showSelection(group.getAttribute('data-nts'));
     };
 
   }
@@ -606,22 +592,27 @@ Rna2D.components.labels = {
   }
 };
 
-Rna2D.components.motifs = function () {
+Rna2D.components.motifs = (function () {
 
   return {
 
-    config: {
-      classOf: function(d) { return d.id.split("_")[0]; },
-      'class': 'motif',
-      highlightColor: function() { return 'red'; },
-      visible: function(d) { return true; },
-      click: null,
-      mouseover: null,
-      mouseout: null,
-      getID: function(d) { return d.id; },
-      getNTs: function(d) { return d.nts; },
-      highlight: Object,
-      normalize: Object
+    config: function(plot) {
+      return {
+        classOf: function(d) { return d.id.split("_")[0]; },
+        'class': 'motif',
+        highlightColor: function() { return 'red'; },
+        visible: function(d) { return true; },
+        click: function(d) {
+          var nts = plot.motifs.nucleotides(this).data();
+          return plot.jmol.showSelection(nts);
+        },
+        mouseover: null,
+        mouseout: null,
+        getID: function(d) { return d.id; },
+        getNTs: function(d) { return d.nts; },
+        highlight: Object,
+        normalize: Object
+      };
     },
 
     actions: function(plot) {
@@ -630,8 +621,9 @@ Rna2D.components.motifs = function () {
       };
 
       plot.motifs.nucleotides = function(obj) {
-        var nts = obj.getAttribute('data-nts').split(',');
-        var selector = '#' + nts.join(', #');
+        var motifData = d3.select(obj).datum(),
+            nts = plot.motifs.getNTs()(motifData),
+            selector = '#' + nts.join(', #');
         return plot.vis.selectAll(selector);
       };
 
@@ -668,7 +660,7 @@ Rna2D.components.motifs = function () {
     }
   };
 
-}();
+}());
 
 Rna2D.components.nucleotides = function() {
 
@@ -683,7 +675,7 @@ Rna2D.components.nucleotides = function() {
       color: 'black',
       fontSize: 11,
       gap: 1,
-      click: null,
+      click: function(d, i) { return plot.jmol.showSelection([d]); },
       mouseover: null,
       mouseout: null,
       getID: function(d) { return d.id; },
@@ -908,14 +900,16 @@ Rna2D.views.airport.groups = function(plot) {
 
   plot.groups = function(standard) {
       // Compute a box around the motif
-      var motifs = plot.motifs();
+      var motifs = plot.motifs(),
+          i = 0,
+          j = 0;
 
       if (!motifs || !motifs.length) {
         return plot;
       }
 
-      for(var i = 0; i < motifs.length; i++) {
-        var current = motifs[i], 
+      for(i = 0; i < motifs.length; i++) {
+        var current = motifs[i],
             left = 0,
             right = plot.__xCoordMax,
             top = plot.__yCoordMax,
@@ -924,32 +918,42 @@ Rna2D.views.airport.groups = function(plot) {
 
         // Mark motif as visible or not
         current.visible = visible(current);
+        current.missing = [];
 
         // Find the outer points.
         var nts = plot.motifs.getNTs()(current);
-        for(var j = 0; j < nts.length; j++) {
+        for(j = 0; j < nts.length; j++) {
           var id = nts[j],
               elem = Rna2D.utils.element(id);
 
           if (elem === null) {
             console.log('Missing nt ' + id + ' in motif: ', current);
-            break;
+            current.missing = id;
+          } else {
+            var bbox = elem.getBBox();
+            if (bbox.x < right) {
+              right = bbox.x;
+            }
+            if (bbox.x + bbox.width > left) {
+              left = bbox.x + bbox.width;
+            }
+            if (bbox.y + bbox.height > bottom) {
+              bottom = bbox.y + bbox.height;
+            }
+            if (bbox.y < top) {
+              top = bbox.y;
+            }
           }
+        }
 
-          var bbox = elem.getBBox();
-          if (bbox.x < right) {
-            right = bbox.x;
-          }
-          if (bbox.x + bbox.width > left) {
-            left = bbox.x + bbox.width;
-          }
-          if (bbox.y + bbox.height > bottom) {
-            bottom = bbox.y + bbox.height;
-          }
-          if (bbox.y < top) {
-            top = bbox.y;
-          }
-
+        // Store bounding box. It is very odd to get a bounding box that
+        // involves the outer edges. In this case we think that we have not
+        // actually found the nts so we log this and use a box that cannot
+        // be seen. This prevents bugs where we stop drawing boxes too early.
+        if (bottom === 0 || left === 0 || right === plot.__xCoordMax || top === plot.__yCoordMax) {
+          console.log("Unlikely bounding box found for " + current.id);
+          current.bounding = [{x: 0, y: 0}, {x: 0, y: 0}, {x: 0, y: 0}, {x: 0, y: 0}];
+        } else {
           current.bounding = [
             { x: left, y: top },
             { x: left, y: bottom },
@@ -957,6 +961,7 @@ Rna2D.views.airport.groups = function(plot) {
             { x: right, y: top }
           ];
         }
+
       }
 
       var motifLine = d3.svg.line()
@@ -967,6 +972,7 @@ Rna2D.views.airport.groups = function(plot) {
       plot.vis.selectAll(plot.motifs['class']())
         .data(plot.motifs()).enter().append('svg:path')
         .call(standard)
+        .attr('missing-nts', function(d) { return d.missing.join(' '); })
         .attr('d', function(d) { return motifLine(d.bounding) + "Z"; });
 
      return plot;
