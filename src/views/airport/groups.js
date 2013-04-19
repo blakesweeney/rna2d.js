@@ -2,13 +2,15 @@ Rna2D.views.airport.groups = function(plot) {
 
   plot.groups = function(standard) {
       // Compute a box around the motif
-      var motifs = plot.motifs();
+      var motifs = plot.motifs(),
+          i = 0,
+          j = 0;
 
       if (!motifs || !motifs.length) {
         return plot;
       }
 
-      for(var i = 0; i < motifs.length; i++) {
+      for(i = 0; i < motifs.length; i++) {
         var current = motifs[i], 
             left = 0,
             right = plot.__xCoordMax,
@@ -18,16 +20,17 @@ Rna2D.views.airport.groups = function(plot) {
 
         // Mark motif as visible or not
         current.visible = visible(current);
+        current.found = true;
 
         // Find the outer points.
         var nts = plot.motifs.getNTs()(current);
-        for(var j = 0; j < nts.length; j++) {
+        for(j = 0; j < nts.length; j++) {
           var id = nts[j],
               elem = Rna2D.utils.element(id);
 
           if (elem === null) {
             console.log('Missing nt ' + id + ' in motif: ', current);
-            continue;
+            break;
           }
 
           var bbox = elem.getBBox();
