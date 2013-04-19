@@ -928,7 +928,7 @@ Rna2D.views.airport.groups = function(plot) {
 
           if (elem === null) {
             console.log('Missing nt ' + id + ' in motif: ', current);
-            current.missing = id;
+            current.missing.push(id);
           } else {
             var bbox = elem.getBBox();
             if (bbox.x < right) {
