@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-/*globals window, d3, _, document, $, jmolApplet, jmolScript */
+/*globals window, d3, document, $, jmolApplet, jmolScript */
 
 var Rna2D = window.Rna2D || function(config) {
   var plot = function(selection) {
@@ -185,7 +185,7 @@ Rna2D.config = function(plot, given) {
     yScale: null
   };
 
-  Rna2D.utils.generateAccessors(plot, _.extend(config, given));
+  Rna2D.utils.generateAccessors(plot, $.extend(config, given));
 
   return plot;
 };
@@ -198,7 +198,7 @@ Rna2D.utils = (function() {
   };
 
   my.generateAccessors = function(obj, state, callback) {
-    _.each(state, function(value, key) {
+    $.each(state, function(key, value) {
       obj[key] = (function() {
         return function(x) {
           if (!arguments.length) {
@@ -263,11 +263,9 @@ Rna2D.views = function(plot) {
   plot.views = {};
 
   // Add all config
-  _.chain(Rna2D.views)
-    .keys()
-    .each(function(name) {
-      var view = Rna2D.views[name](plot),
-          config = view.config;
+  $.each(Rna2D.views, function(name, view) {
+      view = view(plot);
+      var config = view.config;
       if (typeof(config) === "function") {
         config = config(plot);
       }
@@ -471,7 +469,7 @@ Rna2D.components.interactions = (function () {
             seen = {},
             indexOf = plot.nucleotides.indexOf;
 
-        _.each(interactions, function(current) {
+        $.each(interactions, function(i, current) {
           var id = getID(current),
               nts = getNts(current);
 

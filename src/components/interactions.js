@@ -64,7 +64,7 @@ Rna2D.components.interactions = (function () {
             seen = {},
             indexOf = plot.nucleotides.indexOf;
 
-        _.each(interactions, function(current) {
+        $.each(interactions, function(i, current) {
           var id = getID(current),
               nts = getNts(current);
 

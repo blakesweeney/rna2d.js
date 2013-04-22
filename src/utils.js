@@ -6,7 +6,7 @@ Rna2D.utils = (function() {
   };
 
   my.generateAccessors = function(obj, state, callback) {
-    _.each(state, function(value, key) {
+    $.each(state, function(key, value) {
       obj[key] = (function() {
         return function(x) {
           if (!arguments.length) {

@@ -21,11 +21,9 @@ Rna2D.views = function(plot) {
   plot.views = {};
 
   // Add all config
-  _.chain(Rna2D.views)
-    .keys()
-    .each(function(name) {
-      var view = Rna2D.views[name](plot),
-          config = view.config;
+  $.each(Rna2D.views, function(name, view) {
+      view = view(plot);
+      var config = view.config;
       if (typeof(config) === "function") {
         config = config(plot);
       }
