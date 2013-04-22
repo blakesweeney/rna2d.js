@@ -21,12 +21,15 @@ var Rna2D = window.Rna2D || function(config) {
 
       var margin = plot.margin();
 
-      sel.select('svg').remove();
-      plot.top = sel.append('svg')
-          .attr('width', plot.width() - margin.left - margin.right)
-          .attr('height', plot.height() - margin.above - margin.below);
+      plot.width(plot.width() - margin.left - margin.right);
+      plot.height(plot.height() - margin.above - margin.below);
 
-      plot.vis = plot.top.append("g")
+      sel.select('svg').remove();
+      var top = sel.append('svg')
+          .attr('width', plot.width() + margin.left + margin.right)
+          .attr('height', plot.height() + margin.above + margin.below);
+
+      plot.vis = top.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
       // ----------------------------------------------------------------------
@@ -221,8 +224,9 @@ Rna2D.utils = (function() {
         .on(handlers.pop(), obj.highlight());
     }
 
+
     $.each(handlers, function(i, handler) {
-      selection.on(handler, obj[handler]);
+      selection.on(handler, obj[handler]());
     });
 
     return selection;
@@ -394,8 +398,8 @@ Rna2D.components.frame = {
       .classed(plot.frame['class'](), true)
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width', plot.width())
-      .attr('height', plot.height() - 1)
+      .attr('width', plot.width() + plot.margin().left + plot.margin().right)
+      .attr('height', plot.height() + plot.margin().below + plot.margin().above)
       .style('pointer-events', 'none');
   }
 };
@@ -842,13 +846,11 @@ Rna2D.views.airport = function(plot) {
     xCoordMax = d3.max(data, function(d) { return d.x; });
     yCoordMax = d3.max(data, function(d) { return d.y; });
 
-    var xMax = d3.max([width, xCoordMax]),
-        yMax = d3.max([height, yCoordMax]),
-        xScale = d3.scale.linear()
-          .domain([0, xMax])
+    var xScale = d3.scale.linear()
+          .domain([0, xCoordMax])
           .range([0, width]),
         yScale = d3.scale.linear()
-          .domain([0, yMax])
+          .domain([0, yCoordMax])
           .range([0, height]);
 
     plot.xScale(xScale);
@@ -1046,7 +1048,7 @@ Rna2D.views.circular = function(plot) {
 
   var position = function(ntId) {
     var centroid = innerArc.centroid(null, plot.nucleotides.indexOf(ntId)),
-    c = plot.__circleCenter;
+    c = plot.views.circular.center()();
     return { x: c.x + centroid[0], y: c.y + centroid[1] };
   };
 
@@ -1077,11 +1079,11 @@ Rna2D.views.circular = function(plot) {
   // Function to draw the arcs.
   var coordinates = function(standard) {
 
-    outer = plot.width() / 2;
+    outer = plot.views.circular.radius()();
     inner = outer - plot.views.circular.width();
     center = plot.views.circular.center()();
-    angleSize = (2*Math.PI - plot.views.circular.gapSize()) / plot.nucleotides().length;
-    halfGap = plot.circular.arcGap() / 2;
+    angleSize = (2*Math.PI - plot.views.circular.arcGap()) / plot.nucleotides().length;
+    halfGap = plot.views.circular.arcGap() / 2;
     startAngle = function(d, i) { return i * angleSize + halfGap; };
     endAngle = function(d, i) { return (i + 1) * angleSize + halfGap; };
 
@@ -1096,7 +1098,7 @@ Rna2D.views.circular = function(plot) {
       .yScale(d3.scale.identity().domain([0, plot.height()]));
 
     // Draw the arcs
-    plot.g.selectAll(plot.nucleotides['class']())
+    plot.vis.selectAll(plot.nucleotides['class']())
       .append('g')
       .data(plot.nucleotides()).enter().append('svg:path')
       .call(standard)
@@ -1112,7 +1114,7 @@ Rna2D.views.circular = function(plot) {
 
     innerArc = d3.svg.arc()
       .outerRadius(inner)
-      .innerRadius(inner - plot.circular.interactionGap())
+      .innerRadius(inner - plot.views.circular.interactionGap())
       .startAngle(startAngle)
       .endAngle(endAngle);
 
@@ -1130,30 +1132,37 @@ Rna2D.views.circular = function(plot) {
     connections: connections,
     groups: function(standard) { return plot; },
     config: {
-      width: 10,
+      radius: function() {
+        return plot.width() / 4;
+      },
+      width: 4,
       arcGap: 0.2,
       interactionGap: 3,
-      center: function() {
-
-      },
       letterClass: 'nucleotide-letter',
+      xCoord: function(d, i) {
+        return ntArc.centroid(null, i).x;
+      },
+      yCoord: function(d, i) {
+        return ntArc.centroid(null, i).y;
+      },
+      center: function() {
+        return { x: plot.width() / 2, y: plot.height() / 2 };
+      },
       letterID: function(obj) {
         return obj.getAttribute('id') + '-letter';
       },
       letterSize: 20,
       letterPosition: function(obj) {
         var index = plot.nucleotides.indexOf(obj.getAttribute('id')),
-        position = ntArc.centroid(null, index);
-        return {
-          x: plot.__circleCenter.x + position[0],
-          y: plot.__circleCenter.y + position[1]
-        };
+            position = ntArc.centroid(null, index),
+            center = plot.views.circular.center()();
+        return { x: center.x + position[0], y: center.y + position[1] };
       },
       addLetters: function(nts) {
         var positionOf = plot.views.circular.letterPosition(),
         highlightColor = plot.nucleotides.highlightColor();
 
-        plot.g.selectAll(plot.views.circular.letterClass())
+        plot.vis.selectAll(plot.views.circular.letterClass())
           .data(nts).enter().append('svg:text')
           .attr('id', plot.views.circular.letterID())
           .attr('class', plot.views.circular.letterClass())
@@ -1167,7 +1176,7 @@ Rna2D.views.circular = function(plot) {
         return plot;
       },
       clearLetters: function() {
-        return plot.g.selectAll('.' + plot.views.circular.letterClass()).remove();
+        return plot.vis.selectAll('.' + plot.views.circular.letterClass()).remove();
       }
     },
 

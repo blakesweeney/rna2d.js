@@ -17,12 +17,15 @@ var Rna2D = window.Rna2D || function(config) {
 
       var margin = plot.margin();
 
-      sel.select('svg').remove();
-      plot.top = sel.append('svg')
-          .attr('width', plot.width() - margin.left - margin.right)
-          .attr('height', plot.height() - margin.above - margin.below);
+      plot.width(plot.width() - margin.left - margin.right);
+      plot.height(plot.height() - margin.above - margin.below);
 
-      plot.vis = plot.top.append("g")
+      sel.select('svg').remove();
+      var top = sel.append('svg')
+          .attr('width', plot.width() + margin.left + margin.right)
+          .attr('height', plot.height() + margin.above + margin.below);
+
+      plot.vis = top.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
       // ----------------------------------------------------------------------

@@ -62,13 +62,11 @@ Rna2D.views.airport = function(plot) {
     xCoordMax = d3.max(data, function(d) { return d.x; });
     yCoordMax = d3.max(data, function(d) { return d.y; });
 
-    var xMax = d3.max([width, xCoordMax]),
-        yMax = d3.max([height, yCoordMax]),
-        xScale = d3.scale.linear()
-          .domain([0, xMax])
+    var xScale = d3.scale.linear()
+          .domain([0, xCoordMax])
           .range([0, width]),
         yScale = d3.scale.linear()
-          .domain([0, yMax])
+          .domain([0, yCoordMax])
           .range([0, height]);
 
     plot.xScale(xScale);

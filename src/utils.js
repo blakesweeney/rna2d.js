@@ -32,8 +32,9 @@ Rna2D.utils = (function() {
         .on(handlers.pop(), obj.highlight());
     }
 
+
     $.each(handlers, function(i, handler) {
-      selection.on(handler, obj[handler]);
+      selection.on(handler, obj[handler]());
     });
 
     return selection;
