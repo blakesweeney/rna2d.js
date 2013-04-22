@@ -394,6 +394,7 @@ Rna2D.components.frame = {
       return plot.vis;
     }
 
+    // TODO: Change this to ignore margins.
     return plot.vis.append('svg:rect')
       .classed(plot.frame['class'](), true)
       .attr('x', 0)
