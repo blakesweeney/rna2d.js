@@ -43,7 +43,7 @@ Rna2D.views.circular = function(plot) {
   // Function to draw the arcs.
   var coordinates = function(standard) {
 
-    outer = plot.width() / 2;
+    outer = plot.views.circular.radius()();
     inner = outer - plot.views.circular.width();
     center = plot.views.circular.center()();
     angleSize = (2*Math.PI - plot.views.circular.arcGap()) / plot.nucleotides().length;
@@ -96,6 +96,9 @@ Rna2D.views.circular = function(plot) {
     connections: connections,
     groups: function(standard) { return plot; },
     config: {
+      radius: function() {
+        return plot.width() / 4;
+      },
       width: 10,
       arcGap: 0.2,
       interactionGap: 3,
