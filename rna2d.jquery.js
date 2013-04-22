@@ -1,6 +1,8 @@
 (function($) {
+  "use strict";
 
-  $.fn.rna2d = function(opts) {
+
+  $.fn.rna2d = function(plot, opts) {
     var options = {
       "interactions": ".toggle-control",
       "mode": "#mode-toggle",
