@@ -1,8 +1,10 @@
 Rna2D.components.frame = {
 
-  config: {
-    add: true,
-    'class': 'frame'
+  config: function(plot) {
+    return {
+      add: true,
+      'class': 'frame'
+    };
   },
 
   generate: function(plot) {

@@ -1,41 +1,46 @@
 var Rna2D = window.Rna2D || function(config) {
   var plot = function(selection) {
 
+    // Compute the nucleotide ordering. This is often used when drawing
+    // interactions.
+    plot.nucleotides.computeOrder();
+
     // Set the selection to the given one.
     if (selection) {
       plot.selection(selection);
     }
 
     // Setup the view
-    var view = Rna2D.views[plot.view()];
-    view.coordinates(plot);
-    view.connections(plot);
-    view.groups(plot);
+    plot.view.setup();
 
     d3.select(plot.selection()).call(function(sel) {
 
       var margin = plot.margin();
 
-      // Compute the nucleotide ordering. This is often used when drawing
-      // interactions.
-      plot.nucleotides.computeOrder();
-
       sel.select('svg').remove();
-      plot.vis = sel.append('svg')
-        .attr('width', plot.width() - margin.left - margin.right)
-        .attr('height', plot.height() - margin.top - margin.bottom);
+      plot.top = sel.append('svg')
+          .attr('width', plot.width() - margin.left - margin.right)
+          .attr('height', plot.height() - margin.above - margin.below);
 
-      plot.g = plot.vis.append("g")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      plot.vis = plot.top.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
       // ----------------------------------------------------------------------
       // Draw all coordinates and attach all standard data
       // ----------------------------------------------------------------------
       plot.coordinates(function(selection) {
 
+          var x = plot.views[plot.view()].xCoord(),
+              y = plot.views[plot.view()].yCoord();
+
         selection.attr('id', plot.nucleotides.getID())
           .attr('class', function(d, i) {
             return plot.nucleotides['class']() + ' ' + plot.nucleotides.classOf()(d, i);
+          })
+          .datum(function(d, i) {
+            d.__x = x(d, i);
+            d.__y = y(d, i);
+            return d;
           })
           .attr('data-sequence', plot.nucleotides.getSequence());
 
@@ -49,15 +54,15 @@ var Rna2D = window.Rna2D || function(config) {
       // ----------------------------------------------------------------------
       plot.connections(function(selection) {
         var ntsOf = plot.interactions.getNTs(),
-            visible = plot.interactions.visible();
+        visible = plot.interactions.visible();
 
         selection.attr('id', plot.interactions.getID())
           .attr('class', function(d, i) {
             return plot.interactions['class']() + ' ' + plot.interactions.classOf()(d, i);
           })
           .attr('visibility', function(d) {
-                d.__visibility = visible(d);
-                return (visible(d) ? 'visible' : 'hidden'); 
+            d.__visibility = visible(d);
+            return (visible(d) ? 'visible' : 'hidden'); 
           })
           .attr('data-nts', function(d, i) { return ntsOf(d).join(','); })
           .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
@@ -101,6 +106,9 @@ var Rna2D = window.Rna2D || function(config) {
 
   // Add all components.
   Rna2D.components(plot);
+
+  // Add the views
+  Rna2D.views(plot);
 
   return plot;
 };

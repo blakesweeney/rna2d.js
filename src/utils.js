@@ -27,19 +27,19 @@ Rna2D.utils = (function() {
     var handlers = ['click', 'mouseover', 'mouseout'];
 
     if (obj.mouseover() === 'highlight') {
-      handlers = [handlers[0]];
       selection
-        .on('mouseover', obj.highlight())
-        .on('mouseout', obj.normalize());
+        .on(handlers.pop(), obj.normalize())
+        .on(handlers.pop(), obj.highlight());
     }
 
-    _.each(handlers, function(handler) {
+    $.each(handlers, function(i, handler) {
       selection.on(handler, obj[handler]);
     });
 
     return selection;
   };
 
+  // Get an element by id.
   my.element = function(id) {
     return document.getElementById(id);
   };

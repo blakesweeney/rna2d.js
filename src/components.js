@@ -2,19 +2,25 @@ Rna2D.components = function(plot) {
 
   // Create the toplevel component which calls each subcomponent component
   plot.components = function() {
-    console.log(_.functions(plot.components));
+    $.each(Rna2D.components, function(name, obj) {
 
-    _.chain(plot.components)
-    .functions()
-    .each(function(funcName) { plot.components[funcName](plot); });
+      if (obj.hasOwnProperty('actions')) {
+        obj.actions(plot);
+      }
+
+      if (obj.hasOwnProperty('generate')) {
+        try {
+          obj.generate(plot);
+        } catch (except) {
+          console.log(except);
+        }
+      }
+    });
   };
 
   // Create each subcomponent with its accessor function, config, side 
   // effects, and rendering function.
-  _.chain(Rna2D.components)
-  .keys()
-  .each(function(name) {
-    var obj = Rna2D.components[name];
+  $.each(Rna2D.components, function(name, obj) {
 
     // Generate the accessor function
     (function(prop) {
@@ -28,11 +34,7 @@ Rna2D.components = function(plot) {
       };
     }(name));
 
-    // Attach config if needed.
-    if (typeof(obj.config) === "function") {
-      obj.config = obj.config(plot);
-    }
-    Rna2D.utils.generateAccessors(plot[name], obj.config);
+    Rna2D.utils.generateAccessors(plot[name], obj.config(plot));
 
     // Perform the side effects. These often create functions which need to be
     // created before the plot is drawn.
@@ -40,25 +42,7 @@ Rna2D.components = function(plot) {
       obj.sideffects(plot);
     }
 
-    console.log('creating drawing fn ' +  name);
-
-    // Generate the rendering function, which creates the actions and then runs
-    // generate if needed.
-    plot.components[name] = function(plot) {
-      console.log('generic', name);
-      if (obj.hasOwnProperty('actions')) {
-        console.log(name, 'actions');
-        obj.actions(plot);
-      }
-
-      if (obj.hasOwnProperty('generate')) {
-        console.log('generate', name);
-        obj.generate(plot);
-      }
-
-      return plot;
-    };
-
+    plot.components[name] = obj;
   });
 
   return Rna2D;
