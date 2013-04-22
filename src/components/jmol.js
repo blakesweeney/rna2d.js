@@ -1,20 +1,22 @@
 Rna2D.components.jmol = {
 
-  config: {
-    divID: 'jmol',
-    appID: 'jmolApplet0',
-    tmpID: 'tempJmolToolsObj',
-    neighborhoodID: 'neighborhood',
-    numbersID: 'showNtNums',
-    stereoID: 'stero',
-    maxSize: 200,
-    overflow: Object,
-    windowSize: 400,
-    windowBuild: function($div) {
-      $div.append('<label><input type="checkbox" id="showNtNums">Numbers</label>')
+  config: function(plot) {
+    return {
+      divID: 'jmol',
+      appID: 'jmolApplet0',
+      tmpID: 'tempJmolToolsObj',
+      neighborhoodID: 'neighborhood',
+      numbersID: 'showNtNums',
+      stereoID: 'stero',
+      maxSize: 200,
+      overflow: Object,
+      windowSize: 400,
+      windowBuild: function($div) {
+        $div.append('<label><input type="checkbox" id="showNtNums">Numbers</label>')
         .append('<input type="button" id="neighborhood" value="Show neighborhood">')
         .append('<input type="button" id="stereo" value="Stereo">');
-    }
+      }
+    };
   },
 
   sideffects: function(plot) {

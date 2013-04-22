@@ -1,40 +1,44 @@
-Rna2D.components.nucleotides = function() {
+Rna2D.components.nucleotides = (function() {
 
   var ordered = {};
 
   return {
 
-    config: {
-      highlightColor: function() { return 'red'; },
-      'class': 'nucleotide',
-      classOf: function(d, i) { return ''; },
-      color: 'black',
-      fontSize: 11,
-      gap: 1,
-      click: function(d, i) { return plot.jmol.showSelection([d]); },
-      mouseover: null,
-      mouseout: null,
-      getID: function(d) { return d.id; },
-      getX: function(d) { return d.x; },
-      getY: function(d) { return d.y; },
-      getSequence: function(d) { return d.sequence; },
-      highlight: Object,
-      normalize: Object
+    config: function(plot) {
+      return {
+        highlightColor: function() { return 'red'; },
+        'class': 'nucleotide',
+        classOf: function(d, i) { return ''; },
+        color: 'black',
+        click: function(d, i) { return plot.jmol.showSelection([d]); },
+        mouseover: null,
+        mouseout: null,
+        getID: function(d) { return d.id; },
+        getX: function(d) { return d.x; },
+        getY: function(d) { return d.y; },
+        getSequence: function(d) { return d.sequence; },
+        highlight: Object,
+        normalize: Object,
+        toggleLetters: Object
+      };
     },
 
     sideffects: function(plot) {
       plot.nucleotides.computeOrder = function() {
         var nts = plot.nucleotides(),
-            getID = plot.nucleotides.getID();
-        for(var i = 0; i < nts.length; i++) {
-          var id = getID(nts[i]);
-          ordered[getID(nts[i])] = i;
-        }
+        getID = plot.nucleotides.getID();
+
+        $.each(nts, function(i, nt) {
+          ordered[getID(nt)] = i;
+        });
 
         return plot.nucleotides;
       };
 
       plot.nucleotides.indexOf = function(ntId) {
+        if (!ordered.hasOwnProperty(ntId)) {
+          return null;
+        }
         return ordered[ntId];
       };
 
@@ -48,14 +52,16 @@ Rna2D.components.nucleotides = function() {
     },
 
     actions: function(plot) {
-      plot.nucleotides.all = function() {
-        return plot.vis.selectAll('.' + plot.nucleotides['class']());
+      plot.nucleotides.selector = function() {
+        return '.' + plot.nucleotides['class']();
       };
 
-      plot.nucleotides.interactions = function(obj) {
-        if (!arguments.length) {
-          obj = this;
-        }
+      plot.nucleotides.all = function() {
+        return plot.vis.selectAll(plot.nucleotides.selector());
+      };
+
+      plot.nucleotides.interactions = function(given) {
+        var obj = given || this;
         var selector = '[nt1=' + obj.getAttribute('id') + '], [nt2=' + obj.getAttribute('id') + ']';
         return plot.vis.selectAll(selector);
       };
@@ -66,5 +72,5 @@ Rna2D.components.nucleotides = function() {
     }
   };
 
-}();
+}());
 

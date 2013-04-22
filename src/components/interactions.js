@@ -1,4 +1,4 @@
-Rna2D.components.interactions = function () {
+Rna2D.components.interactions = (function () {
 
   return {
 
@@ -24,18 +24,18 @@ Rna2D.components.interactions = function () {
         isForward: function(d) {
           var getFamily = plot.interactions.getFamily(),
               family = getFamily(d);
-          if (family.length == 3) {
+          if (family.length === 3) {
             family = family.slice(1, 3).toUpperCase();
           } else {
             family = family.slice(2, 4).toUpperCase();
           }
-          return family == 'WW' || family == 'WH' || family == 'WS' ||
-                 family == 'HH' || family == 'SH' || family == 'SS';
+          return family === 'WW' || family === 'WH' || family === 'WS' ||
+                 family === 'HH' || family === 'SH' || family === 'SS';
         },
         isSymmetric: function(d, i) {
           var getFamily = plot.interactions.getFamily(),
               family = getFamily(d);
-          return family[1] == family[2];
+          return family[1] === family[2];
         },
         getID: function(d) {
           var family = plot.interactions.getFamily()(d),
@@ -55,25 +55,25 @@ Rna2D.components.interactions = function () {
       // duplicate, and it has nucleotides which have been indexed. Interactions
       // are duplicate if their ID is the same.
       plot.interactions.valid = function() {
+
         var interactions = plot.interactions(),
             getID = plot.interactions.getID(),
             getNts = plot.interactions.getNTs(),
             isForward = plot.interactions.isForward(),
             valid = [],
             seen = {},
-            orderedNts = plot.nucleotides.ordered();
+            indexOf = plot.nucleotides.indexOf;
 
-        for(var i = 0; i < interactions.length; i++) {
-          var current = interactions[i],
-              id = getID(current, i),
+        _.each(interactions, function(current) {
+          var id = getID(current),
               nts = getNts(current);
 
           if (isForward(current) && !seen[id] && nts.length &&
-              orderedNts[nts[0]] && orderedNts[nts[1]]) {
+              indexOf(nts[0]) !== null && indexOf(nts[1]) !== null) {
             seen[id] = true;
             valid.push(current);
           }
-        }
+        });
 
         return valid;
       };
@@ -82,20 +82,16 @@ Rna2D.components.interactions = function () {
     actions: function(plot) {
 
       plot.interactions.all = function(family) {
-        if (!arguments.length || !family) {
-          family = plot.interactions['class']();
-        }
+        family = family || plot.interactions['class']();
         return plot.vis.selectAll('.' + family);
       };
 
-      plot.interactions.family = function(obj) {
-        return plot.interactions.getFamily()(d3.select(obj).datum());
-      };
+      //plot.interactions.family = function(obj) {
+        //return plot.interactions.getFamily()(d3.select(obj).datum());
+      //};
 
       plot.interactions.nucleotides = function(obj) {
-        if (!arguments.length) {
-          obj = this;
-        }
+        obj = obj || this;
         var data = d3.select(obj).datum(),
             nts = plot.interactions.getNTs()(data),
             selector = '#' + nts.join(', #');
@@ -129,5 +125,5 @@ Rna2D.components.interactions = function () {
     }
   };
 
-}();
+}());
 

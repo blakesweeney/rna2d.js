@@ -1,8 +1,13 @@
-(function() {
+(function () {
   'use strict';
+/*globals window, d3, _, document, $, jmolApplet, jmolScript */
 
 var Rna2D = window.Rna2D || function(config) {
   var plot = function(selection) {
+
+    // Compute the nucleotide ordering. This is often used when drawing
+    // interactions.
+    plot.nucleotides.computeOrder();
 
     // Set the selection to the given one.
     if (selection) {
@@ -10,30 +15,39 @@ var Rna2D = window.Rna2D || function(config) {
     }
 
     // Setup the view
-    var view = Rna2D.views[plot.view()];
-    view.coordinates(plot);
-    view.connections(plot);
-    view.groups(plot);
+    plot.view.setup();
 
     d3.select(plot.selection()).call(function(sel) {
 
-      // Compute the nucleotide ordering. This is often used when drawing
-      // interactions.
-      plot.nucleotides.computeOrder();
+      var margin = plot.margin();
+
+      plot.width(plot.width() - margin.left - margin.right);
+      plot.height(plot.height() - margin.above - margin.below);
 
       sel.select('svg').remove();
-      plot.vis = sel.append('svg')
-        .attr('width', plot.width())
-        .attr('height', plot.height());
+      var top = sel.append('svg')
+          .attr('width', plot.width() + margin.left + margin.right)
+          .attr('height', plot.height() + margin.above + margin.below);
+
+      plot.vis = top.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
       // ----------------------------------------------------------------------
       // Draw all coordinates and attach all standard data
       // ----------------------------------------------------------------------
       plot.coordinates(function(selection) {
 
+          var x = plot.views[plot.view()].xCoord(),
+              y = plot.views[plot.view()].yCoord();
+
         selection.attr('id', plot.nucleotides.getID())
           .attr('class', function(d, i) {
             return plot.nucleotides['class']() + ' ' + plot.nucleotides.classOf()(d, i);
+          })
+          .datum(function(d, i) {
+            d.__x = x(d, i);
+            d.__y = y(d, i);
+            return d;
           })
           .attr('data-sequence', plot.nucleotides.getSequence());
 
@@ -47,15 +61,15 @@ var Rna2D = window.Rna2D || function(config) {
       // ----------------------------------------------------------------------
       plot.connections(function(selection) {
         var ntsOf = plot.interactions.getNTs(),
-            visible = plot.interactions.visible();
+        visible = plot.interactions.visible();
 
         selection.attr('id', plot.interactions.getID())
           .attr('class', function(d, i) {
             return plot.interactions['class']() + ' ' + plot.interactions.classOf()(d, i);
           })
           .attr('visibility', function(d) {
-                d.__visibility = visible(d);
-                return (visible(d) ? 'visible' : 'hidden'); 
+            d.__visibility = visible(d);
+            return (visible(d) ? 'visible' : 'hidden'); 
           })
           .attr('data-nts', function(d, i) { return ntsOf(d).join(','); })
           .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
@@ -100,6 +114,9 @@ var Rna2D = window.Rna2D || function(config) {
   // Add all components.
   Rna2D.components(plot);
 
+  // Add the views
+  Rna2D.views(plot);
+
   return plot;
 };
 
@@ -109,56 +126,48 @@ Rna2D.components = function(plot) {
 
   // Create the toplevel component which calls each subcomponent component
   plot.components = function() {
-    _.chain(plot.components)
-      .functions()
-      .each(function(funcName) { plot.components[funcName](plot); });
+    $.each(Rna2D.components, function(name, obj) {
+
+      if (obj.hasOwnProperty('actions')) {
+        obj.actions(plot);
+      }
+
+      if (obj.hasOwnProperty('generate')) {
+        try {
+          obj.generate(plot);
+        } catch (except) {
+          console.log(except);
+        }
+      }
+    });
   };
 
   // Create each subcomponent with its accessor function, config, side 
   // effects, and rendering function.
-  _.chain(Rna2D.components)
-    .keys()
-    .each(function(name) {
-      var obj = Rna2D.components[name];
+  $.each(Rna2D.components, function(name, obj) {
 
-      // Generate the accessor function
-      (function(prop) {
-        var data = null;
-        plot[prop] = function(x) {
-          if (!arguments.length) {
-            return data;
-          }
-          data = x;
-          return plot[prop];
-        };
-      }(name));
-
-      // Attach config if needed.
-      if (typeof(obj.config) === "function") {
-        obj.config = obj.config(plot);
-      }
-      Rna2D.utils.generateAccessors(plot[name], obj.config);
-
-      // Perform the side effects. These often create functions which need to be
-      // created before the plot is drawn.
-      if (obj.hasOwnProperty('sideffects')) {
-        obj.sideffects(plot);
-      }
-
-      // Generate the rendering function, which creates the actions and then runs
-      // generate if needed.
-      plot.components[name] = function(plot) {
-        if (obj.hasOwnProperty('actions')) {
-          obj.actions(plot);
+    // Generate the accessor function
+    (function(prop) {
+      var data = null;
+      plot[prop] = function(x) {
+        if (!arguments.length) {
+          return data;
         }
-        if (obj.hasOwnProperty('generate')) {
-          obj.generate(plot);
-        }
-
-        return plot;
+        data = x;
+        return plot[prop];
       };
+    }(name));
 
-    });
+    Rna2D.utils.generateAccessors(plot[name], obj.config(plot));
+
+    // Perform the side effects. These often create functions which need to be
+    // created before the plot is drawn.
+    if (obj.hasOwnProperty('sideffects')) {
+      obj.sideffects(plot);
+    }
+
+    plot.components[name] = obj;
+  });
 
   return Rna2D;
 };
@@ -210,19 +219,20 @@ Rna2D.utils = (function() {
     var handlers = ['click', 'mouseover', 'mouseout'];
 
     if (obj.mouseover() === 'highlight') {
-      handlers = [handlers[0]];
       selection
-        .on('mouseover', obj.highlight())
-        .on('mouseout', obj.normalize());
+        .on(handlers.pop(), obj.normalize())
+        .on(handlers.pop(), obj.highlight());
     }
 
-    _.each(handlers, function(handler) {
-      selection.on(handler, obj[handler]);
+
+    $.each(handlers, function(i, handler) {
+      selection.on(handler, obj[handler]());
     });
 
     return selection;
   };
 
+  // Get an element by id.
   my.element = function(id) {
     return document.getElementById(id);
   };
@@ -230,25 +240,57 @@ Rna2D.utils = (function() {
   return my;
 }());
 
-// TODO: Organize so we don't have to add this silly setup.
-// Some builtin views.
-Rna2D.views = { 
-  airport: {},
-  circular: {}
+Rna2D.views = function(plot) { 
+
+  // Generate the setup function, which draws the view.
+  plot.view.setup = function() {
+    var view = Rna2D.views[plot.view()];
+
+    if (view === undefined) {
+      console.log("Unknown view " + plot.view());
+      return false;
+    }
+
+    // Overwrite all previous drawing functions
+    plot.coordinates = view.coordinates;
+    plot.connections = view.connections;
+    plot.groups = view.groups;
+
+    // Trigger the side effects
+    view.sideffects();
+  };
+
+  plot.views = {};
+
+  // Add all config
+  _.chain(Rna2D.views)
+    .keys()
+    .each(function(name) {
+      var view = Rna2D.views[name](plot),
+          config = view.config;
+      if (typeof(config) === "function") {
+        config = config(plot);
+      }
+      plot.views[name] = {};
+      Rna2D.utils.generateAccessors(plot.views[name], config);
+      Rna2D.views[name] = view;
+    });
 };
 
-Rna2D.components.brush = function() {
+Rna2D.components.brush = (function() {
 
   var startBrush, updateBrush, endBrush;
 
   return {
 
-    config: {
-      enabled: true,
-      initial: [],
-      'class': 'brush',
-      update: Object,
-      clear: Object
+    config: function(plot) {
+      return {
+        enabled: true,
+        initial: [],
+        'class': 'brush',
+        update: Object,
+        clear: Object
+      };
     },
 
     actions: function(plot) {
@@ -335,13 +377,15 @@ Rna2D.components.brush = function() {
     }
   };
 
-}();
+}());
 
 Rna2D.components.frame = {
 
-  config: {
-    add: true,
-    'class': 'frame'
+  config: function(plot) {
+    return {
+      add: true,
+      'class': 'frame'
+    };
   },
 
   generate: function(plot) {
@@ -350,17 +394,18 @@ Rna2D.components.frame = {
       return plot.vis;
     }
 
+    // TODO: Change this to ignore margins.
     return plot.vis.append('svg:rect')
       .classed(plot.frame['class'](), true)
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width', plot.width())
-      .attr('height', plot.height() - 1)
+      .attr('width', plot.width() + plot.margin().left + plot.margin().right)
+      .attr('height', plot.height() + plot.margin().below + plot.margin().above)
       .style('pointer-events', 'none');
   }
 };
 
-Rna2D.components.interactions = function () {
+Rna2D.components.interactions = (function () {
 
   return {
 
@@ -386,18 +431,18 @@ Rna2D.components.interactions = function () {
         isForward: function(d) {
           var getFamily = plot.interactions.getFamily(),
               family = getFamily(d);
-          if (family.length == 3) {
+          if (family.length === 3) {
             family = family.slice(1, 3).toUpperCase();
           } else {
             family = family.slice(2, 4).toUpperCase();
           }
-          return family == 'WW' || family == 'WH' || family == 'WS' ||
-                 family == 'HH' || family == 'SH' || family == 'SS';
+          return family === 'WW' || family === 'WH' || family === 'WS' ||
+                 family === 'HH' || family === 'SH' || family === 'SS';
         },
         isSymmetric: function(d, i) {
           var getFamily = plot.interactions.getFamily(),
               family = getFamily(d);
-          return family[1] == family[2];
+          return family[1] === family[2];
         },
         getID: function(d) {
           var family = plot.interactions.getFamily()(d),
@@ -417,25 +462,25 @@ Rna2D.components.interactions = function () {
       // duplicate, and it has nucleotides which have been indexed. Interactions
       // are duplicate if their ID is the same.
       plot.interactions.valid = function() {
+
         var interactions = plot.interactions(),
             getID = plot.interactions.getID(),
             getNts = plot.interactions.getNTs(),
             isForward = plot.interactions.isForward(),
             valid = [],
             seen = {},
-            orderedNts = plot.nucleotides.ordered();
+            indexOf = plot.nucleotides.indexOf;
 
-        for(var i = 0; i < interactions.length; i++) {
-          var current = interactions[i],
-              id = getID(current, i),
+        _.each(interactions, function(current) {
+          var id = getID(current),
               nts = getNts(current);
 
           if (isForward(current) && !seen[id] && nts.length &&
-              orderedNts[nts[0]] && orderedNts[nts[1]]) {
+              indexOf(nts[0]) !== null && indexOf(nts[1]) !== null) {
             seen[id] = true;
             valid.push(current);
           }
-        }
+        });
 
         return valid;
       };
@@ -444,20 +489,16 @@ Rna2D.components.interactions = function () {
     actions: function(plot) {
 
       plot.interactions.all = function(family) {
-        if (!arguments.length || !family) {
-          family = plot.interactions['class']();
-        }
+        family = family || plot.interactions['class']();
         return plot.vis.selectAll('.' + family);
       };
 
-      plot.interactions.family = function(obj) {
-        return plot.interactions.getFamily()(d3.select(obj).datum());
-      };
+      //plot.interactions.family = function(obj) {
+        //return plot.interactions.getFamily()(d3.select(obj).datum());
+      //};
 
       plot.interactions.nucleotides = function(obj) {
-        if (!arguments.length) {
-          obj = this;
-        }
+        obj = obj || this;
         var data = d3.select(obj).datum(),
             nts = plot.interactions.getNTs()(data),
             selector = '#' + nts.join(', #');
@@ -491,25 +532,27 @@ Rna2D.components.interactions = function () {
     }
   };
 
-}();
+}());
 
 Rna2D.components.jmol = {
 
-  config: {
-    divID: 'jmol',
-    appID: 'jmolApplet0',
-    tmpID: 'tempJmolToolsObj',
-    neighborhoodID: 'neighborhood',
-    numbersID: 'showNtNums',
-    stereoID: 'stero',
-    maxSize: 200,
-    overflow: Object,
-    windowSize: 400,
-    windowBuild: function($div) {
-      $div.append('<label><input type="checkbox" id="showNtNums">Numbers</label>')
+  config: function(plot) {
+    return {
+      divID: 'jmol',
+      appID: 'jmolApplet0',
+      tmpID: 'tempJmolToolsObj',
+      neighborhoodID: 'neighborhood',
+      numbersID: 'showNtNums',
+      stereoID: 'stero',
+      maxSize: 200,
+      overflow: Object,
+      windowSize: 400,
+      windowBuild: function($div) {
+        $div.append('<label><input type="checkbox" id="showNtNums">Numbers</label>')
         .append('<input type="button" id="neighborhood" value="Show neighborhood">')
         .append('<input type="button" id="stereo" value="Stereo">');
-    }
+      }
+    };
   },
 
   sideffects: function(plot) {
@@ -569,26 +612,28 @@ Rna2D.components.jmol = {
 };
 
 Rna2D.components.labels = {
-  config: {
-    majorTickClass: 'major-tick',
-    minorTickClass: 'minor-tick',
-    labelClass: 'label',
-    width: 5,
-    fontSize: 12,
-    majorTickCount: 30,
-    majorTickGenerator: function(length) {
-      var scale = d3.scale.identity()
-        .domain([1, plot.nucleotides().length + 1])
-        .range([1, plot.nucleotides().length + 1]);
-      return scale.ticks(plot.labels.majorTickCount());
-    },
-    minorTickCount: 150,
-    minorTickGenerator: function(length) {
-      var scale = d3.scale.identity()
-        .domain([1, plot.nucleotides().length + 1])
-        .range([1, plot.nucleotides().length + 1]);
-      return scale.ticks(plot.labels.minorTickCount());
-    }
+  config: function(plot) {
+    return {
+      majorTickClass: 'major-tick',
+      minorTickClass: 'minor-tick',
+      labelClass: 'label',
+      width: 5,
+      fontSize: 12,
+      majorTickCount: 30,
+      //majorTickGenerator: function(length) {
+      //var scale = d3.scale.identity()
+      //.domain([1, plot.nucleotides().length + 1])
+      //.range([1, plot.nucleotides().length + 1]);
+      //return scale.ticks(plot.labels.majorTickCount());
+      //},
+      minorTickCount: 150,
+      //minorTickGenerator: function(length) {
+      //var scale = d3.scale.identity()
+      //.domain([1, plot.nucleotides().length + 1])
+      //.range([1, plot.nucleotides().length + 1]);
+      //return scale.ticks(plot.labels.minorTickCount());
+      //}
+    };
   }
 };
 
@@ -633,7 +678,7 @@ Rna2D.components.motifs = (function () {
           d.__visible = visible(d, i);
           return d;
         }).attr('visibility', function(d, i) {
-          return (d.__visible ?  'visible' : 'hidden');
+          return (d.__visible ? 'visible' : 'hidden');
         });
       };
 
@@ -662,43 +707,47 @@ Rna2D.components.motifs = (function () {
 
 }());
 
-Rna2D.components.nucleotides = function() {
+Rna2D.components.nucleotides = (function() {
 
   var ordered = {};
 
   return {
 
-    config: {
-      highlightColor: function() { return 'red'; },
-      'class': 'nucleotide',
-      classOf: function(d, i) { return ''; },
-      color: 'black',
-      fontSize: 11,
-      gap: 1,
-      click: function(d, i) { return plot.jmol.showSelection([d]); },
-      mouseover: null,
-      mouseout: null,
-      getID: function(d) { return d.id; },
-      getX: function(d) { return d.x; },
-      getY: function(d) { return d.y; },
-      getSequence: function(d) { return d.sequence; },
-      highlight: Object,
-      normalize: Object
+    config: function(plot) {
+      return {
+        highlightColor: function() { return 'red'; },
+        'class': 'nucleotide',
+        classOf: function(d, i) { return ''; },
+        color: 'black',
+        click: function(d, i) { return plot.jmol.showSelection([d]); },
+        mouseover: null,
+        mouseout: null,
+        getID: function(d) { return d.id; },
+        getX: function(d) { return d.x; },
+        getY: function(d) { return d.y; },
+        getSequence: function(d) { return d.sequence; },
+        highlight: Object,
+        normalize: Object,
+        toggleLetters: Object
+      };
     },
 
     sideffects: function(plot) {
       plot.nucleotides.computeOrder = function() {
         var nts = plot.nucleotides(),
-            getID = plot.nucleotides.getID();
-        for(var i = 0; i < nts.length; i++) {
-          var id = getID(nts[i]);
-          ordered[getID(nts[i])] = i;
-        }
+        getID = plot.nucleotides.getID();
+
+        $.each(nts, function(i, nt) {
+          ordered[getID(nt)] = i;
+        });
 
         return plot.nucleotides;
       };
 
       plot.nucleotides.indexOf = function(ntId) {
+        if (!ordered.hasOwnProperty(ntId)) {
+          return null;
+        }
         return ordered[ntId];
       };
 
@@ -712,14 +761,16 @@ Rna2D.components.nucleotides = function() {
     },
 
     actions: function(plot) {
-      plot.nucleotides.all = function() {
-        return plot.vis.selectAll('.' + plot.nucleotides['class']());
+      plot.nucleotides.selector = function() {
+        return '.' + plot.nucleotides['class']();
       };
 
-      plot.nucleotides.interactions = function(obj) {
-        if (!arguments.length) {
-          obj = this;
-        }
+      plot.nucleotides.all = function() {
+        return plot.vis.selectAll(plot.nucleotides.selector());
+      };
+
+      plot.nucleotides.interactions = function(given) {
+        var obj = given || this;
         var selector = '[nt1=' + obj.getAttribute('id') + '], [nt2=' + obj.getAttribute('id') + ']';
         return plot.vis.selectAll(selector);
       };
@@ -730,9 +781,12 @@ Rna2D.components.nucleotides = function() {
     }
   };
 
-}();
+}());
 
-Rna2D.views.airport.connections = function(plot) {
+Rna2D.views.airport = function(plot) {
+
+  // Common variables.
+  var xCoordMax, yCoordMax;
 
   // We need to track if we are drawing across the letter in which case we
   // need to use the width + radius, otherwise we just need to use the radius.
@@ -766,9 +820,9 @@ Rna2D.views.airport.connections = function(plot) {
     if (Math.abs(dx) < almostFlat) {
       x1 = x1 + bbox1.width/2;
       if (y1 > y2) {
-        return { x: x1, y: y1 + r };
+        return { x: x1, y: y1 };
       }
-      return { x: x1, y: y1 + bbox1.height + r};
+      return { x: x1, y: y1 + bbox1.height };
     }
 
     // All other lines
@@ -781,22 +835,58 @@ Rna2D.views.airport.connections = function(plot) {
     return { x: c.x + a, y: c.y + b };
   };
 
-  plot.connections  = function(standard) {
+  // We make a chart function which draws the nucleotides in the given
+  // coordinates.
+   var coordinates = function(standard) {
+
+    var data = plot.nucleotides(),
+        width = plot.width(),
+        height = plot.height();
+
+    // Compute the scales and ranges.
+    xCoordMax = d3.max(data, function(d) { return d.x; });
+    yCoordMax = d3.max(data, function(d) { return d.y; });
+
+    var xScale = d3.scale.linear()
+          .domain([0, xCoordMax])
+          .range([0, width]),
+        yScale = d3.scale.linear()
+          .domain([0, yCoordMax])
+          .range([0, height]);
+
+    plot.xScale(xScale);
+    plot.yScale(yScale);
+
+    // Draw all nucleotides.
+    plot.vis.selectAll(plot.nucleotides['class']())
+      .data(data).enter().append('svg:text')
+      .call(standard)
+      .attr('x', function(d, i) { return xScale(plot.nucleotides.getX()(d, i)); })
+      .attr('y', function(d, i) { return yScale(plot.nucleotides.getY()(d, i)); })
+      .attr('font-size', plot.views.airport.fontSize())
+      .text(plot.nucleotides.getSequence())
+      .attr('fill', plot.nucleotides.color());
+
+    return plot;
+  };
+
+  // Function to draw the connections.
+  var connections = function(standard) {
 
       // Compute the data to use for interactions
       var interactions = plot.interactions.valid(),
           getNTs = plot.interactions.getNTs();
 
-      for(var i = 0; i < interactions.length; i++) {
-        var obj = interactions[i],
-            nts = getNTs(obj),
+      $.each(interactions, function(i, obj) {
+
+        var nts = getNTs(obj),
             nt1 = Rna2D.utils.element(nts[0]),
             nt2 = Rna2D.utils.element(nts[1]),
-            p1 = intersectPoint(nt1, nt2, plot.nucleotides.gap()),
-            p2 = intersectPoint(nt2, nt1, plot.nucleotides.gap());
+            p1 = intersectPoint(nt1, nt2, plot.views.airport.gap()),
+            p2 = intersectPoint(nt2, nt1, plot.views.airport.gap());
 
         obj.line = { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };
-      }
+      });
 
       // Draw the interactions
       plot.vis.selectAll(plot.interactions['class']())
@@ -812,93 +902,7 @@ Rna2D.views.airport.connections = function(plot) {
     return plot;
   };
 
-  plot.interactions.highlight(function() {
-    var obj = this,
-        highlightColor = plot.interactions.highlightColor();
-    d3.select(obj).style('stroke', highlightColor(obj));
-    return plot.interactions.nucleotides(obj).style('stroke', highlightColor(obj));
-  });
-
-  plot.interactions.normalize(function() {
-    var obj = this;
-    d3.select(obj).style('stroke', null);
-    return plot.interactions.nucleotides(obj).style('stroke', null);
-  });
-
-  return Rna2D;
-};
-
-Rna2D.views.airport.coordinates = function(plot) {
-
-  // We make a chart function which draws the nucleotides in the given
-  // coordinates.
-  plot.coordinates = function(standard) {
-
-    var data = plot.nucleotides(),
-        width = plot.width(),
-        height = plot.height(),
-        margin = plot.margin();
-
-    // Compute the scales and ranges.
-    var xCoordMax = d3.max(data, function(d) { return d.x; }),
-        yCoordMax = d3.max(data, function(d) { return d.y; }),
-        xMax = d3.max([width, xCoordMax]),
-        yMax = d3.max([height, yCoordMax]),
-        xScale = d3.scale.linear()
-          .domain([-margin.right, xMax + margin.left])
-          .range([0, width]),
-        yScale = d3.scale.linear()
-          .domain([-margin.above, yMax + margin.below])
-          .range([0, height]);
-
-    plot.xScale(xScale);
-    plot.yScale(yScale);
-    plot.__xCoordMax = xCoordMax;
-    plot.__yCoordMax = yCoordMax;
-
-    // Draw all nucleotides.
-    plot.vis.selectAll(plot.nucleotides['class']())
-      .data(data).enter().append('svg:text')
-      .call(standard)
-      .attr('x', function(d, i) { 
-        var x = xScale(plot.nucleotides.getX()(d, i));
-        d.__x = x;
-        return x; 
-      })
-      .attr('y', function(d, i) { 
-        var y = yScale(plot.nucleotides.getY()(d, i));
-        d.__y = y;
-        return  y;
-      })
-      .attr('font-size', plot.nucleotides.fontSize())
-      .attr('fill', plot.nucleotides.color())
-      .text(plot.nucleotides.getSequence())
-      .attr('fill', plot.nucleotides.color());
-
-    return plot;
-  };
-
-  plot.nucleotides.highlight(function() {
-    var obj = this,
-        highlightColor = plot.nucleotides.highlightColor();
-    d3.select(obj).style('stroke', highlightColor());
-    return plot.nucleotides.interactions(obj)
-      .style('stroke', highlightColor());
-  });
-
-  plot.nucleotides.normalize(function() {
-    var obj = this;
-    d3.select(obj).style('stroke', null);
-    return plot.nucleotides.interactions(obj)
-      .style('stroke', null);
-  });
-
-  return Rna2D;
-};
-
-Rna2D.views.airport.groups = function(plot) {
-
-  plot.groups = function(standard) {
+  var groups = function(standard) {
       // Compute a box around the motif
       var motifs = plot.motifs(),
           i = 0,
@@ -908,11 +912,10 @@ Rna2D.views.airport.groups = function(plot) {
         return plot;
       }
 
-      for(i = 0; i < motifs.length; i++) {
-        var current = motifs[i],
-            left = 0,
-            right = plot.__xCoordMax,
-            top = plot.__yCoordMax,
+      $.each(motifs, function(i, current) {
+        var left = 0,
+            right = xCoordMax,
+            top = yCoordMax,
             bottom = 0,
             visible = plot.motifs.visible();
 
@@ -922,9 +925,8 @@ Rna2D.views.airport.groups = function(plot) {
 
         // Find the outer points.
         var nts = plot.motifs.getNTs()(current);
-        for(j = 0; j < nts.length; j++) {
-          var id = nts[j],
-              elem = Rna2D.utils.element(id);
+        $.each(nts, function(j, id) {
+          var elem = Rna2D.utils.element(id);
 
           if (elem === null) {
             console.log('Missing nt ' + id + ' in motif: ', current);
@@ -944,13 +946,13 @@ Rna2D.views.airport.groups = function(plot) {
               top = bbox.y;
             }
           }
-        }
+        });
 
         // Store bounding box. It is very odd to get a bounding box that
         // involves the outer edges. In this case we think that we have not
         // actually found the nts so we log this and use a box that cannot
         // be seen. This prevents bugs where we stop drawing boxes too early.
-        if (bottom === 0 || left === 0 || right === plot.__xCoordMax || top === plot.__yCoordMax) {
+        if (bottom === 0 || left === 0 || right === xCoordMax || top === yCoordMax) {
           console.log("Unlikely bounding box found for " + current.id);
           current.bounding = [{x: 0, y: 0}, {x: 0, y: 0}, {x: 0, y: 0}, {x: 0, y: 0}];
         } else {
@@ -962,7 +964,7 @@ Rna2D.views.airport.groups = function(plot) {
           ];
         }
 
-      }
+      });
 
       var motifLine = d3.svg.line()
         .x(function(d) { return d.x; })
@@ -978,205 +980,250 @@ Rna2D.views.airport.groups = function(plot) {
      return plot;
   };
 
-  plot.motifs.highlight(function() {
-    var obj = this,
-        highlightColor = plot.motifs.highlightColor();
-    return plot.motifs.nucleotides(obj).style('stroke', highlightColor(obj));
-  });
+  return {
+    config: {
+      fontSize: 11,
+      gap: 1,
+      xCoord: function(d, i) { return plot.xScale()(plot.nucleotides.getX()(d, i)); },
+      yCoord: function(d, i) { return plot.yScale()(plot.nucleotides.getY()(d, i)); }
+    },
+    connections: connections,
+    coordinates: coordinates,
+    groups: groups,
+    sideffects: function() {
+      plot.interactions.highlight(function() {
+        var obj = this,
+            highlightColor = plot.interactions.highlightColor();
+        d3.select(obj).style('stroke', highlightColor(obj));
+        return plot.interactions.nucleotides(obj).style('stroke', highlightColor(obj));
+      });
 
-  plot.motifs.normalize(function() {
-    var obj = this;
-    return plot.motifs.nucleotides(obj).style('stroke', null);
-  });
+      plot.interactions.normalize(function() {
+        var obj = this;
+        d3.select(obj).style('stroke', null);
+        return plot.interactions.nucleotides(obj).style('stroke', null);
+      });
 
-  return Rna2D;
+      plot.nucleotides.highlight(function() {
+        var obj = this,
+            highlightColor = plot.nucleotides.highlightColor();
+        d3.select(obj).style('stroke', highlightColor());
+        return plot.nucleotides.interactions(obj)
+          .style('stroke', highlightColor());
+      });
+
+      plot.nucleotides.normalize(function() {
+        var obj = this;
+        d3.select(obj).style('stroke', null);
+        return plot.nucleotides.interactions(obj)
+          .style('stroke', null);
+      });
+
+      plot.motifs.highlight(function() {
+        var obj = this,
+            highlightColor = plot.motifs.highlightColor();
+        return plot.motifs.nucleotides(obj).style('stroke', highlightColor(obj));
+      });
+
+      plot.motifs.normalize(function() {
+        var obj = this;
+        return plot.motifs.nucleotides(obj).style('stroke', null);
+      });
+
+    }
+  };
+
 };
 
-Rna2D.views.circular.connections = function(plot) {
+Rna2D.views.circular = function(plot) {
+  var getNTs = plot.interactions.getNTs();
 
-  plot.connections = function(standard) {
+  // Some common config variables
+  var outer, inner, center, angleSize, halfGap, startAngle, endAngle;
 
-    var getNTs = plot.interactions.getNTs();
+  // Used to compute where to place the backbone arc.
+  var ntArc;
 
-   // Use to compute where to place the arcs for interaction arcs.
-   var innerArc = d3.svg.arc()
-          .outerRadius(plot.__ntArc.innerRadius()())
-          .innerRadius(plot.__ntArc.innerRadius()() - 3)
-          .startAngle(plot.__ntArc.startAngle())
-          .endAngle(plot.__ntArc.endAngle());
+  // Use to compute where to place the arcs for interaction arcs.
+  var innerArc;
 
-    var position = function(ntId) {
-      var centroid = innerArc.centroid(null, plot.nucleotides.indexOf(ntId)),
-          c = plot.__circleCenter;
-      return { x: c.x + centroid[0], y: c.y + centroid[1] };
-    };
+  var position = function(ntId) {
+    var centroid = innerArc.centroid(null, plot.nucleotides.indexOf(ntId)),
+    c = plot.views.circular.center()();
+    return { x: c.x + centroid[0], y: c.y + centroid[1] };
+  };
 
-    var curve = function(d, i) {
-      var startAngle = innerArc.startAngle(),
-          nts = getNTs(d),
-          from = position(nts[0]),
-          to = position(nts[1]),
-          distance = Rna2D.utils.distance(from, to),
-          angleDiff = startAngle(null, plot.nucleotides.indexOf(nts[0])) -
-                      startAngle(null, plot.nucleotides.indexOf(nts[1])),
-          radius = innerArc.innerRadius()() * Math.tan(angleDiff/2),
-          sweep  = 0;
+  var curve = function(d, i) {
+    var nts = getNTs(d),
+        from = position(nts[0]),
+        to = position(nts[1]),
+        distance = Rna2D.utils.distance(from, to),
+        angleDiff = startAngle(null, plot.nucleotides.indexOf(nts[0])) -
+          startAngle(null, plot.nucleotides.indexOf(nts[1])),
+        radius = innerArc.innerRadius()() * Math.tan(angleDiff/2),
+        sweep  = 0,
+        rotation = 0,
+        large_arc = 0;
 
-      if (plot.nucleotides.indexOf(nts[0]) > plot.nucleotides.indexOf(nts[1])) {
-        sweep = 1;
-      }
+    if (plot.nucleotides.indexOf(nts[0]) > plot.nucleotides.indexOf(nts[1])) {
+      sweep = 1;
+    }
 
-      return "M "  + from.x + " " + from.y +     // Start point
-             " A " + radius + "," + radius +     // Radii of elpise
-             " " + 0 +                           // Rotation
-             " " + 0 + " " + sweep +             // Large Arc and Sweep flag
-             " " + to.x + "," + to.y;            // End point
+    return "M "  + from.x + " " + from.y +     // Start point
+      " A " + radius + "," + radius +     // Radii of elpise
+      " " + rotation +                           // Rotation
+      " " + large_arc + " " + sweep +             // Large Arc and Sweep flag
+      " " + to.x + "," + to.y;            // End point
 
-    };
+  };
 
-    plot.vis.selectAll(plot.interactions['class']())
+  // Function to draw the arcs.
+  var coordinates = function(standard) {
+
+    outer = plot.views.circular.radius()();
+    inner = outer - plot.views.circular.width();
+    center = plot.views.circular.center()();
+    angleSize = (2*Math.PI - plot.views.circular.arcGap()) / plot.nucleotides().length;
+    halfGap = plot.views.circular.arcGap() / 2;
+    startAngle = function(d, i) { return i * angleSize + halfGap; };
+    endAngle = function(d, i) { return (i + 1) * angleSize + halfGap; };
+
+    ntArc = d3.svg.arc()
+      .outerRadius(outer)
+      .innerRadius(inner)
+      .startAngle(startAngle)
+      .endAngle(endAngle);
+
+    // Define the scales we are using
+    plot.xScale(d3.scale.identity().domain([0, plot.width()]))
+      .yScale(d3.scale.identity().domain([0, plot.height()]));
+
+    // Draw the arcs
+    plot.vis.selectAll(plot.nucleotides['class']())
+      .append('g')
+      .data(plot.nucleotides()).enter().append('svg:path')
+      .call(standard)
+      .attr('d', ntArc)
+      .attr('transform', 'translate(' + center.x + ',' + center.y + ')')
+      .attr('fill', plot.nucleotides.color());
+
+    return plot;
+  };
+
+  // Function to draw all connections.
+  var connections = function(standard) {
+
+    innerArc = d3.svg.arc()
+      .outerRadius(inner)
+      .innerRadius(inner - plot.views.circular.interactionGap())
+      .startAngle(startAngle)
+      .endAngle(endAngle);
+
+    return plot.vis.selectAll(plot.interactions['class']())
       .data(plot.interactions.valid()).enter().append('path')
       .call(standard)
       .attr('d', curve)
       .attr('fill', 'none')
       .attr('stroke', plot.interactions.color());
-
-    return plot;
   };
 
-  plot.interactions.highlight(function() {
-    var obj = this,
+  return {
+
+    coordinates: coordinates,
+    connections: connections,
+    groups: function(standard) { return plot; },
+    config: {
+      radius: function() {
+        return plot.width() / 4;
+      },
+      width: 4,
+      arcGap: 0.2,
+      interactionGap: 3,
+      letterClass: 'nucleotide-letter',
+      xCoord: function(d, i) {
+        return ntArc.centroid(null, i).x;
+      },
+      yCoord: function(d, i) {
+        return ntArc.centroid(null, i).y;
+      },
+      center: function() {
+        return { x: plot.width() / 2, y: plot.height() / 2 };
+      },
+      letterID: function(obj) {
+        return obj.getAttribute('id') + '-letter';
+      },
+      letterSize: 20,
+      letterPosition: function(obj) {
+        var index = plot.nucleotides.indexOf(obj.getAttribute('id')),
+            position = ntArc.centroid(null, index),
+            center = plot.views.circular.center()();
+        return { x: center.x + position[0], y: center.y + position[1] };
+      },
+      addLetters: function(nts) {
+        var positionOf = plot.views.circular.letterPosition(),
+        highlightColor = plot.nucleotides.highlightColor();
+
+        plot.vis.selectAll(plot.views.circular.letterClass())
+          .data(nts).enter().append('svg:text')
+          .attr('id', plot.views.circular.letterID())
+          .attr('class', plot.views.circular.letterClass())
+          .attr('x', function(d) { return positionOf(d).x; })
+          .attr('y', function(d) { return positionOf(d).y; })
+          .attr('font-size', plot.views.circular.letterSize())
+          .attr('pointer-events', 'none')
+          .text(function(d) { return d.getAttribute('data-sequence'); })
+          .attr('fill', function(d) { return highlightColor(d); });
+
+        return plot;
+      },
+      clearLetters: function() {
+        return plot.vis.selectAll('.' + plot.views.circular.letterClass()).remove();
+      }
+    },
+
+    sideffects: function() {
+
+      plot.nucleotides.highlight(function() {
+        var obj = this,
+        highlightColor = plot.nucleotides.highlightColor();
+        d3.select(obj).style('stroke', highlightColor(obj));
+
+        plot.views.circular.addLetters()([obj]);
+
+        return plot.nucleotides.interactions(obj)
+        .style('stroke', highlightColor(obj));
+      });
+
+      plot.nucleotides.normalize(function() {
+        var obj = this;
+        d3.select(obj).style('stroke', null);
+        plot.views.circular.clearLetters()();
+        return plot.nucleotides.interactions(obj)
+        .style('stroke', null);
+      });
+
+      plot.interactions.highlight(function() {
+        var obj = this,
         highlightColor = plot.interactions.highlightColor(),
         nts = plot.interactions.nucleotides(obj);
 
-    d3.select(obj).style('stroke', highlightColor(obj));
-    plot.pie.addLetters()(nts[0]); // TODO: WTF?
+        d3.select(obj).style('stroke', highlightColor(obj));
+        plot.views.circular.addLetters()(nts[0]); // TODO: WTF?
 
-    return nts.style('stroke', highlightColor(obj));
-  });
+        return nts.style('stroke', highlightColor(obj));
+      });
 
-  plot.interactions.normalize(function() {
-    var obj = this;
-    d3.select(obj).style('stroke', null);
-    plot.pie.clearLetters()();
-    plot.interactions.nucleotides(obj).style('stroke', null);
-    return plot.interactions;
-  });
-
-  return Rna2D;
-};
-
-Rna2D.views.circular.coordinates = function(plot) {
-
-  plot.coordinates = function(standard) {
-
-    var margin = 10 * Math.min(plot.margin().left, plot.margin().right),
-        outer = plot.width() / 2 - margin,
-        inner = outer - plot.pie.width(),
-        center = { x: plot.width() / 2, y: plot.height() / 2},
-        count = plot.nucleotides().length,
-        angleSize = (2*Math.PI - plot.pie.gapSize()) / count,
-        halfGap = plot.pie.gapSize() / 2,
-        startAngle = function(d, i) { return i * angleSize + halfGap; },
-        endAngle = function(d, i) { return (i + 1) * angleSize + halfGap; };
-
-    var arc = d3.svg.arc()
-          .outerRadius(outer)
-          .innerRadius(inner)
-          .startAngle(startAngle)
-          .endAngle(endAngle);
-
-    var nts = plot.nucleotides();
-    for(var i = 0; i < nts.length; i++) {
-      var centroid = arc.centroid(null, i);
-      nts[i].__x = center.x + centroid[0];
-      nts[i].__y = center.y + centroid[1];
-    }
-
-    plot.vis.selectAll(plot.nucleotides['class']())
-      .append('g')
-      .data(plot.nucleotides()).enter().append('svg:path')
-      .call(standard)
-      .attr('d', arc)
-      .attr('transform', 'translate(' + center.x + ',' + center.y + ')')
-      .attr('fill', plot.nucleotides.color());
-
-    plot.__ntArc = arc;
-    plot.__circleCenter = center;
-    plot.xScale(d3.scale.identity().domain([0, plot.width()])) 
-        .yScale(d3.scale.identity().domain([0, plot.height()]));
-
-    return plot;
-  };
-
-  plot.nucleotides.highlight(function() {
-    var obj = this,
-        highlightColor = plot.nucleotides.highlightColor();
-    d3.select(obj).style('stroke', highlightColor(obj));
-
-    plot.pie.addLetters()([obj]);
-
-    return plot.nucleotides.interactions(obj)
-      .style('stroke', highlightColor(obj));
-  });
-
-  plot.nucleotides.normalize(function() {
-    var obj = this;
-    d3.select(obj).style('stroke', null);
-    plot.pie.clearLetters()();
-    return plot.nucleotides.interactions(obj)
-      .style('stroke', null);
-  });
-
-  plot.pie = {};
-  var config = {
-    width: 10,
-    gapSize: 0.2,
-    letterClass: 'nucleotide-letter',
-    letterID: function(obj) {
-      return obj.getAttribute('id') + '-letter';
-    },
-    letterSize: 20,
-    letterPosition: function(obj) {
-      var index = plot.nucleotides.indexOf(obj.getAttribute('id')),
-          position = plot.__ntArc.centroid(null, index);
-      return {
-        x: plot.__circleCenter.x + position[0],
-        y: plot.__circleCenter.y + position[1]
-      };
-    },
-    addLetters: function(nts) {
-      var positionOf = plot.pie.letterPosition(),
-          highlightColor = plot.nucleotides.highlightColor();
-
-      plot.vis.selectAll(plot.pie.letterClass())
-        .data(nts).enter().append('svg:text')
-        .attr('id', plot.pie.letterID())
-        .attr('class', plot.pie.letterClass())
-        .attr('x', function(d) { return positionOf(d).x; })
-        .attr('y', function(d) { return positionOf(d).y; })
-        .attr('font-size', plot.pie.letterSize())
-        .attr('pointer-events', 'none')
-        .text(function(d) { return d.getAttribute('data-sequence'); })
-        .attr('fill', function(d) { return highlightColor(d); });
-
-        return plot.pie;
-    },
-    clearLetters: function() {
-      plot.vis.selectAll('.' + plot.pie.letterClass()).remove();
+      plot.interactions.normalize(function() {
+        var obj = this;
+        d3.select(obj).style('stroke', null);
+        plot.views.circular.clearLetters()();
+        plot.interactions.nucleotides(obj).style('stroke', null);
+        return plot.interactions;
+      });
     }
   };
-  Rna2D.utils.generateAccessors(plot.pie, config);
 
-  return Rna2D;
 };
 
-Rna2D.views.circular.groups = function(plot) {
-  plot.groups = function(standard) {
-    return plot;
-  };
 
-  return Rna2D;
-};
-
-})();
+}());
