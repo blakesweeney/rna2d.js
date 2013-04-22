@@ -99,7 +99,7 @@ Rna2D.views.circular = function(plot) {
       radius: function() {
         return plot.width() / 4;
       },
-      width: 10,
+      width: 4,
       arcGap: 0.2,
       interactionGap: 3,
       letterClass: 'nucleotide-letter',
