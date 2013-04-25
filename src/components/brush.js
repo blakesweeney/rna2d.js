@@ -1,15 +1,17 @@
-Rna2D.components.brush = function() {
+Rna2D.components.brush = (function() {
 
   var startBrush, updateBrush, endBrush;
 
   return {
 
-    config: {
-      enabled: true,
-      initial: [],
-      'class': 'brush',
-      update: Object,
-      clear: Object
+    config: function(plot) {
+      return {
+        enabled: true,
+        initial: [],
+        'class': 'brush',
+        update: Object,
+        clear: Object
+      };
     },
 
     actions: function(plot) {
@@ -96,5 +98,5 @@ Rna2D.components.brush = function() {
     }
   };
 
-}();
+}());
 

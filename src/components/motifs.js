@@ -39,7 +39,7 @@ Rna2D.components.motifs = (function () {
           d.__visible = visible(d, i);
           return d;
         }).attr('visibility', function(d, i) {
-          return (d.__visible ?  'visible' : 'hidden');
+          return (d.__visible ? 'visible' : 'hidden');
         });
       };
 
