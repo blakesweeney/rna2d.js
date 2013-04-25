@@ -11,6 +11,7 @@
     <script src='static/js/underscore.min.js'></script>
     <script src='static/js/sizzle.js'></script>
     <script src='static/js/d3.js'></script>
+    <script src='static/js/app.js'></script>
 
     <script src='rna2d.js'></script>
   </head>
@@ -79,51 +80,5 @@
         </div>
       </div>
 
-      <!-- Code to generate 2D structure and toggle buttons -->
-      <script type='text/javascript'>
-
-        var plot = Rna2D({ selection: '#rna-2d', width: 630, height: 795 });
-        plot.view('airport');
-
-        plot.jmol.overflow(function() { alert("Too many nts selected"); });
-
-          plot.brush.enabled(true)
-            .update(plot.jmol.showSelection)
-            .initial([[100, 36], [207, 132]]);
-
-        d3.json('data/16S-ecoli.js', function(data) {
-            plot.nucleotides(data)
-              .mouseover('highlight');
-
-          d3.csv('data/16S-ecoli-interactions.csv', function(data) {
-            plot.interactions(data)
-              .mouseover('highlight')
-              .visible(function(obj) { return obj.family == 'cWW' });
-              ;
-
-            d3.json('data/2AW7_motifs.json', function(data) {
-              plot.motifs(data)
-                .mouseover('highlight')
-                ;
-
-              plot();
-           });
-          });
-        });
-
-      $('#mode-checkbox').click(function() { plot.brush.toggle(); });
-      $('#cww-checkbox').click(function() { plot.interactions.toggle('cWW'); });
-      $('#css-checkbox').click(function() { plot.interactions.toggle('cSS'); });
-      $('#motif-checkbox').click(function() { plot.motifs.toggle(); });
-      $('#view-checkbox').click(function() {
-          if (plot.view() == 'airport') {
-            plot.view('circular');
-            } else {
-            plot.view('airport');
-            }
-            plot();
-          });
-
-      </script>
   </body>
 </html>
