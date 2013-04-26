@@ -16,16 +16,20 @@
           "failed_fetch": Object,
           "init": {
             "brush": {
-              "selector": "#brush-toggle"
+              "selector": "#brush-toggle",
+              "plot": plot
             },
             "motifs": {
-              "selector": ".motif-toggle"
+              "selector": ".motif-toggle",
+              "plot": plot
             },
             "interactions": {
-              "selector": ".interaction-toggle"
+              "selector": ".interaction-toggle",
+              "plot": plot
             },
             "views": {
-              "selector": ".view-toggle"
+              "selector": ".view-toggle",
+              "plot": plot
             }
           }
         };
