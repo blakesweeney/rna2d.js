@@ -14,7 +14,7 @@
           "motifs_parser": function(text) { },
           "jmol": true,
           "failed_fetch": Object,
-          "init": {
+          "controls": {
             "brush": {
               "selector": "#brush-toggle",
               "plot": plot
@@ -38,7 +38,7 @@
     plot.selection(this.get(0).tagName.toLowerCase());
 
     // Attach handlers to each control.
-    $.each(options.init, function(type, given) {
+    $.each(options.controls, function(type, given) {
       $(given.selector).rna2d[type](given);
     });
 
@@ -86,7 +86,7 @@
   };
 
   // Interaction controls.
-  $.fn.rna2d.interaction = function(opts) {
+  $.fn.rna2d.interactions = function(opts) {
     var plot = opts.plot;
     var options = {
       'callback': Object,
@@ -106,7 +106,7 @@
   };
 
   // Motif controls.
-  $.fn.rna2d.motif = function(opts) {
+  $.fn.rna2d.motifs = function(opts) {
     var plot = opts.plot;
     var options = {
       'callback': Object,
@@ -122,7 +122,7 @@
   };
 
   // View controls.
-  $.fn.rna2d.view = function(opts) {
+  $.fn.rna2d.views = function(opts) {
     var plot = opts.plot;
     var options = {
       'pre': Object,
