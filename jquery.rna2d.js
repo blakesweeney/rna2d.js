@@ -1,19 +1,24 @@
 (function($) {
   "use strict";
 
-
   // Generic controls
   $.fn.rna2d = function(opts) {
     var plot = opts.plot,
         options = {
-          "nts_url": false,
-          "nts_parser": function(text) { },
-          "interactions_url": false,
-          "interactions_parser": function(text) { },
-          "motifs_url": false,
-          "motifs_parser": function(text) { },
           "jmol": true,
           "failed_fetch": Object,
+          "nts": {
+            "url": false,
+            "parser": function(text) { },
+          },
+          "interactions": {
+            "url": false,
+            "parser": function(text) { },
+          },
+          "motifs": {
+            "url": false,
+            "parser": function(text) { },
+          },
           "controls": {
             "brush": {
               "selector": "#brush-toggle",
@@ -54,10 +59,8 @@
 
     // If we are given urls then fire off requests for each element.
     var requests = $.map(['nts', 'interactions', 'motifs'], function(i, type) {
-      var url = type + '_url';
-
-      if (options[url]) {
-        return $.get(options[url], setter(type, options[type + '_parser']));
+      if (options[type].url) {
+        return $.get(options[type].url, setter(type, options[type].parser));
       }
 
       return null;
@@ -90,13 +93,13 @@
     var plot = opts.plot;
     var options = {
       'callback': Object,
-      'family': 'family',
+      'data': 'family',
       'near': true
     };
     $.extend(options, opts);
 
     this.on('click', function(event) {
-      var family = $(this).data(options.family);
+      var family = $(this).data(options.data);
       plot.interactions.toggle(family);
       if (options.near) {
         plot.interactions.toggle('n' + family);
@@ -110,12 +113,12 @@
     var plot = opts.plot;
     var options = {
       'callback': Object,
-      'type': 'type'
+      'data': 'type'
     };
     $.extend(options, opts);
 
     this.on('click', function(event) {
-      var type = $(this).data(options.type);
+      var type = $(this).data(options.data);
       plot.motifs.toggle(type);
       options.callback(event);
     });
@@ -127,12 +130,12 @@
     var options = {
       'pre': Object,
       'post': Object,
-      'view': 'view'
+      'data': 'view'
     };
     $.extend(options, opts);
 
     this.on('click', function(event) {
-      var view = $(this).data(options.view);
+      var view = $(this).data(options.data);
       if (view === plot.view()) {
         return false;
       }
