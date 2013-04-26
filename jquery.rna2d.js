@@ -1,75 +1,6 @@
 (function($) {
   "use strict";
 
-  // Brush controls.
-  $.fn.brushToggle = function(opts) {
-    var plot = opts.plot,
-        options = { 'callback': Object };
-    $.extend(options, opts);
-
-    this.on('click', function(event) {
-      plot.brush.toggle();
-      options.callback(event);
-    });
-  };
-
-  // Interaction controls.
-  $.fn.interactionToggle = function(opts) {
-    var plot = opts.plot;
-    var options = {
-      'callback': Object,
-      'family': 'family',
-      'near': true
-    };
-    $.extend(options, opts);
-
-    this.on('click', function(event) {
-      var family = $(this).data(options.family);
-      plot.interactions.toggle(family);
-      if (options.near) {
-        plot.interactions.toggle('n' + family);
-      }
-      options.callback(event);
-    });
-  };
-
-  // Motif controls.
-  $.fn.motifToggle = function(opts) {
-    var plot = opts.plot;
-    var options = {
-      'callback': Object,
-      'type': 'type'
-    };
-    $.extend(options, opts);
-
-    this.on('click', function(event) {
-      var type = $(this).data(options.type);
-      plot.motifs.toggle(type);
-      options.callback(event);
-    });
-  };
-
-  // View controls.
-  $.fn.viewToggle = function(opts) {
-    var plot = opts.plot;
-    var options = {
-      'pre': Object,
-      'post': Object,
-      'view': 'view'
-    };
-    $.extend(options, opts);
-
-    this.on('click', function(event) {
-      var view = $(this).data(options.view);
-      if (view === plot.view()) {
-        return false;
-      }
-      options.pre(event);
-      plot.view(view);
-      plot();
-      options.post(event);
-    });
-  };
 
   // Generic controls
   $.fn.rna2d = function(opts) {
@@ -82,11 +13,30 @@
           "motifs_url": false,
           "motifs_parser": function(text) { },
           "jmol": true,
-          "failed_fetch": Object
+          "failed_fetch": Object,
+          "init": {
+            "brush": {
+              "selector": "#brush-toggle"
+            },
+            "motifs": {
+              "selector": ".motif-toggle"
+            },
+            "interactions": {
+              "selector": ".interaction-toggle"
+            },
+            "views": {
+              "selector": ".view-toggle"
+            }
+          }
         };
     $.extend(options, opts);
 
     plot.selection(this.get(0).tagName.toLowerCase());
+
+    // Attach handlers to each control.
+    $.each(options.init, function(type, given) {
+      $(given.selector).rna2d[type](given);
+    });
 
     var setter = function(type, parser) {
       return function(data, status, xhr) {
@@ -117,6 +67,76 @@
       $.when.apply($, requests).done(plot);
     }
 
+  };
+
+  // Brush controls.
+  $.fn.rna2d.brush = function(opts) {
+    var plot = opts.plot,
+        options = { 'callback': Object };
+    $.extend(options, opts);
+
+    this.on('click', function(event) {
+      plot.brush.toggle();
+      options.callback(event);
+    });
+  };
+
+  // Interaction controls.
+  $.fn.rna2d.interaction = function(opts) {
+    var plot = opts.plot;
+    var options = {
+      'callback': Object,
+      'family': 'family',
+      'near': true
+    };
+    $.extend(options, opts);
+
+    this.on('click', function(event) {
+      var family = $(this).data(options.family);
+      plot.interactions.toggle(family);
+      if (options.near) {
+        plot.interactions.toggle('n' + family);
+      }
+      options.callback(event);
+    });
+  };
+
+  // Motif controls.
+  $.fn.rna2d.motif = function(opts) {
+    var plot = opts.plot;
+    var options = {
+      'callback': Object,
+      'type': 'type'
+    };
+    $.extend(options, opts);
+
+    this.on('click', function(event) {
+      var type = $(this).data(options.type);
+      plot.motifs.toggle(type);
+      options.callback(event);
+    });
+  };
+
+  // View controls.
+  $.fn.rna2d.view = function(opts) {
+    var plot = opts.plot;
+    var options = {
+      'pre': Object,
+      'post': Object,
+      'view': 'view'
+    };
+    $.extend(options, opts);
+
+    this.on('click', function(event) {
+      var view = $(this).data(options.view);
+      if (view === plot.view()) {
+        return false;
+      }
+      options.pre(event);
+      plot.view(view);
+      plot();
+      options.post(event);
+    });
   };
 
 }(jQuery));
