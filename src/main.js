@@ -21,9 +21,10 @@ var Rna2D = window.Rna2D || function(config) {
       plot.height(plot.height() - margin.above - margin.below);
 
       sel.select('svg').remove();
-      var top = sel.append('svg')
-          .attr('width', plot.width() + margin.left + margin.right)
-          .attr('height', plot.height() + margin.above + margin.below);
+      var top = sel.select('svg')
+          .append('svg')
+            .attr('width', plot.width() + margin.left + margin.right)
+            .attr('height', plot.height() + margin.above + margin.below);
 
       plot.vis = top.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
