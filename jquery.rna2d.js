@@ -7,7 +7,7 @@
         options = {
           "jmol": true,
           "failed_fetch": Object,
-          "nts": {
+          "nucleotides": {
             "url": false,
             "parser": function(text) { },
           },
@@ -21,20 +21,16 @@
           },
           "controls": {
             "brush": {
-              "selector": "#brush-toggle",
-              "plot": plot
+              "selector": "#brush-toggle"
             },
             "motifs": {
-              "selector": ".motif-toggle",
-              "plot": plot
+              "selector": ".motif-toggle"
             },
             "interactions": {
-              "selector": ".interaction-toggle",
-              "plot": plot
+              "selector": ".interaction-toggle"
             },
             "views": {
-              "selector": ".view-toggle",
-              "plot": plot
+              "selector": ".view-toggle"
             }
           }
         };
@@ -44,6 +40,7 @@
 
     // Attach handlers to each control.
     $.each(options.controls, function(type, given) {
+      given.plot = plot;
       $(given.selector).rna2d[type](given);
     });
 
@@ -52,13 +49,18 @@
         // TODO: Handle failure
 
         // Parse given data
-        var parsed = parser(data);
-        plot[type](parsed);
+        try {
+          var parsed = parser(data);
+          plot[type](parsed);
+        } catch(err) {
+          console.log("Error caught when trying to parse loaded data for " + type);
+          console.log(err);
+        }
       };
     };
 
     // If we are given urls then fire off requests for each element.
-    var requests = $.map(['nts', 'interactions', 'motifs'], function(i, type) {
+    var requests = $.map(['nucleotides', 'interactions', 'motifs'], function(type, i) {
       if (options[type].url) {
         return $.get(options[type].url, setter(type, options[type].parser));
       }
@@ -82,7 +84,7 @@
         options = { 'callback': Object };
     $.extend(options, opts);
 
-    this.on('click', function(event) {
+    $(options.selector).on('click', function(event) {
       plot.brush.toggle();
       options.callback(event);
     });
@@ -98,7 +100,7 @@
     };
     $.extend(options, opts);
 
-    this.on('click', function(event) {
+    $(options.selector).on('click', function(event) {
       var family = $(this).data(options.data);
       plot.interactions.toggle(family);
       if (options.near) {
@@ -117,7 +119,7 @@
     };
     $.extend(options, opts);
 
-    this.on('click', function(event) {
+    $(options.selector).on('click', function(event) {
       var type = $(this).data(options.data);
       plot.motifs.toggle(type);
       options.callback(event);
@@ -134,7 +136,7 @@
     };
     $.extend(options, opts);
 
-    this.on('click', function(event) {
+    $(options.selector).on('click', function(event) {
       var view = $(this).data(options.data);
       if (view === plot.view()) {
         return false;
