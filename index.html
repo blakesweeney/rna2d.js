@@ -1,75 +1,78 @@
 <!DOCTYPE html>
 <html lang='en'>
-  <head>
-    <title>Rna2D.js</title>
-    <meta charset='utf-8'>
-    <link href='static/css/main.css' rel='stylesheet'>
+<head>
+  <title>Rna2D.js</title>
+  <meta charset='utf-8'>
+  <link href='static/css/main.css' rel='stylesheet'>
 
-    <script src='static/jmol/jmol.js'></script>
-    <script src='static/js/jquery.min.js'></script>
-    <script src='static/js/jquery.jmolTools.js'></script>
-    <script src='static/js/sizzle.js'></script>
-    <script src='static/js/d3.js'></script>
-    <script src='static/js/app.js'></script>
+  <script src='static/jmol/jmol.js'></script>
+  <script src='static/js/jquery.min.js'></script>
+  <script src='static/js/jquery.jmolTools.js'></script>
+  <script src='static/js/sizzle.js'></script>
+  <script src='static/js/d3.js'></script>
+  <script src='static/js/app.js'></script>
 
-    <script src='rna2d.js'></script>
-  </head>
+  <script src='rna2d.js'></script>
+  <script src='jquery.rna2d.js'></script>
+</head>
 
-  <body>
+<body>
 
-      <div>
+<div>
 
-      <div id='mode'>
-        <label for='mode-checkbox'>Selection Mode</label>
-        <div id='mode-button'>
-          <input id='mode-checkbox' type='checkbox' value='v' checked='checked'>
-        </div>
-      </div>
+  <div id='mode'>
+    <label for='mode-checkbox'>Selection Mode</label>
+    <div id='mode-button'>
+      <input id='mode-checkbox' type='checkbox' value='v' checked='checked'>
+    </div>
+  </div>
 
-      <div id='motifs'>
-        <label for='motif-checkbox'>Show Motifs</label>
-        <div id='motif-button'>
-          <input id='motif-checkbox' type='checkbox' value='v' checked='checked'>
-        </div>
-      </div>
+  <div id='motifs'>
+    <label for='motif-checkbox'>Show Motifs</label>
+    <div id='motif-button'>
+      <input id='motif-checkbox' type='checkbox' value='v'
+      checked='checked' data-type='IL'>
+    </div>
+  </div>
 
-      <div id='interaction-controls'>
-        <label for='cww-checkbox'>cWW</label>
-        <div id='cww-toggle'>
-          <input id='cww-checkbox' type='checkbox' value='v' checked='checked'>
-        </div>
+  <div id='interaction-controls'>
+    <label for='cww-checkbox'>cWW</label>
+    <div id='cww-toggle'>
+      <input id='cww-checkbox' type='checkbox' value='v' checked='checked'
+      data-family='cWW'>
+    </div>
 
-        <label for='css-checkbox'>cSS</label>
-        <div id='css-toggle'>
-          <input id='css-checkbox' type='checkbox' value='v'>
-        </div>
-      </div>
+    <label for='css-checkbox'>cSS</label>
+    <div id='css-toggle'>
+      <input id='css-checkbox' type='checkbox' value='v' data-family='cSS'>
+    </div>
+  </div>
 
-      <div id='view-controls'>
-        <label for='view-checkbox'>circular</label>
-        <div id='view-toggle'>
-          <input id='view-checkbox' type='checkbox' value='v' >
-        </div>
-      </div>
+  <div id='view-controls'>
+    <label for='view-checkbox'>circular</label>
+    <div id='view-toggle'>
+      <input id='view-checkbox' type='checkbox' value='v' data-view='circular'>
+    </div>
+  </div>
 
-        <!-- 2D structure -->
-        <div class='span6'>
-          <h2><i>E. coli</i> Secondary Structure</h2>
-          <div id='rna-2d'></div>
-        </div>
+  <!-- 2D structure -->
+  <div class='span6'>
+    <h2><i>E. coli</i> Secondary Structure</h2>
+    <div id='rna-2d'></div>
+  </div>
 
-        <!-- Jmol Viewer -->
-        <div class='span4 jmol-viewer'>
-          <div id='jmol'>
-            <script type="text/javascript">
-              jmolInitialize("./static/jmol");
-              jmolSetDocument(0);
-              jmolSetAppletColor("#ffffff");
-            </script>
-          </div>
-          <div id='info'>
-          </div>
-        </div>
-      </div>
-  </body>
+  <!-- Jmol Viewer -->
+  <div class='span4 jmol-viewer'>
+    <div id='jmol'>
+      <script type="text/javascript">
+        jmolInitialize("./static/jmol");
+        jmolSetDocument(0);
+        jmolSetAppletColor("#ffffff");
+      </script>
+    </div>
+    <div id='info'></div>
+  </div>
+
+</div>
+</body>
 </html>
