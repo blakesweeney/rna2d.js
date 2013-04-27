@@ -27,7 +27,7 @@ $(document).ready(function() {
 
     interactions: {
       url: "data/16S-ecoli-interactions.csv",
-      parser: function(text) { return d3.csv.parse('"nt1","family","nt2"' + text); }
+      parser: d3.csv.parse
     },
 
     motifs: {
