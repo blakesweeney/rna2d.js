@@ -2,8 +2,7 @@ $(document).ready(function() {
   "use strict";
   /*global alert, Rna2D, d3, $ */
 
-  var plot = Rna2D({ width: 630, height: 795 });
-  plot.view('airport');
+  var plot = Rna2D({ view: 'airport', width: 630, height: 795 });
 
   plot.jmol.overflow(function() { alert("Too many nts selected"); });
 
@@ -19,23 +18,37 @@ $(document).ready(function() {
 
   plot.motifs.mouseover('highlight');
 
-  d3.json('data/16S-ecoli.js', function(data) {
-    plot.nucleotides(data);
+  $("#rna-2d").rna2d({
+    plot: plot,
+    nucleotides: {
+      url: "data/16S-ecoli.js",
+      parser: $.parseJSON
+    },
 
-    d3.csv('data/16S-ecoli-interactions.csv', function(data) {
-      plot.interactions(data);
+    interactions: {
+      url: "data/16S-ecoli-interactions.csv",
+      parser: function(text) { return d3.csv.parse('"nt1","family","nt2"' + text); }
+    },
 
-      d3.json('data/2AW7_motifs.json', function(data) {
-        plot.motifs(data);
+    motifs: {
+      url: "data/2AW7_motifs.json",
+      parser: $.parseJSON
+    },
 
-        plot();
-      });
-    });
+    controls: {
+      brush: {
+        selector: "#mode-checkbox"
+      },
+      interactions: {
+        selector: ".interaction-checkbox"
+      },
+      motifs: {
+        selector: ".motif-checkbox"
+      },
+      views: {
+        selector: ".view-control"
+      }
+    }
   });
-
-  $('#mode-checkbox').brushToggle({plot: plot});
-  $(".interaction-checkbox").interactionToggle({plot: plot});
-  $(".motif-checkbox").motifToggle({plot: plot});
-  $(".view-control").viewToggle({plot: plot});
 
 });
