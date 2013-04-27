@@ -17,6 +17,7 @@ var Rna2D = window.Rna2D || function(config) {
 
       var margin = plot.margin();
 
+      // TODO: Don't mess with width.
       plot.width(plot.width() - margin.left - margin.right);
       plot.height(plot.height() - margin.above - margin.below);
 
@@ -34,6 +35,7 @@ var Rna2D = window.Rna2D || function(config) {
       // ----------------------------------------------------------------------
       plot.coordinates(function(selection) {
 
+        console.log('hello');
           var x = plot.views[plot.view()].xCoord(),
               y = plot.views[plot.view()].yCoord();
 
