@@ -92,7 +92,7 @@ Rna2D.views.airport = function(plot) {
     var interactions = plot.interactions.valid(),
     getNTs = plot.interactions.getNTs();
 
-    interactions = $.map(interactions, function(i, obj) {
+    interactions = $.map(interactions, function(obj, i) {
       try {
         var nts = getNTs(obj),
         nt1 = Rna2D.utils.element(nts[0]),
