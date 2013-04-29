@@ -95,16 +95,16 @@ Rna2D.views.airport = function(plot) {
     interactions = $.map(interactions, function(obj, i) {
       try {
         var nts = getNTs(obj),
-        nt1 = Rna2D.utils.element(nts[0]),
-        nt2 = Rna2D.utils.element(nts[1]),
-        p1 = intersectPoint(nt1, nt2, plot.views.airport.gap()),
-        p2 = intersectPoint(nt2, nt1, plot.views.airport.gap());
+            nt1 = Rna2D.utils.element(nts[0]),
+            nt2 = Rna2D.utils.element(nts[1]),
+            p1 = intersectPoint(nt1, nt2, plot.views.airport.gap()),
+            p2 = intersectPoint(nt2, nt1, plot.views.airport.gap());
+        obj.line = { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };
       } catch (err) {
         console.log("Could not compute interaction line for", obj);
         return null;
       }
-
-      obj.line = { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };
+      
       return obj;
     });
 
