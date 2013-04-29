@@ -1054,26 +1054,30 @@ Rna2D.views.circular = function(plot) {
   };
 
   var curve = function(d, i) {
-    var nts = getNTs(d),
-        from = position(nts[0]),
+    // The idea is to sort the nts such that we are always drawing from lower to
+    // higher nts, unless we are drawing from one half to the other half, in
+    // which case we flip the order. This lets us always use the sweep and arc
+    // flags of 0,0.
+    var length = plot.nucleotides().length,
+        indexOf = plot.nucleotides.indexOf,
+        nts = getNTs(d).sort(function(nt1, nt2) { 
+          var i1 = indexOf(nt1),
+              i2 = indexOf(nt2);
+          if (Math.abs(i1 - i2) > length /2) {
+            return i2 - i1;
+          }
+          return i1 - i2; 
+        });
+
+    var from = position(nts[0]),
         to = position(nts[1]),
-        distance = Rna2D.utils.distance(from, to),
-        angleDiff = startAngle(null, plot.nucleotides.indexOf(nts[0])) -
-          startAngle(null, plot.nucleotides.indexOf(nts[1])),
-        radius = innerArc.innerRadius()() * Math.tan(angleDiff/2),
-        sweep  = 0,
-        rotation = 0,
-        large_arc = 0;
+        angleDiff = startAngle(null, indexOf(nts[0])) - startAngle(null, indexOf(nts[1])),
+        radius = Math.abs(innerArc.innerRadius()() * Math.tan(angleDiff/2));
 
-    if (plot.nucleotides.indexOf(nts[0]) > plot.nucleotides.indexOf(nts[1])) {
-      sweep = 1;
-    }
-
-    return "M "  + from.x + " " + from.y +     // Start point
-      " A " + radius + "," + radius +     // Radii of elpise
-      " " + rotation +                           // Rotation
-      " " + large_arc + " " + sweep +             // Large Arc and Sweep flag
-      " " + to.x + "," + to.y;            // End point
+    return "M "  + from.x + " " + from.y +  // Start point
+      " A " + radius + "," + radius +       // Both radi are the same for a circle
+      " 0 0,0 " +                           // Rotation and arc flags are always 0
+      to.x + "," + to.y;                    // End point
 
   };
 
