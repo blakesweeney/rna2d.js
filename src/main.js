@@ -22,7 +22,7 @@ var Rna2D = window.Rna2D || function(config) {
             .attr('height', plot.height() + margin.above + margin.below);
 
       plot.vis = top.append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        .attr("transform", "translate(" + margin.left + "," + margin.above + ")");
 
       // ----------------------------------------------------------------------
       // Draw all coordinates and attach all standard data
