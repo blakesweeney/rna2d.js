@@ -1057,7 +1057,7 @@ Rna2D.views.circular = function(plot) {
     // The idea is to sort the nts such that we are always drawing from lower to
     // higher nts, unless we are drawing from one half to the other half, in
     // which case we flip the order. This lets us always use the sweep and arc
-    // flags of 0,0.
+    // flags of 0,0. The code is kinda gross but it works.
     var length = plot.nucleotides().length,
         indexOf = plot.nucleotides.indexOf,
         nts = getNTs(d).sort(function(nt1, nt2) { 
