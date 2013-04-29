@@ -1,73 +1,258 @@
 <!DOCTYPE html>
 <html lang='en'>
 <head>
-  <title>Rna2D.js</title>
+  <title>RNA2D.js</title>
   <meta charset='utf-8'>
+  <link href='static/css/bootstrap.min.css' rel='stylesheet'>
+  <link href='static/css/bootstrap-toggle-buttons.css' rel='stylesheet'>
+  <link rel="stylesheet" href="static/css/github-fork-ribbon.css" />
+  <!--[if IE]>
+      <link rel="stylesheet" href="static/css/github-fork-ribbon.ie.css" />
+  <![endif]-->
   <link href='static/css/main.css' rel='stylesheet'>
 
-  <script src='static/jmol/jmol.js'></script>
-  <script src='static/js/jquery.min.js'></script>
-  <script src='static/js/jquery.jmolTools.js'></script>
+  <script src='static/jmol/Jmol.js'></script>
   <script src='static/js/sizzle.js'></script>
+  <script src='static/js/jquery.min.js'></script>
+  <script src='static/js/jquery.toggle.buttons.js'></script>
+  <script src='static/js/jquery.jmolTools.js'></script>
   <script src='static/js/d3.js'></script>
-  <script src='static/js/app.js'></script>
+  <script src='static/js/bootstrap.min.js'></script>
 
   <script src='rna2d.js'></script>
   <script src='jquery.rna2d.js'></script>
+
+  <script src='static/js/app.js'></script>
 </head>
 
 <body>
-
-<div>
-
-  <div id='mode'>
-    <label for='mode-checkbox'>Selection Mode</label>
-    <input id='mode-checkbox' type='checkbox' value='v' checked='checked'>
-  </div>
-
-  <div id='motifs'>
-    <label for='il-checkbox'>Show IL</label>
-    <input id='il-checkbox' class='motif-checkbox' type='checkbox' value='v' checked='checked' data-type='IL'>
-    <br>
-    <label for='hl-checkbox'>Show HL</label>
-    <input id='hl-checkbox' class='motif-checkbox' type='checkbox' value='v' checked='checked' data-type='HL'>
-  </div>
-
-  <div id='interaction-controls'>
-    <label for='cww-checkbox'>cWW</label>
-    <input id='cww-checkbox' class='interaction-checkbox' type='checkbox' value='v' checked='checked' data-family='cWW'>
-    <br>
-
-    <label for='css-checkbox'>cSS</label>
-    <input id='css-checkbox' class='interaction-checkbox' type='checkbox' value='v' data-family='cSS'>
-  </div>
-
-  <div id='view-controls'>
-    <form action="">
-      <label for="airport-control">Airport</label>
-      <input id="airport-control" type="radio" class='view-control' name="view" data-view='airport' checked='checked' value="airport">
-      <br>
-      <label for="airport-control">Circular</label>
-      <input id='circular-control' type="radio" class='view-control' name="view" data-view='circular' value="circular">
-    </form>
-  </div>
-
-  <!-- 2D structure -->
-  <div class='span6'>
-    <h2><i>E. coli</i> Secondary Structure</h2>
-    <div id='rna-2d'></div>
-  </div>
-
-  <!-- Jmol Viewer -->
-  <div class='span4 jmol-viewer'>
-    <div id='jmol'>
-      <script type="text/javascript">
-        jmolInitialize("./static/jmol");
-        jmolSetDocument(0);
-        jmolSetAppletColor("#ffffff");
-      </script>
+    <div class="github-fork-ribbon-wrapper right">
+        <div class="github-fork-ribbon">
+            <a href="https://github.com/blakesweeney/rna2d.js">Fork me on GitHub</a>
+        </div>
     </div>
-    <div id='info'></div>
+
+<div class='navbar navbar-inverse navbar-fixed-top'>
+  <div class='navbar-inner'>
+    <a class='brand' href='#'>&nbsp;&nbsp;&nbsp;&nbsp;RNA2d.js</a>
+    <ul class='nav'>
+      <li><a href='#modal' data-toggle="modal">About</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class='container-fluid'>
+  <div class='page-header'>
+    <h1>RNA2d.js &nbsp; <small>Interact with RNA 2D structures</small></h1>
+  </div>
+
+  <div id='view-div' class='row'>
+    <div class="span3 offset4">
+      <div id='view-buttons' class='btn-group' data-toggle='buttons-radio'>
+        <button id='airpot-view' class="btn active view-control" data-view='airport'>
+          Airport
+        </button>
+        <button id='circular-view' class="btn view-control" data-view='circular'>
+          Circular
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id='example' class='row'>
+
+    <div id='controls' class='span1'>
+
+      <a href="#modal" role="button" class="btn btn-primary btn-block" data-toggle="modal">Help</a>
+
+      <!-- <h5>Mode</h5> -->
+      <button type="button" id="mode-toggle" class="btn btn-block"
+        autocomplete="off" data-normal-text="Select"
+        data-loading-text="Click">Select</button>
+
+      <div class="btn-toolbar">
+        <button id="motif-toggle" type="button" class="btn btn-block motif-control"
+          data-type='IL'>Motifs</button>
+      </div>
+
+      <div id="control-groups" class="accordian">
+        <div id="nucleotide-controls" class="accordion-group">
+          <div class="accordion-heading">
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#control-groups"
+              href="#nucleotide-control-buttons">Units</a>
+          </div>
+
+          <div id="nucleotide-control-buttons" class="accordion-body collapse">
+            <div class="accordion-inner">
+
+              <div class="button-group">
+                <div class="btn-toolbar">
+                  <button id="sequence-control" class="btn btn-small">
+                    <i class="icon-tint"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="interaction-controls" class="accordion-group">
+          <div class="accordion-heading">
+            <a class="accordion-toggle" data-toggle="collapse"
+              data-parent="#control-groups" href="#interaction-control-buttons">Pairs</a>
+          </div>
+
+          <div id="interaction-control-buttons" class="accordion-body collapse in">
+            <div class="accordion-inner" data-toggle="buttons-checkbox">
+              <div class="btn-toolbar">
+                <button type="button" id='cWW-toggle' class="btn btn-block
+                  interaction-toggle active" data-family='cWW'>cWW</button>
+              </div>
+
+              <div class="btn-toolbar">
+                <button type="button" id='tWW-toggle' class="btn btn-block
+                  tWW interaction-toggle" data-family='tWW'>tWW</button>
+              </div>
+
+              <div class="btn-toolbar">
+                <button type="button" id="cWS-toggle" class="btn btn-block
+                  cWS interaction-toggle" data-family='cWS'>cWS</button>
+              </div>
+
+              <div class="btn-toolbar">
+                <button type="button" id="tWS-toggle" class="btn btn-block
+                  tWS interaction-toggle" data-family='tWS'>tWS</button>
+              </div>
+
+              <div class="btn-toolbar">
+                <button type="button" id="cWH-toggle" class="btn btn-block
+                  cWH interaction-toggle" data-family='cWH'>cWH</button>
+              </div>
+
+              <div class="btn-toolbar">
+                <button type="button" id="tWH-toggle" class="btn btn-block
+                  tWH interaction-toggle" data-family='tWH'>tWH</button>
+              </div>
+
+              <div class="btn-toolbar">
+                <button type="button" id="cSH-toggle" class="btn btn-block
+                  cSH interaction-toggle" data-family='cSH'>cSH</button>
+              </div>
+
+              <div class="btn-toolbar">
+                <button type="button" id="tSH-toggle" class="btn btn-block
+                  tSH interaction-toggle" data-family='tSH'>tSH</button>
+              </div>
+
+              <div class="btn-toolbar">
+                <button type="button" id="cSS-toggle" class="btn btn-block
+                  cSS interaction-toggle" data-family='cSS'>cSS</button>
+              </div>
+
+              <div class="btn-toolbar">
+                <button type="button" id="tSS-toggle" class="btn btn-block
+                  tSS interaction-toggle" data-family='tSS'>tSS</button>
+              </div>
+
+              <div class="btn-toolbar">
+                <button type="button" id="cHH-toggle" class="btn btn-block
+                  cHH interaction-toggle" data-family='cHH'>cHH</button>
+              </div>
+
+              <div class="btn-toolbar">
+                <button type="button" id="tHH-toggle" class="btn btn-block
+                  tHH interaction-toggle" data-family='tHH'>tHH</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class='span6'>
+      <!-- 2D structure -->
+      <div id='rna-2d'></div>
+    </div>
+
+    <div class='jmol-viewer'>
+      <div id="overflow" class="alert alert-error" style="display: none">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        <strong>Error!</strong> Can only select 200 nts at a time
+      </div>
+      <div id='jmol' class='well'>
+        <script type="text/javascript">
+          jmolInitialize("./static/jmol");
+          jmolSetDocument(0);
+          jmolSetAppletColor("#ffffff");
+        </script>
+      </div>
+      <div id="about-selection" class="well" style="display: none">
+      </div>
+    </div>
+
+  </div>
+
+  <div id="modal" class='modal hide fade' tabindex="-1" role="dialog">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+      <h3>RNA2D.js</h3>
+    </div>
+
+    <div class="modal-body">
+      <p>
+      <a href='https://github.com/blakesweeney/rna2d.js'>RNA2D.js</a>
+      is a tool to visualize and interact with RNA Secondary
+      structures. It is meant to create the standard airport diagrams and
+      provide a way to interact with them. Currently, we can easily
+      integrate the 2D visualization with the 3D visualization provided by
+      <a href='https://github.com/AntonPetrov/jmolTools'>jmolTools</a>.
+      </p>
+
+      <a class="btn btn-primary" href="http://rna.bgsu.edu/main/interacting-with-2d-structures" target="_blank">More details</a>
+      <h4>Interactivity</h4>
+
+      <p>
+      In the default select mode,
+      click and drag to create a selection box. All nucleotides within
+      the selection box will be displayed in a jmol window to the right.
+      </p>
+
+      <p>
+      The selection box is dragable and resizeable. Click inside and
+      drag to move it. Click on the border and drag to resize it.
+      </p>
+
+      <p>
+      In click mode, click on a interaction to display the interaction
+      in 3D. To switch to the click mode use the selection mode control.
+      </p>
+
+      <p>
+      Interactions are displayed as black bars connecting nucleotides,
+      by default only cWW interactions are displayed. To display other
+      interactions use the interaction controls.
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+  </div>
+
+  <div class='row'>
+    <div class='span9'>
+      <h2>Data</h2>
+      <p>
+      This example uses the 16S <i>E. coli</i> secondary structure provided
+      <a href='http://www.rna.ccbb.utexas.edu/'>Comparative RNA Web Site and
+        Project</a> and interaction annotations of <a
+        href='http://www.rcsb.org/pdb/explore.do?structureId=2aw7'>2AW7</a>
+      (<a href='http://rna.bgsu.edu/rna3dhub/pdb/2AW7'>RNA 3D Hub</a>) from
+      <a href='http://rna.bgsu.edu/main/software/fr3d/'>FR3D</a>.
+      </p>
+    </div>
   </div>
 
 </div>

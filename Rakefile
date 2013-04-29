@@ -5,8 +5,8 @@ def append(file)
   sh("cat #{file} >> #{$file}")
 end
 
-desc "Generate the RNA2D library"
-task :build do
+desc "Generate the RNA2d library"
+task :js do
   sh('cat src/intro.js src/main.js > %s' % $file)
 
   Dir['src/*.js'].each do |file|
@@ -24,6 +24,14 @@ task :build do
 
   append('src/outro.js')
 end
+
+desc "Generate the stylesheets"
+task :less do
+  sh("lessc static/less/main.less > static/css/main.css")
+end
+
+desc "Build library and stylesheets"
+task :build => [:js, :less]
 
 desc "Compress the generate file"
 task :compress do
@@ -45,4 +53,4 @@ task :deploy => :release do
   sh('git checkout develop')
 end
 
-task :default => :build
+task :default => :js
