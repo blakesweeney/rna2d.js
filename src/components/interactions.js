@@ -86,10 +86,6 @@ Rna2D.components.interactions = (function () {
         return plot.vis.selectAll('.' + family);
       };
 
-      //plot.interactions.family = function(obj) {
-        //return plot.interactions.getFamily()(d3.select(obj).datum());
-      //};
-
       plot.interactions.nucleotides = function(obj) {
         obj = obj || this;
         var data = d3.select(obj).datum(),
