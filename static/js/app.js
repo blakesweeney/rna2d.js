@@ -13,6 +13,7 @@ $(document).ready(function() {
   plot.nucleotides.mouseover('highlight');
 
   plot.interactions
+    .click(function(d) { console.log(d); })
     .mouseover('highlight')
     .visible(function(obj) { return obj.family === 'cWW' || obj.family === 'ncWW'; });
 
