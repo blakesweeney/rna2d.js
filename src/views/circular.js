@@ -96,6 +96,8 @@ Rna2D.views.circular = function(plot) {
 
   return {
 
+    xDomain: function() { return [0, 1000]; },
+    yDomain: function() { return [0, 1000]; },
     coordinates: coordinates,
     connections: connections,
     groups: function(standard) { return plot; },

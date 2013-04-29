@@ -1,7 +1,7 @@
 Rna2D.views.airport = function(plot) {
 
   // Common variables.
-  var xCoordMax, yCoordMax;
+  var coordMax = {};
 
   // We need to track if we are drawing across the letter in which case we
   // need to use the width + radius, otherwise we just need to use the radius.
@@ -50,34 +50,25 @@ Rna2D.views.airport = function(plot) {
     return { x: c.x + a, y: c.y + b };
   };
 
+  // A function to define the axes.
+  var domain = function(property) {
+    return function() { 
+      var max = d3.max(plot.nucleotides(), function(d) { return d[property]; });
+      coordMax[property] = max;
+      return [0, max]; 
+    };
+  };
+
   // We make a chart function which draws the nucleotides in the given
   // coordinates.
    var coordinates = function(standard) {
 
-    var data = plot.nucleotides(),
-        width = plot.width(),
-        height = plot.height();
-
-    // Compute the scales and ranges.
-    xCoordMax = d3.max(data, function(d) { return d.x; });
-    yCoordMax = d3.max(data, function(d) { return d.y; });
-
-    var xScale = d3.scale.linear()
-          .domain([0, xCoordMax])
-          .range([0, width]),
-        yScale = d3.scale.linear()
-          .domain([0, yCoordMax])
-          .range([0, height]);
-
-    plot.xScale(xScale);
-    plot.yScale(yScale);
-
     // Draw all nucleotides.
     plot.vis.selectAll(plot.nucleotides['class']())
-      .data(data).enter().append('svg:text')
+      .data(plot.nucleotides()).enter().append('svg:text')
       .call(standard)
-      .attr('x', function(d, i) { return xScale(plot.nucleotides.getX()(d, i)); })
-      .attr('y', function(d, i) { return yScale(plot.nucleotides.getY()(d, i)); })
+      .attr('x', function(d, i) { return plot.xScale()(plot.nucleotides.getX()(d, i)); })
+      .attr('y', function(d, i) { return plot.yScale()(plot.nucleotides.getY()(d, i)); })
       .attr('font-size', plot.views.airport.fontSize())
       .text(plot.nucleotides.getSequence())
       .attr('fill', plot.nucleotides.color());
@@ -134,8 +125,8 @@ Rna2D.views.airport = function(plot) {
 
       $.each(motifs, function(i, current) {
         var left = 0,
-            right = xCoordMax,
-            top = yCoordMax,
+            right = coordMax.x,
+            top = coordMax.y,
             bottom = 0,
             visible = plot.motifs.visible();
 
@@ -172,7 +163,7 @@ Rna2D.views.airport = function(plot) {
         // involves the outer edges. In this case we think that we have not
         // actually found the nts so we log this and use a box that cannot
         // be seen. This prevents bugs where we stop drawing boxes too early.
-        if (bottom === 0 || left === 0 || right === xCoordMax || top === yCoordMax) {
+        if (bottom === 0 || left === 0 || right === coordMax.x || top === coordMax.y) {
           console.log("Unlikely bounding box found for " + current.id);
           current.bounding = [{x: 0, y: 0}, {x: 0, y: 0}, {x: 0, y: 0}, {x: 0, y: 0}];
         } else {
@@ -207,6 +198,8 @@ Rna2D.views.airport = function(plot) {
       xCoord: function(d, i) { return plot.xScale()(plot.nucleotides.getX()(d, i)); },
       yCoord: function(d, i) { return plot.yScale()(plot.nucleotides.getY()(d, i)); }
     },
+    xDomain: domain('x'),
+    yDomain: domain('y'),
     connections: connections,
     coordinates: coordinates,
     groups: groups,

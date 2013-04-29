@@ -13,6 +13,8 @@ Rna2D.views = function(plot) {
     plot.coordinates = view.coordinates;
     plot.connections = view.connections;
     plot.groups = view.groups;
+    plot.xDomain = view.xDomain;
+    plot.yDomain = view.yDomain;
 
     // Trigger the side effects
     view.sideffects();

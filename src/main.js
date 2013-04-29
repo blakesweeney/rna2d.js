@@ -12,10 +12,6 @@ var Rna2D = window.Rna2D || function(config) {
 
       var margin = plot.margin();
 
-      // TODO: Don't mess with width.
-      plot.width(plot.width() - margin.left - margin.right);
-      plot.height(plot.height() - margin.above - margin.below);
-
       sel.select('svg').remove();
       var top = sel.append('svg')
             .attr('width', plot.width() + margin.left + margin.right)
@@ -23,6 +19,12 @@ var Rna2D = window.Rna2D || function(config) {
 
       plot.vis = top.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.above + ")");
+
+      // ----------------------------------------------------------------------
+      // Setup the axis
+      // ----------------------------------------------------------------------
+      plot.xScale(d3.scale.linear().domain(plot.xDomain()).range([0, plot.width() - margin.right]));
+      plot.yScale(d3.scale.linear().domain(plot.yDomain()).range([0, plot.height() - margin.above]));
 
       // ----------------------------------------------------------------------
       // Draw all coordinates and attach all standard data
