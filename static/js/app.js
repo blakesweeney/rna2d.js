@@ -21,7 +21,7 @@ $(document).ready(function() {
   $("#rna-2d").rna2d({
     plot: plot,
     nucleotides: {
-      url: "data/16S-ecoli.js",
+      url: "data/16S-ecoli.json",
       parser: $.parseJSON
     },
 
