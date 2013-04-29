@@ -62,7 +62,11 @@
     // If we are given urls then fire off requests for each element.
     var requests = $.map(['nucleotides', 'interactions', 'motifs'], function(type, i) {
       if (options[type].url) {
-        return $.get(options[type].url, setter(type, options[type].parser));
+        return $.ajax({
+          url: options[type].url, 
+          success: setter(type, options[type].parser),
+          dataType: "text"
+        });
       }
 
       return null;
