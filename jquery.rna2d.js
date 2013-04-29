@@ -36,7 +36,7 @@
         };
     $.extend(options, opts);
 
-    plot.selection(this);
+    plot.selection(this.get(0));
 
     // Attach handlers to each control.
     $.each(options.controls, function(type, given) {
