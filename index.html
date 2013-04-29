@@ -1,131 +1,75 @@
 <!DOCTYPE html>
 <html lang='en'>
-  <head>
-    <title>Rna2D.js</title>
-    <meta charset='utf-8'>
-    <link href='static/css/main.css' rel='stylesheet'>
+<head>
+  <title>Rna2D.js</title>
+  <meta charset='utf-8'>
+  <link href='static/css/main.css' rel='stylesheet'>
 
-    <script src='static/jmol/jmol.js'></script>
-    <script src='static/js/jquery.min.js'></script>
-    <script src='static/js/jquery.jmolTools.js'></script>
-    <script src='static/js/underscore.min.js'></script>
-    <script src='static/js/sizzle.js'></script>
-    <script src='static/js/d3.js'></script>
+  <script src='static/jmol/jmol.js'></script>
+  <script src='static/js/jquery.min.js'></script>
+  <script src='static/js/jquery.jmolTools.js'></script>
+  <script src='static/js/sizzle.js'></script>
+  <script src='static/js/d3.js'></script>
+  <script src='static/js/app.js'></script>
 
-    <script src='rna2d.js'></script>
-  </head>
+  <script src='rna2d.js'></script>
+  <script src='jquery.rna2d.js'></script>
+</head>
 
-  <body>
+<body>
 
-      <div>
+<div>
 
-      <div id='mode'>
-        <label for='mode-checkbox'>Selection Mode</label>
-        <div id='mode-button'>
-          <input id='mode-checkbox' type='checkbox' value='v' checked='checked'>
-        </div>
-      </div>
+  <div id='mode'>
+    <label for='mode-checkbox'>Selection Mode</label>
+    <input id='mode-checkbox' type='checkbox' value='v' checked='checked'>
+  </div>
 
-      <div id='motifs'>
-        <label for='motif-checkbox'>Show Motifs</label>
-        <div id='motif-button'>
-          <input id='motif-checkbox' type='checkbox' value='v' checked='checked'>
-        </div>
-      </div>
+  <div id='motifs'>
+    <label for='il-checkbox'>Show IL</label>
+    <input id='il-checkbox' class='motif-checkbox' type='checkbox' value='v' checked='checked' data-type='IL'>
+    <br>
+    <label for='hl-checkbox'>Show HL</label>
+    <input id='hl-checkbox' class='motif-checkbox' type='checkbox' value='v' checked='checked' data-type='HL'>
+  </div>
 
-      <div id='interaction-controls'>
-        <label for='cww-checkbox'>cWW</label>
-        <div id='cww-toggle'>
-          <input id='cww-checkbox' type='checkbox' value='v' checked='checked'>
-        </div>
+  <div id='interaction-controls'>
+    <label for='cww-checkbox'>cWW</label>
+    <input id='cww-checkbox' class='interaction-checkbox' type='checkbox' value='v' checked='checked' data-family='cWW'>
+    <br>
 
-        <label for='css-checkbox'>cSS</label>
-        <div id='css-toggle'>
-          <input id='css-checkbox' type='checkbox' value='v'>
-        </div>
-      </div>
+    <label for='css-checkbox'>cSS</label>
+    <input id='css-checkbox' class='interaction-checkbox' type='checkbox' value='v' data-family='cSS'>
+  </div>
 
-      <div id='view-controls'>
-        <label for='view-checkbox'>circular</label>
-        <div id='view-toggle'>
-          <input id='view-checkbox' type='checkbox' value='v' >
-        </div>
-      </div>
+  <div id='view-controls'>
+    <form action="">
+      <label for="airport-control">Airport</label>
+      <input id="airport-control" type="radio" class='view-control' name="view" data-view='airport' checked='checked' value="airport">
+      <br>
+      <label for="airport-control">Circular</label>
+      <input id='circular-control' type="radio" class='view-control' name="view" data-view='circular' value="circular">
+    </form>
+  </div>
 
-      <!-- <div id='near-controls'> -->
-      <!--   <label for='cww-checkbox'>Nears</label> -->
-      <!--   <div id='near-toggle'> -->
-      <!--     <input id='near-checkbox' type='checkbox' value='v'> -->
-      <!--   </div> -->
-      <!-- </div> -->
+  <!-- 2D structure -->
+  <div class='span6'>
+    <h2><i>E. coli</i> Secondary Structure</h2>
+    <div id='rna-2d'></div>
+  </div>
 
-        <!-- 2D structure -->
-        <div class='span6'>
-          <h2><i>E. coli</i> Secondary Structure</h2>
-          <div id='rna-2d'></div>
-        </div>
-
-        <!-- Jmol Viewer -->
-        <div class='span4 jmol-viewer'>
-          <div id='jmol'>
-            <script type="text/javascript">
-              jmolInitialize("./static/jmol");
-              jmolSetDocument(0);
-              jmolSetAppletColor("#ffffff");
-            </script>
-          </div>
-          <div id='info'>
-          </div>
-        </div>
-      </div>
-
-      <!-- Code to generate 2D structure and toggle buttons -->
-      <script type='text/javascript'>
-
-        var plot = Rna2D({ selection: '#rna-2d', width: 630, height: 795 });
-        plot.view('airport')
-          .frame.add(true);
-
-        plot.jmol.overflow(function() { alert("Too many nts selected"); });
-
-          plot.brush.enabled(true)
-            .update(plot.jmol.showSelection)
-            .initial([[100, 36], [207, 132]]);
-
-        d3.json('data/16S-ecoli.js', function(data) {
-            plot.nucleotides(data)
-              .mouseover('highlight');
-
-          d3.csv('data/16S-ecoli-interactions.csv', function(data) {
-            plot.interactions(data)
-              .mouseover('highlight')
-              .visible(function(obj) { return obj.family == 'cWW' });
-              ;
-
-            d3.json('data/2AW7_motifs.json', function(data) {
-              plot.motifs(data)
-                .mouseover('highlight')
-                .click(function(d, i) { console.log(d); });
-                ;
-
-              plot();
-           });
-          });
-        });
-
-      $('#mode-checkbox').click(function() { plot.brush.toggle(); });
-      $('#cww-checkbox').click(function() { plot.interactions.toggle('cWW'); });
-      $('#css-checkbox').click(function() { plot.interactions.toggle('cSS'); });
-      $('#motif-checkbox').click(function() { plot.motifs.toggle(); });
-      $('#view-checkbox').click(function() {
-          if (plot.view() == 'airport') {
-            plot.view('circular');
-            } else {
-            plot.view('airport');
-            }
-            plot();
-          });
-
+  <!-- Jmol Viewer -->
+  <div class='span4 jmol-viewer'>
+    <div id='jmol'>
+      <script type="text/javascript">
+        jmolInitialize("./static/jmol");
+        jmolSetDocument(0);
+        jmolSetAppletColor("#ffffff");
       </script>
-  </body>
+    </div>
+    <div id='info'></div>
+  </div>
+
+</div>
+</body>
 </html>

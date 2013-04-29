@@ -1,18 +1,13 @@
 (function () {
   'use strict';
-/*globals window, d3, _, document, $, jmolApplet, jmolScript */
+/*globals window, d3, document, $, jmolApplet, jmolScript */
 
 var Rna2D = window.Rna2D || function(config) {
-  var plot = function(selection) {
+  var plot = function() {
 
     // Compute the nucleotide ordering. This is often used when drawing
     // interactions.
     plot.nucleotides.computeOrder();
-
-    // Set the selection to the given one.
-    if (selection) {
-      plot.selection(selection);
-    }
 
     // Setup the view
     plot.view.setup();
@@ -21,16 +16,17 @@ var Rna2D = window.Rna2D || function(config) {
 
       var margin = plot.margin();
 
+      // TODO: Don't mess with width.
       plot.width(plot.width() - margin.left - margin.right);
       plot.height(plot.height() - margin.above - margin.below);
 
       sel.select('svg').remove();
       var top = sel.append('svg')
-          .attr('width', plot.width() + margin.left + margin.right)
-          .attr('height', plot.height() + margin.above + margin.below);
+            .attr('width', plot.width() + margin.left + margin.right)
+            .attr('height', plot.height() + margin.above + margin.below);
 
       plot.vis = top.append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        .attr("transform", "translate(" + margin.left + "," + margin.above + ")");
 
       // ----------------------------------------------------------------------
       // Draw all coordinates and attach all standard data
@@ -136,6 +132,7 @@ Rna2D.components = function(plot) {
         try {
           obj.generate(plot);
         } catch (except) {
+          console.log("Error generating component " + name);
           console.log(except);
         }
       }
@@ -185,7 +182,7 @@ Rna2D.config = function(plot, given) {
     yScale: null
   };
 
-  Rna2D.utils.generateAccessors(plot, _.extend(config, given));
+  Rna2D.utils.generateAccessors(plot, $.extend(config, given));
 
   return plot;
 };
@@ -198,7 +195,7 @@ Rna2D.utils = (function() {
   };
 
   my.generateAccessors = function(obj, state, callback) {
-    _.each(state, function(value, key) {
+    $.each(state, function(key, value) {
       obj[key] = (function() {
         return function(x) {
           if (!arguments.length) {
@@ -263,11 +260,9 @@ Rna2D.views = function(plot) {
   plot.views = {};
 
   // Add all config
-  _.chain(Rna2D.views)
-    .keys()
-    .each(function(name) {
-      var view = Rna2D.views[name](plot),
-          config = view.config;
+  $.each(Rna2D.views, function(name, view) {
+      view = view(plot);
+      var config = view.config;
       if (typeof(config) === "function") {
         config = config(plot);
       }
@@ -471,7 +466,7 @@ Rna2D.components.interactions = (function () {
             seen = {},
             indexOf = plot.nucleotides.indexOf;
 
-        _.each(interactions, function(current) {
+        $.each(interactions, function(i, current) {
           var id = getID(current),
               nts = getNts(current);
 
@@ -873,31 +868,36 @@ Rna2D.views.airport = function(plot) {
   // Function to draw the connections.
   var connections = function(standard) {
 
-      // Compute the data to use for interactions
-      var interactions = plot.interactions.valid(),
-          getNTs = plot.interactions.getNTs();
+    // Compute the data to use for interactions
+    var interactions = plot.interactions.valid(),
+    getNTs = plot.interactions.getNTs();
 
-      $.each(interactions, function(i, obj) {
-
+    interactions = $.map(interactions, function(obj, i) {
+      try {
         var nts = getNTs(obj),
             nt1 = Rna2D.utils.element(nts[0]),
             nt2 = Rna2D.utils.element(nts[1]),
             p1 = intersectPoint(nt1, nt2, plot.views.airport.gap()),
             p2 = intersectPoint(nt2, nt1, plot.views.airport.gap());
-
         obj.line = { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };
-      });
+      } catch (err) {
+        console.log("Could not compute interaction line for", obj);
+        return null;
+      }
+      
+      return obj;
+    });
 
-      // Draw the interactions
-      plot.vis.selectAll(plot.interactions['class']())
-        .data(interactions)
-        .enter().append('svg:line')
-        .call(standard)
-        .attr('stroke', plot.interactions.color())
-        .attr('x1', function(d) { return d.line.x1; })
-        .attr('y1', function(d) { return d.line.y1; })
-        .attr('x2', function(d) { return d.line.x2; })
-        .attr('y2', function(d) { return d.line.y2; });
+    // Draw the interactions
+    plot.vis.selectAll(plot.interactions['class']())
+    .data(interactions)
+    .enter().append('svg:line')
+    .call(standard)
+    .attr('stroke', plot.interactions.color())
+    .attr('x1', function(d) { return d.line.x1; })
+    .attr('y1', function(d) { return d.line.y1; })
+    .attr('x2', function(d) { return d.line.x2; })
+    .attr('y2', function(d) { return d.line.y2; });
 
     return plot;
   };
@@ -1054,26 +1054,30 @@ Rna2D.views.circular = function(plot) {
   };
 
   var curve = function(d, i) {
-    var nts = getNTs(d),
-        from = position(nts[0]),
+    // The idea is to sort the nts such that we are always drawing from lower to
+    // higher nts, unless we are drawing from one half to the other half, in
+    // which case we flip the order. This lets us always use the sweep and arc
+    // flags of 0,0. The code is kinda gross but it works.
+    var length = plot.nucleotides().length,
+        indexOf = plot.nucleotides.indexOf,
+        nts = getNTs(d).sort(function(nt1, nt2) { 
+          var i1 = indexOf(nt1),
+              i2 = indexOf(nt2);
+          if (Math.abs(i1 - i2) > length /2) {
+            return i2 - i1;
+          }
+          return i1 - i2; 
+        });
+
+    var from = position(nts[0]),
         to = position(nts[1]),
-        distance = Rna2D.utils.distance(from, to),
-        angleDiff = startAngle(null, plot.nucleotides.indexOf(nts[0])) -
-          startAngle(null, plot.nucleotides.indexOf(nts[1])),
-        radius = innerArc.innerRadius()() * Math.tan(angleDiff/2),
-        sweep  = 0,
-        rotation = 0,
-        large_arc = 0;
+        angleDiff = startAngle(null, indexOf(nts[0])) - startAngle(null, indexOf(nts[1])),
+        radius = Math.abs(innerArc.innerRadius()() * Math.tan(angleDiff/2));
 
-    if (plot.nucleotides.indexOf(nts[0]) > plot.nucleotides.indexOf(nts[1])) {
-      sweep = 1;
-    }
-
-    return "M "  + from.x + " " + from.y +     // Start point
-      " A " + radius + "," + radius +     // Radii of elpise
-      " " + rotation +                           // Rotation
-      " " + large_arc + " " + sweep +             // Large Arc and Sweep flag
-      " " + to.x + "," + to.y;            // End point
+    return "M "  + from.x + " " + from.y +  // Start point
+      " A " + radius + "," + radius +       // Both radi are the same for a circle
+      " 0 0,0 " +                           // Rotation and arc flags are always 0
+      to.x + "," + to.y;                    // End point
 
   };
 

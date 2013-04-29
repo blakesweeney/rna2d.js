@@ -88,31 +88,36 @@ Rna2D.views.airport = function(plot) {
   // Function to draw the connections.
   var connections = function(standard) {
 
-      // Compute the data to use for interactions
-      var interactions = plot.interactions.valid(),
-          getNTs = plot.interactions.getNTs();
+    // Compute the data to use for interactions
+    var interactions = plot.interactions.valid(),
+    getNTs = plot.interactions.getNTs();
 
-      $.each(interactions, function(i, obj) {
-
+    interactions = $.map(interactions, function(obj, i) {
+      try {
         var nts = getNTs(obj),
             nt1 = Rna2D.utils.element(nts[0]),
             nt2 = Rna2D.utils.element(nts[1]),
             p1 = intersectPoint(nt1, nt2, plot.views.airport.gap()),
             p2 = intersectPoint(nt2, nt1, plot.views.airport.gap());
-
         obj.line = { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };
-      });
+      } catch (err) {
+        console.log("Could not compute interaction line for", obj);
+        return null;
+      }
+      
+      return obj;
+    });
 
-      // Draw the interactions
-      plot.vis.selectAll(plot.interactions['class']())
-        .data(interactions)
-        .enter().append('svg:line')
-        .call(standard)
-        .attr('stroke', plot.interactions.color())
-        .attr('x1', function(d) { return d.line.x1; })
-        .attr('y1', function(d) { return d.line.y1; })
-        .attr('x2', function(d) { return d.line.x2; })
-        .attr('y2', function(d) { return d.line.y2; });
+    // Draw the interactions
+    plot.vis.selectAll(plot.interactions['class']())
+    .data(interactions)
+    .enter().append('svg:line')
+    .call(standard)
+    .attr('stroke', plot.interactions.color())
+    .attr('x1', function(d) { return d.line.x1; })
+    .attr('y1', function(d) { return d.line.y1; })
+    .attr('x2', function(d) { return d.line.x2; })
+    .attr('y2', function(d) { return d.line.y2; });
 
     return plot;
   };

@@ -1,14 +1,9 @@
 var Rna2D = window.Rna2D || function(config) {
-  var plot = function(selection) {
+  var plot = function() {
 
     // Compute the nucleotide ordering. This is often used when drawing
     // interactions.
     plot.nucleotides.computeOrder();
-
-    // Set the selection to the given one.
-    if (selection) {
-      plot.selection(selection);
-    }
 
     // Setup the view
     plot.view.setup();
@@ -17,16 +12,17 @@ var Rna2D = window.Rna2D || function(config) {
 
       var margin = plot.margin();
 
+      // TODO: Don't mess with width.
       plot.width(plot.width() - margin.left - margin.right);
       plot.height(plot.height() - margin.above - margin.below);
 
       sel.select('svg').remove();
       var top = sel.append('svg')
-          .attr('width', plot.width() + margin.left + margin.right)
-          .attr('height', plot.height() + margin.above + margin.below);
+            .attr('width', plot.width() + margin.left + margin.right)
+            .attr('height', plot.height() + margin.above + margin.below);
 
       plot.vis = top.append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        .attr("transform", "translate(" + margin.left + "," + margin.above + ")");
 
       // ----------------------------------------------------------------------
       // Draw all coordinates and attach all standard data
