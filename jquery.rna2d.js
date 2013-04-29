@@ -36,7 +36,7 @@
         };
     $.extend(options, opts);
 
-    plot.selection(this.get(0).tagName.toLowerCase());
+    plot.selection(this);
 
     // Attach handlers to each control.
     $.each(options.controls, function(type, given) {

@@ -12,6 +12,7 @@ Rna2D.components = function(plot) {
         try {
           obj.generate(plot);
         } catch (except) {
+          console.log("Error generating component " + name);
           console.log(except);
         }
       }
