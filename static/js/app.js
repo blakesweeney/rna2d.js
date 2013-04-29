@@ -14,7 +14,7 @@ $(document).ready(function() {
 
   plot.interactions
     .mouseover('highlight')
-    .visible(function(obj) { return obj.family === 'cWW'; });
+    .visible(function(obj) { return obj.family === 'cWW' || obj.family === 'ncWW'; });
 
   plot.motifs.mouseover('highlight');
 

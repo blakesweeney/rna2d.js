@@ -22,37 +22,37 @@
 
   <div id='mode'>
     <label for='mode-checkbox'>Selection Mode</label>
-    <div id='mode-button'>
-      <input id='mode-checkbox' type='checkbox' value='v' checked='checked'>
-    </div>
+    <input id='mode-checkbox' type='checkbox' value='v' checked='checked'>
   </div>
 
   <div id='motifs'>
-    <label for='motif-checkbox'>Show Motifs</label>
-    <div id='motif-button'>
-      <input id='motif-checkbox' type='checkbox' value='v'
-      checked='checked' data-type='IL'>
-    </div>
+    <label for='il-checkbox'>Show IL</label>
+    <input id='il-checkbox' class='motif-checkbox' type='checkbox' value='v' checked='checked' data-type='IL'>
+    <br>
+    <label for='hl-checkbox'>Show HL</label>
+    <input id='hl-checkbox' class='motif-checkbox' type='checkbox' value='v' checked='checked' data-type='HL'>
+    <br>
+    <label for='j3-checkbox'>Show J3</label>
+    <input id='j3-checkbox' class='motif-checkbox' type='checkbox' value='v' checked='checked' data-type='J3'>
   </div>
 
   <div id='interaction-controls'>
     <label for='cww-checkbox'>cWW</label>
-    <div id='cww-toggle'>
-      <input id='cww-checkbox' type='checkbox' value='v' checked='checked'
-      data-family='cWW'>
-    </div>
+    <input id='cww-checkbox' class='interaction-checkbox' type='checkbox' value='v' checked='checked' data-family='cWW'>
+    <br>
 
     <label for='css-checkbox'>cSS</label>
-    <div id='css-toggle'>
-      <input id='css-checkbox' type='checkbox' value='v' data-family='cSS'>
-    </div>
+    <input id='css-checkbox' class='interaction-checkbox' type='checkbox' value='v' data-family='cSS'>
   </div>
 
   <div id='view-controls'>
-    <label for='view-checkbox'>circular</label>
-    <div id='view-toggle'>
-      <input id='view-checkbox' type='checkbox' value='v' data-view='circular'>
-    </div>
+    <form action="">
+      <label for="airport-control">Airport</label>
+      <input id="airport-control" type="radio" class='view-control' name="view" data-view='airport' checked='checked' value="airport">
+      <br>
+      <label for="airport-control">Circular</label>
+      <input id='circular-control' type="radio" class='view-control' name="view" data-view='circular' value="circular">
+    </form>
   </div>
 
   <!-- 2D structure -->
