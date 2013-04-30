@@ -14,7 +14,6 @@ Rna2D.components = function(plot) {
         }
 
         obj.actions(plot);
-        actions = true;
       }
 
       if (obj.hasOwnProperty('generate')) {
@@ -27,6 +26,7 @@ Rna2D.components = function(plot) {
       }
     });
 
+    actions = true;
   };
 
   // Create each subcomponent with its accessor function, config, side 
