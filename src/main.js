@@ -1,4 +1,18 @@
 var Rna2D = window.Rna2D || function(config) {
+
+  // A function to call when we are building the nts, interactions or motifs.
+  // All have some steps in common so we move them somewhere common.
+  var standardBuild = function(type, selection) {
+    var klass = type['class'](),
+        classOf = type.classOf();
+
+    Rna2D.utils.attachHandlers(selection, type);
+
+    return selection.attr('id', type.getID())
+      .attr('class', function(d, i) { return classOf(d, i).concat(klass).join(' '); })
+      .attr('visibility', type.visibility);
+  };
+
   var plot = function() {
 
     // Compute the nucleotide ordering. This is often used when drawing
@@ -34,55 +48,37 @@ var Rna2D = window.Rna2D || function(config) {
     plot.coordinates(function(selection) {
 
       var x = plot.views[plot.view()].xCoord(),
-          y = plot.views[plot.view()].yCoord(),
-          classOf = plot.nucleotides.classOf(),
-          klass = plot.nucleotides['class']();
+          y = plot.views[plot.view()].yCoord();
 
-      selection.attr('id', plot.nucleotides.getID())
-        .attr('class', function(d, i) { return classOf(d, i).concat(klass).join(' '); })
+      standardBuild(plot.nucleotides, selection)
         .datum(function(d, i) {
           d.__x = x(d, i);
           d.__y = y(d, i);
           return d;
         })
-        .attr('visibility', plot.nucleotides.visiblity)
         .attr('data-sequence', plot.nucleotides.getSequence());
-
-      Rna2D.utils.attachHandlers(selection, plot.nucleotides);
 
       return selection;
     });
 
     // Draw all interactions and add all common data
     plot.connections(function(selection) {
-      var ntsOf = plot.interactions.getNTs(),
-          classOf = plot.interactions.classOf(),
-          klass = plot.interactions['class']();
+      var ntsOf = plot.interactions.getNTs();
 
-      selection.attr('id', plot.interactions.getID())
-        .attr('class', function(d, i) { return classOf(d, i).concat(klass).join(' '); })
-        .attr('visibility', plot.interactions.visibilityString)
+      standardBuild(plot.interactions, selection)
         .attr('data-nts', function(d, i) { return ntsOf(d).join(','); })
         .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
         .attr('nt2', function(d, i) { return ntsOf(d)[1]; });
-
-      Rna2D.utils.attachHandlers(selection, plot.interactions);
 
       return selection;
     });
 
     // Draw motifs
     plot.groups(function(selection) {
-      var ntsOf = plot.motifs.getNTs(),
-          classOf = plot.motifs.classOf(),
-          klass = plot.motifs['class']();
+      var ntsOf = plot.motifs.getNTs();
 
-      selection.attr('id', plot.motifs.getID())
-        .attr('class', function(d, i) { return classOf(d, i).concat(klass).join(' '); })
-        .attr('data-nts', function(d) { return plot.motifs.getNTs()(d).join(','); })
-        .attr('visibility', plot.motifs.visibility);
-
-      Rna2D.utils.attachHandlers(selection, plot.motifs);
+      standardBuild(plot.motifs, selection)
+        .attr('data-nts', function(d) { return plot.motifs.getNTs()(d).join(','); });
 
       return selection;
     });
