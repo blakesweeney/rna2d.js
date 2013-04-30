@@ -32,7 +32,7 @@ Rna2D.togglable = function(plot, name) {
 
   // Note that we use null above so here we can use the fact that jQuery's map
   // is actually a map/filter to remove elements as we traverse.
-  type.visibilityString = function(d, i) {
+  type.visibility = function(d, i) {
     var klasses = type.classOf()(d),
         found = $.map(klasses, function(k, i) { return status[k]; });
     return (found.length ? 'visible' : 'hidden');
