@@ -33,7 +33,7 @@ $(document).ready(function() {
     $('#about-selection').children().remove();
     $('#about-selection').append(link);
     $('#about-selection').show();
-    return plot.jmol.showGroup(this);
+    return plot.jmol.showSelection([d]);
   };
 
   plot.jmol.overflow(function() { alert("Too many nts selected"); });
