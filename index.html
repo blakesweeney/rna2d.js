@@ -65,17 +65,28 @@
 
       <a href="#modal" role="button" class="btn btn-primary btn-block" data-toggle="modal">Help</a>
 
-      <!-- <h5>Mode</h5> -->
-      <button type="button" id="mode-toggle" class="btn btn-block"
-        autocomplete="off" data-normal-text="Select"
-        data-loading-text="Click">Select</button>
-
       <div class="btn-toolbar">
-        <button id="motif-toggle" type="button" class="btn btn-block motif-control"
-          data-type='IL'>Motifs</button>
+        <!-- <h5>Mode</h5> -->
+        <button type="button" id="mode-toggle" class="btn btn-block"
+          data-normal-text="Select" data-loading-text="Click">Select</button>
       </div>
 
       <div id="control-groups" class="accordian">
+
+        <div id="motif-controls" class="accordion-group">
+          <div class="accordion-heading">
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#control-groups"
+              href="#motif-control-buttons">Motifs</a>
+          </div>
+
+          <div id="motif-control-buttons" class="accordion-body collapse">
+            <div class="accordion-inner">
+              <button id="il-toggle" type="button" class="btn btn-block motif-control" data-type='IL'>IL</button>
+              <button id="hl-toggle" type="button" class="btn btn-block motif-control" data-type='HL'>HL</button>
+            </div>
+          </div>
+        </div>
+
         <div id="nucleotide-controls" class="accordion-group">
           <div class="accordion-heading">
             <a class="accordion-toggle" data-toggle="collapse" data-parent="#control-groups"
