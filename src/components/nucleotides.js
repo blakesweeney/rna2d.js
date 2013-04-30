@@ -4,11 +4,12 @@ Rna2D.components.nucleotides = (function() {
 
   return {
 
+    togglable: true,
     config: function(plot) {
       return {
         highlightColor: function() { return 'red'; },
         'class': 'nucleotide',
-        classOf: function(d, i) { return ''; },
+        classOf: function(d, i) { return [d.sequence]; },
         color: 'black',
         click: function(d, i) { return plot.jmol.showSelection([d]); },
         mouseover: null,
@@ -52,12 +53,10 @@ Rna2D.components.nucleotides = (function() {
     },
 
     actions: function(plot) {
+      plot.nucleotides.visible('A', 'C', 'G', 'U');
+
       plot.nucleotides.selector = function() {
         return '.' + plot.nucleotides['class']();
-      };
-
-      plot.nucleotides.all = function() {
-        return plot.vis.selectAll(plot.nucleotides.selector());
       };
 
       plot.nucleotides.interactions = function(given) {

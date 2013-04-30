@@ -2,14 +2,11 @@ Rna2D.components.interactions = (function () {
 
   return {
 
+    togglable: true,
     config: function(plot) {
       return {
         getFamily: function(d) { return d.family; },
         getNTs: function(d) { return [d.nt1, d.nt2]; },
-        visible: function(d) { 
-          var family = plot.interactions.getFamily()(d);
-          return family === 'cWW' || family === 'ncWW'; 
-        },
         mouseover: null,
         mouseout: null,
         click: function(d) {
@@ -17,7 +14,7 @@ Rna2D.components.interactions = (function () {
           plot.jmol.showSelection(nts.data());
         },
         'class': 'interaction',
-        classOf: function(d) { return d.family; },
+        classOf: function(d) { return [d.family]; },
         highlightColor: function() { return 'red'; },
         highlight: Object,
         normalize: Object,
@@ -81,14 +78,7 @@ Rna2D.components.interactions = (function () {
 
     actions: function(plot) {
 
-      plot.interactions.all = function(family) {
-        family = family || plot.interactions['class']();
-        return plot.vis.selectAll('.' + family);
-      };
-
-      //plot.interactions.family = function(obj) {
-        //return plot.interactions.getFamily()(d3.select(obj).datum());
-      //};
+      plot.interactions.visible('cWW', 'ncWW');
 
       plot.interactions.nucleotides = function(obj) {
         obj = obj || this;
@@ -98,30 +88,6 @@ Rna2D.components.interactions = (function () {
         return plot.vis.selectAll(selector);
       };
 
-      plot.interactions.show = function(family) {
-        return plot.interactions.all(family).attr('visibility', function(data) {
-          data.__visibility = true;
-          return 'visible';
-        });
-      };
-
-      plot.interactions.hide = function(family) {
-        return plot.interactions.all(family).attr('visibility', function(data) {
-          data.__visibility = false;
-          return 'hidden';
-        });
-      };
-
-      plot.interactions.toggle = function(family) {
-        return plot.interactions.all(family).attr('visibility', function(data) {
-          if (data.__visibility) {
-            data.__visibility = false;
-            return 'hidden';
-          }
-          data.__visibility = true;
-          return 'visible';
-        });
-      };
     }
   };
 

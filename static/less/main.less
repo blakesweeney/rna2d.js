@@ -1,0 +1,153 @@
+@cWW-stroke: black;
+@cWW-fill: black;
+
+@tWW-stroke: #663300;
+@tWW-fill: #3D1F00;
+
+@cWH-stroke: #00CC00;
+@cWH-fill: #007A00;
+
+@tWH-stroke: #CC00FF;
+@tWH-fill: #7A0099;
+
+@cWS-stroke: #669900;
+@cWS-fill: #3D5C00;
+
+@tWS-stroke: #3333CC;
+@tWS-fill: #1F1F7A;
+
+@cSS-stroke: #CC9900;
+@cSS-fill: #7A5C00;
+
+@tSS-stroke: #666699;
+@tSS-fill: #3D3D5C;
+
+@tSH-stroke: #3333FF;
+@tSH-fill: #1F1F99;
+
+@cSH-stroke: #FF9900;
+@cSH-fill:  #995C00;
+
+@cHH-stroke: #009900;
+@cHH-fill: #005C00;
+
+@tHH-stroke: #6600FF;
+@tHH-fill: #3D0099;
+
+@toggle-color: #FFFFFF;
+
+body {
+  position: relative;
+  padding-top: 40px;
+}
+
+.frame {
+  fill: #fff;
+  fill-opacity: 0;
+  stroke: #aaa;
+}
+
+#view-div {
+  padding-bottom: 10px;
+}
+
+#rna-2d {
+
+  .interaction {
+    stroke-width: 1.5;
+    stroke: black;
+    opacity: 0.4;
+  }
+
+  .cWW, .ncWW { stroke: @cWW-stroke; }
+  .tWW, .ntWW { stroke: @tWW-stroke; }
+  .cWS, .ncWS { stroke: @cWS-stroke; }
+  .tWS, .ntWS { stroke: @tWS-stroke; }
+  .cWH, .ncWH { stroke: @cWH-stroke; }
+  .tWH, .ntWH { stroke: @tWH-stroke; }
+  .cSH, .ncSH { stroke: @cSH-stroke; }
+  .tSH, .ntSH { stroke: @tSH-stroke; }
+  .cSS, .ncSS { stroke: @cSS-stroke; }
+  .tSS, .ntSS { stroke: @tSS-stroke; }
+  .cHH, .ncHH { stroke: @cHH-stroke; }
+  .tHH, .ntHH { stroke: @tHH-stroke; }
+
+  .motif {
+    fill: #000;
+    fill-opacity: .25;
+    stroke: #B0A2A8;
+  }
+
+  .IL {
+    fill: #5BB75B;
+    stroke: #387038;
+  }
+
+  .HL {
+    fill: #49AFCD;
+    stroke: #1F6377
+  }
+
+  .frame {
+    fill: #fff;
+    fill-opacity: 0;
+    stroke: #aaa;
+  }
+
+  .brush {
+    fill: #000;
+    fill-opacity: .125;
+    stroke: #B0A2A8;
+  }
+
+  .nucleotide {
+    cursor: default;
+  }
+}
+
+.jmol-viewer {
+  position: fixed;
+  left: 780px;
+  top: 200px;
+  overflow: auto;
+}
+
+#jmol { border: 1px solid #ddd; }
+
+.toggle-control-mixin (@fill, @stroke) {
+  color: @stroke;
+  &.active { 
+    color: #FFFFFF;
+    background: @stroke;
+    background-image: -webkit-linear-gradient(top, @stroke, @fill);
+    background-image: -moz-linear-gradient(top, @stroke, @fill);
+    background-image: -o-linear-gradient(top, @stroke, @fill);
+    background-image: linear-gradient(top, @stroke, @fill);
+  } 
+}
+
+#interaction-controls {
+
+  .interaction-toggle {
+    width: 38px;
+    font-size: 12px;
+    position: relative;
+    left: -5px;
+  }
+
+  .cWW { .toggle-control-mixin(@cWW-stroke, @cWW-fill); }
+  .tWW { .toggle-control-mixin(@tWW-stroke, @tWW-fill); }
+  .cWH { .toggle-control-mixin(@cWH-stroke, @cWH-fill); }
+  .tWH { .toggle-control-mixin(@tWH-stroke, @tWH-fill); }
+  .cWS { .toggle-control-mixin(@cWS-stroke, @cWS-fill); }
+  .tWS { .toggle-control-mixin(@tWS-stroke, @tWS-fill); }
+  .cHH { .toggle-control-mixin(@cHH-stroke, @cHH-fill); }
+  .tHH { .toggle-control-mixin(@tHH-stroke, @tHH-fill); }
+  .cSH { .toggle-control-mixin(@cSH-stroke, @cSH-fill); }
+  .tSH { .toggle-control-mixin(@tSH-stroke, @tSH-fill); }
+  .cSS { .toggle-control-mixin(@cSS-stroke, @cSS-fill); }
+  .tSS { .toggle-control-mixin(@tSS-stroke, @tSS-fill); }
+
+}
+
+// vim: ft=less

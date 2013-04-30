@@ -1,4 +1,18 @@
 var Rna2D = window.Rna2D || function(config) {
+
+  // A function to call when we are building the nts, interactions or motifs.
+  // All have some steps in common so we move them somewhere common.
+  var standardBuild = function(type, selection) {
+    var klass = type['class'](),
+        classOf = type.classOf();
+
+    Rna2D.utils.attachHandlers(selection, type);
+
+    return selection.attr('id', type.getID())
+      .attr('class', function(d, i) { return classOf(d, i).concat(klass).join(' '); })
+      .attr('visibility', type.visibility);
+  };
+
   var plot = function() {
 
     // Compute the nucleotide ordering. This is often used when drawing
@@ -8,96 +22,68 @@ var Rna2D = window.Rna2D || function(config) {
     // Setup the view
     plot.view.setup();
 
-    d3.select(plot.selection()).call(function(sel) {
+    var margin = plot.margin(),
+        selection = d3.select(plot.selection()),
+        scale = function(domainFn, max) { 
+          return d3.scale.linear().domain(domainFn()).range([0, max]);
+        };
 
-      var margin = plot.margin();
+    // Setup the overall drawing area
+    selection.select('svg').remove();
+    var top = selection.append('svg')
+      .attr('width', plot.width() + margin.left + margin.right)
+      .attr('height', plot.height() + margin.above + margin.below);
 
-      // TODO: Don't mess with width.
-      plot.width(plot.width() - margin.left - margin.right);
-      plot.height(plot.height() - margin.above - margin.below);
+    plot.vis = top.append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.above + ")");
 
-      sel.select('svg').remove();
-      var top = sel.append('svg')
-            .attr('width', plot.width() + margin.left + margin.right)
-            .attr('height', plot.height() + margin.above + margin.below);
+    // Setup the scales
+    plot.xScale(scale(plot.xDomain, plot.width() - margin.right));
+    plot.yScale(scale(plot.yDomain, plot.height() - margin.above));
 
-      plot.vis = top.append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.above + ")");
+    // Generate the components - brush, frame, zoom, etc
+    plot.components();
 
-      // ----------------------------------------------------------------------
-      // Draw all coordinates and attach all standard data
-      // ----------------------------------------------------------------------
-      plot.coordinates(function(selection) {
+    // Draw all coordinates and attach all standard data
+    plot.coordinates(function(selection) {
 
-          var x = plot.views[plot.view()].xCoord(),
-              y = plot.views[plot.view()].yCoord();
+      var x = plot.views[plot.view()].xCoord(),
+          y = plot.views[plot.view()].yCoord();
 
-        selection.attr('id', plot.nucleotides.getID())
-          .attr('class', function(d, i) {
-            return plot.nucleotides['class']() + ' ' + plot.nucleotides.classOf()(d, i);
-          })
-          .datum(function(d, i) {
-            d.__x = x(d, i);
-            d.__y = y(d, i);
-            return d;
-          })
-          .attr('data-sequence', plot.nucleotides.getSequence());
+      standardBuild(plot.nucleotides, selection)
+        .datum(function(d, i) {
+          d.__x = x(d, i);
+          d.__y = y(d, i);
+          return d;
+        })
+        .attr('data-sequence', plot.nucleotides.getSequence());
 
-        Rna2D.utils.attachHandlers(selection, plot.nucleotides);
-
-        return selection;
-      });
-
-      // ----------------------------------------------------------------------
-      // Draw all interactions and add all common data
-      // ----------------------------------------------------------------------
-      plot.connections(function(selection) {
-        var ntsOf = plot.interactions.getNTs(),
-        visible = plot.interactions.visible();
-
-        selection.attr('id', plot.interactions.getID())
-          .attr('class', function(d, i) {
-            return plot.interactions['class']() + ' ' + plot.interactions.classOf()(d, i);
-          })
-          .attr('visibility', function(d) {
-            d.__visibility = visible(d);
-            return (visible(d) ? 'visible' : 'hidden'); 
-          })
-          .attr('data-nts', function(d, i) { return ntsOf(d).join(','); })
-          .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
-          .attr('nt2', function(d, i) { return ntsOf(d)[1]; });
-
-        Rna2D.utils.attachHandlers(selection, plot.interactions);
-
-        return selection;
-      });
-
-      // ----------------------------------------------------------------------
-      // Draw motifs
-      // ----------------------------------------------------------------------
-      plot.groups(function(selection) {
-        var ntsOf = plot.motifs.getNTs();
-
-        selection.attr('id', plot.motifs.getID())
-          .attr('class', function(d, i) {
-            return plot.motifs['class']() + ' ' + plot.motifs.classOf()(d, i);
-          })
-          .attr('data-nts', function(d) { return plot.motifs.getNTs()(d).join(','); })
-          .datum(function(d, i) {
-            d.__visible = plot.motifs.visible()(d, i);
-            return d;
-          }).attr('visibility', function(d) { return (d.__visible ? 'visible' : 'hidden'); });
-
-        Rna2D.utils.attachHandlers(selection, plot.motifs);
-
-        return selection;
-      });
-
-      // Generate the components - brush, frame, zoom, etc
-      plot.components();
-
-      return plot;
+      return selection;
     });
+
+    // Draw all interactions and add all common data
+    plot.connections(function(selection) {
+      var ntsOf = plot.interactions.getNTs();
+
+      standardBuild(plot.interactions, selection)
+        .attr('data-nts', function(d, i) { return ntsOf(d).join(','); })
+        .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
+        .attr('nt2', function(d, i) { return ntsOf(d)[1]; });
+
+      return selection;
+    });
+
+    // Draw motifs
+    plot.groups(function(selection) {
+      var ntsOf = plot.motifs.getNTs();
+
+      standardBuild(plot.motifs, selection)
+        .attr('data-nts', function(d) { return plot.motifs.getNTs()(d).join(','); });
+
+      return selection;
+    });
+
+    return plot;
   };
 
   // Configure the plot
