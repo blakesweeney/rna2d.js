@@ -53,12 +53,6 @@ Rna2D.components.brush = (function() {
 
     generate: function(plot) {
 
-      // Blank for now, later may use this for a multiple selecting brush.
-      startBrush = function () { return 'bobo'; };
-
-      // Do nothing for now.
-      updateBrush = function (p) { };
-
       endBrush = function () {
         var matched = [];
 
@@ -68,11 +62,13 @@ Rna2D.components.brush = (function() {
 
           var e = plot.brush().extent();
           plot.vis.selectAll('.' + plot.nucleotides['class']())
-            .attr("checked", function(d) {
+            .attr("selected", function(d) {
               if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
                   e[0][1] <= d.__y && d.__y <= e[1][1]) {
                 matched.push(d);
+              return 'selected';
               }
+              return '';
             });
 
           plot.brush.update()(matched);
@@ -80,8 +76,6 @@ Rna2D.components.brush = (function() {
       };
 
       plot.brush(d3.svg.brush()
-        .on('brushstart', startBrush)
-        .on('brush', updateBrush)
         .on('brushend', endBrush)
         .x(plot.xScale())
         .y(plot.yScale()));
