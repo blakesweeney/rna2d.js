@@ -78,8 +78,7 @@ $(document).ready(function() {
         selector: ".interaction-toggle"
       },
       motifs: {
-        selector: ".motif-control",
-        callback: motifClick
+        selector: ".motif-control"
       },
       views: {
         selector: ".view-control"
