@@ -1,16 +1,20 @@
 Rna2D.components = function(plot) {
 
+  var actions = false;
+
   // Create the toplevel component which calls each subcomponent component
   plot.components = function() {
+
     $.each(Rna2D.components, function(name, obj) {
 
-      if (obj.hasOwnProperty('actions')) {
+      if (obj.hasOwnProperty('actions') && !actions) {
         // If something is toggable we will add all the toggable functions.
         if (obj.togglable) {
           Rna2D.togglable(plot, name);
         }
 
         obj.actions(plot);
+        actions = true;
       }
 
       if (obj.hasOwnProperty('generate')) {
@@ -22,6 +26,7 @@ Rna2D.components = function(plot) {
         }
       }
     });
+
   };
 
   // Create each subcomponent with its accessor function, config, side 
