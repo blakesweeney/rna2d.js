@@ -5,6 +5,11 @@ Rna2D.components = function(plot) {
     $.each(Rna2D.components, function(name, obj) {
 
       if (obj.hasOwnProperty('actions')) {
+        // If something is toggable we will add all the toggable functions.
+        if (obj.togglable) {
+          Rna2D.togglable(plot, name);
+        }
+
         obj.actions(plot);
       }
 

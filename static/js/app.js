@@ -47,7 +47,7 @@ $(document).ready(function() {
   plot.interactions
     .click(function(d) { console.log(d); })
     .mouseover('highlight')
-    .visible(function(obj) { return obj.family === 'cWW' || obj.family === 'ncWW'; });
+    ;
 
   plot.motifs
     .mouseover('highlight')

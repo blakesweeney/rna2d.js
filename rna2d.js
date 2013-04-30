@@ -16,10 +16,6 @@ var Rna2D = window.Rna2D || function(config) {
 
       var margin = plot.margin();
 
-      // TODO: Don't mess with width.
-      //plot.width(plot.width() - margin.left - margin.right);
-      //plot.height(plot.height() - margin.above - margin.below);
-
       sel.select('svg').remove();
       var top = sel.append('svg')
             .attr('width', plot.width() + margin.left + margin.right)
@@ -35,22 +31,28 @@ var Rna2D = window.Rna2D || function(config) {
       plot.yScale(d3.scale.linear().domain(plot.yDomain()).range([0, plot.height() - margin.above]));
 
       // ----------------------------------------------------------------------
+      // Generate the components - brush, frame, zoom, etc
+      // ----------------------------------------------------------------------
+      plot.components();
+
+      // ----------------------------------------------------------------------
       // Draw all coordinates and attach all standard data
       // ----------------------------------------------------------------------
       plot.coordinates(function(selection) {
 
           var x = plot.views[plot.view()].xCoord(),
-              y = plot.views[plot.view()].yCoord();
+              y = plot.views[plot.view()].yCoord(),
+              classOf = plot.nucleotides.classOf(),
+              klass = plot.nucleotides['class']();
 
         selection.attr('id', plot.nucleotides.getID())
-          .attr('class', function(d, i) {
-            return plot.nucleotides['class']() + ' ' + plot.nucleotides.classOf()(d, i);
-          })
+          .attr('class', function(d, i) { return classOf(d, i).concat(klass).join(' '); })
           .datum(function(d, i) {
             d.__x = x(d, i);
             d.__y = y(d, i);
             return d;
           })
+          .attr('visibility', plot.nucleotides.visiblity)
           .attr('data-sequence', plot.nucleotides.getSequence());
 
         Rna2D.utils.attachHandlers(selection, plot.nucleotides);
@@ -63,16 +65,12 @@ var Rna2D = window.Rna2D || function(config) {
       // ----------------------------------------------------------------------
       plot.connections(function(selection) {
         var ntsOf = plot.interactions.getNTs(),
-        visible = plot.interactions.visible();
+            classOf = plot.interactions.classOf(),
+            klass = plot.interactions['class']();
 
         selection.attr('id', plot.interactions.getID())
-          .attr('class', function(d, i) {
-            return plot.interactions['class']() + ' ' + plot.interactions.classOf()(d, i);
-          })
-          .attr('visibility', function(d) {
-            d.__visibility = visible(d);
-            return (visible(d) ? 'visible' : 'hidden'); 
-          })
+          .attr('class', function(d, i) { return classOf(d, i).concat(klass).join(' '); })
+          .attr('visibility', plot.interactions.visibilityString)
           .attr('data-nts', function(d, i) { return ntsOf(d).join(','); })
           .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
           .attr('nt2', function(d, i) { return ntsOf(d)[1]; });
@@ -86,25 +84,19 @@ var Rna2D = window.Rna2D || function(config) {
       // Draw motifs
       // ----------------------------------------------------------------------
       plot.groups(function(selection) {
-        var ntsOf = plot.motifs.getNTs();
+        var ntsOf = plot.motifs.getNTs(),
+            classOf = plot.motifs.classOf(),
+            klass = plot.motifs['class']();
 
         selection.attr('id', plot.motifs.getID())
-          .attr('class', function(d, i) {
-            return plot.motifs['class']() + ' ' + plot.motifs.classOf()(d, i);
-          })
+          .attr('class', function(d, i) { return classOf(d, i).concat(klass).join(' '); })
           .attr('data-nts', function(d) { return plot.motifs.getNTs()(d).join(','); })
-          .datum(function(d, i) {
-            d.__visible = plot.motifs.visible()(d, i);
-            return d;
-          }).attr('visibility', function(d) { return (d.__visible ? 'visible' : 'hidden'); });
+          .attr('visibility', plot.motifs.visibility);
 
         Rna2D.utils.attachHandlers(selection, plot.motifs);
 
         return selection;
       });
-
-      // Generate the components - brush, frame, zoom, etc
-      plot.components();
 
       return plot;
     });
@@ -131,6 +123,11 @@ Rna2D.components = function(plot) {
     $.each(Rna2D.components, function(name, obj) {
 
       if (obj.hasOwnProperty('actions')) {
+        // If something is toggable we will add all the toggable functions.
+        if (obj.togglable) {
+          Rna2D.togglable(plot, name);
+        }
+
         obj.actions(plot);
       }
 
@@ -191,6 +188,48 @@ Rna2D.config = function(plot, given) {
   Rna2D.utils.generateAccessors(plot, $.extend(config, given));
 
   return plot;
+};
+
+Rna2D.togglable = function(plot, name) {
+
+  var type = plot[name],
+      status = {};
+
+  type.all = function(klass) {
+    klass = (klass && klass !== 'all' ? klass : type['class']());
+    return plot.vis.selectAll('.' + klass);
+  };
+
+  type.visible = function() {
+    $.each(arguments, function(i, klass) { status[klass] = true; });
+  };
+
+  type.hidden = function() {
+    $.each(arguments, function(i, klass) { status[klass] = null;  });
+  };
+
+  type.show = function(klass) {
+    status[klass] = true;
+    return type.all(klass).attr('visibility', function() { return 'visible'; });
+  };
+
+  type.hide = function(klass) {
+    status[klass] = null;
+    return type.all(klass).attr('visibility', function() { return 'hidden'; });
+  };
+
+  type.toggle = function(klass) {
+    return (status[klass] ? type.hide(klass) : type.show(klass));
+  };
+
+  // Note that we use null above so here we can use the fact that jQuery's map
+  // is actually a map/filter to remove elements as we traverse.
+  type.visibilityString = function(d, i) {
+    var klasses = type.classOf()(d),
+        found = $.map(klasses, function(k, i) { return status[k]; });
+    return (found.length ? 'visible' : 'hidden');
+  };
+
 };
 
 Rna2D.utils = (function() {
@@ -412,14 +451,11 @@ Rna2D.components.interactions = (function () {
 
   return {
 
+    togglable: true,
     config: function(plot) {
       return {
         getFamily: function(d) { return d.family; },
         getNTs: function(d) { return [d.nt1, d.nt2]; },
-        visible: function(d) { 
-          var family = plot.interactions.getFamily()(d);
-          return family === 'cWW' || family === 'ncWW'; 
-        },
         mouseover: null,
         mouseout: null,
         click: function(d) {
@@ -427,7 +463,7 @@ Rna2D.components.interactions = (function () {
           plot.jmol.showSelection(nts.data());
         },
         'class': 'interaction',
-        classOf: function(d) { return d.family; },
+        classOf: function(d) { return [d.family]; },
         highlightColor: function() { return 'red'; },
         highlight: Object,
         normalize: Object,
@@ -491,14 +527,7 @@ Rna2D.components.interactions = (function () {
 
     actions: function(plot) {
 
-      plot.interactions.all = function(family) {
-        family = family || plot.interactions['class']();
-        return plot.vis.selectAll('.' + family);
-      };
-
-      //plot.interactions.family = function(obj) {
-        //return plot.interactions.getFamily()(d3.select(obj).datum());
-      //};
+      plot.interactions.visible('cWW', 'ncWW');
 
       plot.interactions.nucleotides = function(obj) {
         obj = obj || this;
@@ -508,30 +537,6 @@ Rna2D.components.interactions = (function () {
         return plot.vis.selectAll(selector);
       };
 
-      plot.interactions.show = function(family) {
-        return plot.interactions.all(family).attr('visibility', function(data) {
-          data.__visibility = true;
-          return 'visible';
-        });
-      };
-
-      plot.interactions.hide = function(family) {
-        return plot.interactions.all(family).attr('visibility', function(data) {
-          data.__visibility = false;
-          return 'hidden';
-        });
-      };
-
-      plot.interactions.toggle = function(family) {
-        return plot.interactions.all(family).attr('visibility', function(data) {
-          if (data.__visibility) {
-            data.__visibility = false;
-            return 'hidden';
-          }
-          data.__visibility = true;
-          return 'visible';
-        });
-      };
     }
   };
 
@@ -644,12 +649,12 @@ Rna2D.components.motifs = (function () {
 
   return {
 
+    togglable: true,
     config: function(plot) {
       return {
-        classOf: function(d) { return d.id.split("_")[0]; },
+        classOf: function(d) { return [d.id.split("_")[0]]; },
         'class': 'motif',
         highlightColor: function() { return 'red'; },
-        visible: function(d) { return true; },
         click: function(d) {
           var nts = plot.motifs.nucleotides(this).data();
           return plot.jmol.showSelection(nts);
@@ -664,45 +669,14 @@ Rna2D.components.motifs = (function () {
     },
 
     actions: function(plot) {
-      plot.motifs.all = function() {
-        return plot.vis.selectAll('.' + plot.motifs['class']());
-      };
+
+      plot.motifs.visible('IL', 'HL', 'J3');
 
       plot.motifs.nucleotides = function(obj) {
         var motifData = d3.select(obj).datum(),
             nts = plot.motifs.getNTs()(motifData),
             selector = '#' + nts.join(', #');
         return plot.vis.selectAll(selector);
-      };
-
-      plot.motifs.show = function() { 
-        var visible = plot.motifs.visible();
-        return plot.motifs.all().datum(function(d, i) {
-          d.__visible = visible(d, i);
-          return d;
-        }).attr('visibility', function(d, i) {
-          return (d.__visible ? 'visible' : 'hidden');
-        });
-      };
-
-      plot.motifs.hide = function() {
-        var visible = plot.motifs.visible();
-        return plot.motifs.all().datum(function(d, i) {
-          d.__visible = visible(d, i);
-          return d;
-        }).attr('visibility', function(d, i) {
-          return (d.__visible ? 'hidden' : 'visible');
-        });
-      };
-
-      plot.motifs.toggle = function() {
-        var visible = plot.motifs.visible();
-        plot.motifs.all().datum(function(d, i) {
-          d.__visible = !d.__visible;
-          return d;
-        }).attr('visibility', function(d, i) {
-          return (d.__visible ? 'visible' : 'hidden');
-        });
       };
 
     }
@@ -716,11 +690,12 @@ Rna2D.components.nucleotides = (function() {
 
   return {
 
+    togglable: true,
     config: function(plot) {
       return {
         highlightColor: function() { return 'red'; },
         'class': 'nucleotide',
-        classOf: function(d, i) { return ''; },
+        classOf: function(d, i) { return [d.sequence]; },
         color: 'black',
         click: function(d, i) { return plot.jmol.showSelection([d]); },
         mouseover: null,
@@ -764,12 +739,10 @@ Rna2D.components.nucleotides = (function() {
     },
 
     actions: function(plot) {
+      plot.nucleotides.visible('A', 'C', 'G', 'U');
+
       plot.nucleotides.selector = function() {
         return '.' + plot.nucleotides['class']();
-      };
-
-      plot.nucleotides.all = function() {
-        return plot.vis.selectAll(plot.nucleotides.selector());
       };
 
       plot.nucleotides.interactions = function(given) {
@@ -915,11 +888,8 @@ Rna2D.views.airport = function(plot) {
         var left = 0,
             right = coordMax.x,
             top = coordMax.y,
-            bottom = 0,
-            visible = plot.motifs.visible();
+            bottom = 0;
 
-        // Mark motif as visible or not
-        current.visible = visible(current);
         current.missing = [];
 
         // Find the outer points.

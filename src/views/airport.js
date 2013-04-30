@@ -127,11 +127,8 @@ Rna2D.views.airport = function(plot) {
         var left = 0,
             right = coordMax.x,
             top = coordMax.y,
-            bottom = 0,
-            visible = plot.motifs.visible();
+            bottom = 0;
 
-        // Mark motif as visible or not
-        current.visible = visible(current);
         current.missing = [];
 
         // Find the outer points.
