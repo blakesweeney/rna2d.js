@@ -21,20 +21,29 @@
           },
           "controls": {
             "brush": {
-              "selector": "#brush-toggle"
+              "selector": "#brush-toggle",
+              "callback": Object
             },
             "motifs": {
-              "selector": ".motif-toggle"
+              "selector": ".motif-toggle",
+              'callback': Object,
+              'data': 'type'
             },
             "interactions": {
-              "selector": ".interaction-toggle"
+              "selector": ".interaction-toggle",
+              'callback': Object,
+              'data': 'family',
+              'near': true
             },
             "views": {
-              "selector": ".view-toggle"
+              "selector": ".view-toggle",
+              'pre': Object,
+              'post': Object,
+              'data': 'view'
             }
           }
         };
-    $.extend(options, opts);
+    $.extend(true, options, opts);
 
     plot.selection(this.get(0));
 
@@ -83,10 +92,8 @@
   };
 
   // Brush controls.
-  $.fn.rna2d.brush = function(opts) {
-    var plot = opts.plot,
-        options = { 'callback': Object };
-    $.extend(options, opts);
+  $.fn.rna2d.brush = function(options) {
+    var plot = options.plot;
 
     $(options.selector).on('click', function(event) {
       plot.brush.toggle();
@@ -95,14 +102,9 @@
   };
 
   // Interaction controls.
-  $.fn.rna2d.interactions = function(opts) {
-    var plot = opts.plot;
-    var options = {
-      'callback': Object,
-      'data': 'family',
-      'near': true
-    };
-    $.extend(options, opts);
+  $.fn.rna2d.interactions = function(options) {
+    var plot = options.plot;
+    console.log(options);
 
     $(options.selector).on('click', function(event) {
       var family = $(this).data(options.data);
@@ -115,13 +117,8 @@
   };
 
   // Motif controls.
-  $.fn.rna2d.motifs = function(opts) {
-    var plot = opts.plot;
-    var options = {
-      'callback': Object,
-      'data': 'type'
-    };
-    $.extend(options, opts);
+  $.fn.rna2d.motifs = function(options) {
+    var plot = options.plot;
 
     $(options.selector).on('click', function(event) {
       var type = $(this).data(options.data);
@@ -131,14 +128,8 @@
   };
 
   // View controls.
-  $.fn.rna2d.views = function(opts) {
-    var plot = opts.plot;
-    var options = {
-      'pre': Object,
-      'post': Object,
-      'data': 'view'
-    };
-    $.extend(options, opts);
+  $.fn.rna2d.views = function(options) {
+    var plot = options.plot;
 
     $(options.selector).on('click', function(event) {
       var view = $(this).data(options.data);
