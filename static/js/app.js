@@ -27,13 +27,14 @@ $(document).ready(function() {
   };
 
  var motifClick = function(d, i) {
-    var id = d.id;
-    var link = '<a href="http://rna.bgsu.edu/rna3dhub/loops/view/' + id +
-      '">' + id + '</a>';
+    var id = d.id,
+        nts = plot.motifs.nucleotides(this).data(),
+        link = '<a href="http://rna.bgsu.edu/rna3dhub/loops/view/' + id +
+               '">' + id + '</a>';
     $('#about-selection').children().remove();
     $('#about-selection').append(link);
     $('#about-selection').show();
-    return plot.jmol.showSelection([d]);
+    return plot.jmol.showSelection(nts);
   };
 
   plot.jmol.overflow(function() { alert("Too many nts selected"); });
