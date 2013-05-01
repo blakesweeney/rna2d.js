@@ -994,7 +994,6 @@ Rna2D.views.airport = function(plot) {
 };
 
 Rna2D.views.circular = function(plot) {
-  var getNTs = plot.interactions.getNTs();
 
   // Some common config variables
   var outer, inner, center, angleSize, halfGap, startAngle, endAngle;
@@ -1018,7 +1017,7 @@ Rna2D.views.circular = function(plot) {
     // flags of 0,0. The code is kinda gross but it works.
     var length = plot.nucleotides().length,
         indexOf = plot.nucleotides.indexOf,
-        nts = getNTs(d).sort(function(nt1, nt2) { 
+        nts = plot.interactions.getNTs()(d).sort(function(nt1, nt2) { 
           var i1 = indexOf(nt1),
               i2 = indexOf(nt2);
           if (Math.abs(i1 - i2) > length /2) {
