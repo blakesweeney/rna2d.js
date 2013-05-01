@@ -104,7 +104,6 @@
   // Interaction controls.
   $.fn.rna2d.interactions = function(options) {
     var plot = options.plot;
-    console.log(options);
 
     $(options.selector).on('click', function(event) {
       var family = $(this).data(options.data);
