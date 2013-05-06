@@ -43,10 +43,11 @@ $(document).ready(function() {
     .update(plot.jmol.showSelection)
     .initial([[100, 36], [207, 132]]);
 
-  plot.nucleotides.mouseover('highlight');
+  plot.nucleotides.mouseover('highlight')
+    .encodeID(function(id) { return id.toLowerCase(); });
 
   plot.interactions
-    .click(function(d) { console.log(d); })
+    //.click(plot.jmol
     .mouseover('highlight')
     ;
 

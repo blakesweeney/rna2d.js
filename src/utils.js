@@ -45,6 +45,18 @@ Rna2D.utils = (function() {
     return document.getElementById(id);
   };
 
+  // Not very good compose function. The idea is compose(f, g, h)(a) == h(g(f(a)))
+  my.compose = function() {
+    // Why can't jquery have some more nice functional tools like reduce and
+    // compose?
+    var funcs = arguments;
+    return function() {
+      var res = arguments;
+      $.each(funcs, function(i, fn) { res = [fn.apply(this, res)]; });
+      return res;
+    };
+  };
+
   return my;
 }());
 

@@ -12,7 +12,7 @@ var Rna2D = window.Rna2D || function(config) {
 
     Rna2D.utils.attachHandlers(selection, type);
 
-    return selection.attr('id', type.getID())
+    return selection.attr('id', type.elementID)
       .attr('class', function(d, i) { return classOf(d, i).concat(klass).join(' '); })
       .attr('visibility', type.visibility);
   };
@@ -159,6 +159,23 @@ Rna2D.components = function(plot) {
       obj.sideffects(plot);
     }
 
+    if (plot[name].hasOwnProperty('encodeID') && plot[name].hasOwnProperty('getID')) {
+      plot[name].elementID = function(d, i) {
+        var encode = plot[name].encodeID(),
+            getID = plot[name].getID();
+        return encode(getID(d, i));
+      };
+    }
+
+    if (plot[name].hasOwnProperty('getNTs')) {
+      (function(prop) {
+        plot[prop].ntElements = function(d, i) {
+          var getNTs = plot[prop].getNTs();
+          return $.map(getNTs(d, i), plot.nucleotides.encodeID());
+        };
+      }(name));
+    }
+
     plot.components[name] = obj;
   });
 
@@ -270,6 +287,18 @@ Rna2D.utils = (function() {
   // Get an element by id.
   my.element = function(id) {
     return document.getElementById(id);
+  };
+
+  // Not very good compose function. The idea is compose(f, g, h)(a) == h(g(f(a)))
+  my.compose = function() {
+    // Why can't jquery have some more nice functional tools like reduce and
+    // compose?
+    var funcs = arguments;
+    return function() {
+      var res = arguments;
+      $.each(funcs, function(i, fn) { res = [fn.apply(this, res)]; });
+      return res;
+    };
   };
 
   return my;
@@ -479,6 +508,7 @@ Rna2D.components.interactions = (function () {
           nts.push(family);
           return nts.join('-');
         },
+        encodeID: function(id) { return id; },
         color: 'black'
       };
     },
@@ -516,10 +546,21 @@ Rna2D.components.interactions = (function () {
 
       plot.interactions.visible('cWW', 'ncWW');
 
+      //plot.interactions.jmol = function(callback) {
+        //return function(data) {
+        //};
+      //};
+
+      //plot.interactions.ntData = function(data) {
+        //var nts = plot.interactions.nucleotides(data);
+        //nts = $.map(nts, function(nt, i) { return 
+        //return nts;
+      //};
+
       plot.interactions.nucleotides = function(obj) {
         obj = obj || this;
         var data = d3.select(obj).datum(),
-            nts = plot.interactions.getNTs()(data),
+            nts = plot.interactions.ntElements(data),
             selector = '#' + nts.join(', #');
         return plot.vis.selectAll(selector);
       };
@@ -649,6 +690,7 @@ Rna2D.components.motifs = (function () {
         mouseover: null,
         mouseout: null,
         getID: function(d) { return d.id; },
+        encodeID: function(id) { return id; },
         getNTs: function(d) { return d.nts; },
         highlight: Object,
         normalize: Object
@@ -661,7 +703,7 @@ Rna2D.components.motifs = (function () {
 
       plot.motifs.nucleotides = function(obj) {
         var motifData = d3.select(obj).datum(),
-            nts = plot.motifs.getNTs()(motifData),
+            nts = plot.motifs.ntElements(motifData),
             selector = '#' + nts.join(', #');
         return plot.vis.selectAll(selector);
       };
@@ -690,6 +732,7 @@ Rna2D.components.nucleotides = (function() {
         getID: function(d) { return d.id; },
         getX: function(d) { return d.x; },
         getY: function(d) { return d.y; },
+        encodeID: function(id) { return id; },
         getSequence: function(d) { return d.sequence; },
         highlight: Object,
         normalize: Object,
@@ -723,18 +766,15 @@ Rna2D.components.nucleotides = (function() {
         ordered = _;
         return plot.nucleotides;
       };
+
     },
 
     actions: function(plot) {
       plot.nucleotides.visible('A', 'C', 'G', 'U');
 
-      plot.nucleotides.selector = function() {
-        return '.' + plot.nucleotides['class']();
-      };
-
-      plot.nucleotides.interactions = function(given) {
-        var obj = given || this;
-        var selector = '[nt1=' + obj.getAttribute('id') + '], [nt2=' + obj.getAttribute('id') + ']';
+      plot.nucleotides.interactions = function(d, i) {
+        var id = plot.nucleotides.getID()(d, i),
+            selector = '[nt1=' + id + '], [nt2=' + id + ']';
         return plot.vis.selectAll(selector);
       };
 
@@ -829,7 +869,7 @@ Rna2D.views.airport = function(plot) {
 
     // Compute the data to use for interactions
     var interactions = plot.interactions.valid(),
-    getNTs = plot.interactions.getNTs();
+        getNTs = plot.interactions.ntElements;
 
     interactions = $.map(interactions, function(obj, i) {
       try {
@@ -880,7 +920,7 @@ Rna2D.views.airport = function(plot) {
         current.missing = [];
 
         // Find the outer points.
-        var nts = plot.motifs.getNTs()(current);
+        var nts = plot.motifs.ntElements(current);
         $.each(nts, function(j, id) {
           var elem = Rna2D.utils.element(id);
 
@@ -962,18 +1002,18 @@ Rna2D.views.airport = function(plot) {
         return plot.interactions.nucleotides(obj).style('stroke', null);
       });
 
-      plot.nucleotides.highlight(function() {
+      plot.nucleotides.highlight(function(d, i) {
         var obj = this,
             highlightColor = plot.nucleotides.highlightColor();
         d3.select(obj).style('stroke', highlightColor());
-        return plot.nucleotides.interactions(obj)
+        return plot.nucleotides.interactions(d, i)
           .style('stroke', highlightColor());
       });
 
-      plot.nucleotides.normalize(function() {
+      plot.nucleotides.normalize(function(d, i) {
         var obj = this;
         d3.select(obj).style('stroke', null);
-        return plot.nucleotides.interactions(obj)
+        return plot.nucleotides.interactions(d, i)
           .style('stroke', null);
       });
 
@@ -1117,14 +1157,15 @@ Rna2D.views.circular = function(plot) {
       },
       letterSize: 20,
       letterPosition: function(obj) {
-        var index = plot.nucleotides.indexOf(obj.getAttribute('id')),
+        var data = d3.select(obj).datum(),
+            index = plot.nucleotides.indexOf(plot.nucleotides.getID()(data)),
             position = ntArc.centroid(null, index),
             center = plot.views.circular.center()();
         return { x: center.x + position[0], y: center.y + position[1] };
       },
       addLetters: function(nts) {
         var positionOf = plot.views.circular.letterPosition(),
-        highlightColor = plot.nucleotides.highlightColor();
+            highlightColor = plot.nucleotides.highlightColor();
 
         plot.vis.selectAll(plot.views.circular.letterClass())
           .data(nts).enter().append('svg:text')
@@ -1146,29 +1187,29 @@ Rna2D.views.circular = function(plot) {
 
     sideffects: function() {
 
-      plot.nucleotides.highlight(function() {
+      plot.nucleotides.highlight(function(d, i) {
         var obj = this,
-        highlightColor = plot.nucleotides.highlightColor();
-        d3.select(obj).style('stroke', highlightColor(obj));
+            highlightColor = plot.nucleotides.highlightColor();
+            d3.select(obj).style('stroke', highlightColor(obj));
 
         plot.views.circular.addLetters()([obj]);
 
-        return plot.nucleotides.interactions(obj)
-        .style('stroke', highlightColor(obj));
+        return plot.nucleotides.interactions(d, i)
+          .style('stroke', highlightColor(obj));
       });
 
-      plot.nucleotides.normalize(function() {
+      plot.nucleotides.normalize(function(d, i) {
         var obj = this;
         d3.select(obj).style('stroke', null);
         plot.views.circular.clearLetters()();
-        return plot.nucleotides.interactions(obj)
-        .style('stroke', null);
+        return plot.nucleotides.interactions(d, i)
+          .style('stroke', null);
       });
 
-      plot.interactions.highlight(function() {
+      plot.interactions.highlight(function(d, i) {
         var obj = this,
-        highlightColor = plot.interactions.highlightColor(),
-        nts = plot.interactions.nucleotides(obj);
+            highlightColor = plot.interactions.highlightColor(),
+            nts = plot.interactions.nucleotides(obj);
 
         d3.select(obj).style('stroke', highlightColor(obj));
         plot.views.circular.addLetters()(nts[0]); // TODO: WTF?
@@ -1176,7 +1217,7 @@ Rna2D.views.circular = function(plot) {
         return nts.style('stroke', highlightColor(obj));
       });
 
-      plot.interactions.normalize(function() {
+      plot.interactions.normalize(function(d, i) {
         var obj = this;
         d3.select(obj).style('stroke', null);
         plot.views.circular.clearLetters()();

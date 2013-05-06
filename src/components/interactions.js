@@ -43,6 +43,7 @@ Rna2D.components.interactions = (function () {
           nts.push(family);
           return nts.join('-');
         },
+        encodeID: function(id) { return id; },
         color: 'black'
       };
     },
@@ -80,10 +81,21 @@ Rna2D.components.interactions = (function () {
 
       plot.interactions.visible('cWW', 'ncWW');
 
+      //plot.interactions.jmol = function(callback) {
+        //return function(data) {
+        //};
+      //};
+
+      //plot.interactions.ntData = function(data) {
+        //var nts = plot.interactions.nucleotides(data);
+        //nts = $.map(nts, function(nt, i) { return 
+        //return nts;
+      //};
+
       plot.interactions.nucleotides = function(obj) {
         obj = obj || this;
         var data = d3.select(obj).datum(),
-            nts = plot.interactions.getNTs()(data),
+            nts = plot.interactions.ntElements(data),
             selector = '#' + nts.join(', #');
         return plot.vis.selectAll(selector);
       };

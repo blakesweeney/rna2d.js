@@ -17,6 +17,7 @@ Rna2D.components.nucleotides = (function() {
         getID: function(d) { return d.id; },
         getX: function(d) { return d.x; },
         getY: function(d) { return d.y; },
+        encodeID: function(id) { return id; },
         getSequence: function(d) { return d.sequence; },
         highlight: Object,
         normalize: Object,
@@ -50,18 +51,15 @@ Rna2D.components.nucleotides = (function() {
         ordered = _;
         return plot.nucleotides;
       };
+
     },
 
     actions: function(plot) {
       plot.nucleotides.visible('A', 'C', 'G', 'U');
 
-      plot.nucleotides.selector = function() {
-        return '.' + plot.nucleotides['class']();
-      };
-
-      plot.nucleotides.interactions = function(given) {
-        var obj = given || this;
-        var selector = '[nt1=' + obj.getAttribute('id') + '], [nt2=' + obj.getAttribute('id') + ']';
+      plot.nucleotides.interactions = function(d, i) {
+        var id = plot.nucleotides.getID()(d, i),
+            selector = '[nt1=' + id + '], [nt2=' + id + ']';
         return plot.vis.selectAll(selector);
       };
 
