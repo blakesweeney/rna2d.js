@@ -53,6 +53,23 @@ Rna2D.components = function(plot) {
       obj.sideffects(plot);
     }
 
+    if (plot[name].hasOwnProperty('encodeID') && plot[name].hasOwnProperty('getID')) {
+      plot[name].elementID = function(d, i) {
+        var encode = plot[name].encodeID(),
+            getID = plot[name].getID();
+        return encode(getID(d, i));
+      };
+    }
+
+    if (plot[name].hasOwnProperty('getNTs')) {
+      (function(prop) {
+        plot[prop].ntElements = function(d, i) {
+          var getNTs = plot[prop].getNTs();
+          return $.map(getNTs(d, i), plot.nucleotides.encodeID());
+        };
+      }(name));
+    }
+
     plot.components[name] = obj;
   });
 

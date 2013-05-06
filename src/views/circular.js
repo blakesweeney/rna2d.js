@@ -122,14 +122,15 @@ Rna2D.views.circular = function(plot) {
       },
       letterSize: 20,
       letterPosition: function(obj) {
-        var index = plot.nucleotides.indexOf(obj.getAttribute('id')),
+        var data = d3.select(obj).datum(),
+            index = plot.nucleotides.indexOf(plot.nucleotides.getID()(data)),
             position = ntArc.centroid(null, index),
             center = plot.views.circular.center()();
         return { x: center.x + position[0], y: center.y + position[1] };
       },
       addLetters: function(nts) {
         var positionOf = plot.views.circular.letterPosition(),
-        highlightColor = plot.nucleotides.highlightColor();
+            highlightColor = plot.nucleotides.highlightColor();
 
         plot.vis.selectAll(plot.views.circular.letterClass())
           .data(nts).enter().append('svg:text')
@@ -151,29 +152,29 @@ Rna2D.views.circular = function(plot) {
 
     sideffects: function() {
 
-      plot.nucleotides.highlight(function() {
+      plot.nucleotides.highlight(function(d, i) {
         var obj = this,
-        highlightColor = plot.nucleotides.highlightColor();
-        d3.select(obj).style('stroke', highlightColor(obj));
+            highlightColor = plot.nucleotides.highlightColor();
+            d3.select(obj).style('stroke', highlightColor(obj));
 
         plot.views.circular.addLetters()([obj]);
 
-        return plot.nucleotides.interactions(obj)
-        .style('stroke', highlightColor(obj));
+        return plot.nucleotides.interactions(d, i)
+          .style('stroke', highlightColor(obj));
       });
 
-      plot.nucleotides.normalize(function() {
+      plot.nucleotides.normalize(function(d, i) {
         var obj = this;
         d3.select(obj).style('stroke', null);
         plot.views.circular.clearLetters()();
-        return plot.nucleotides.interactions(obj)
-        .style('stroke', null);
+        return plot.nucleotides.interactions(d, i)
+          .style('stroke', null);
       });
 
-      plot.interactions.highlight(function() {
+      plot.interactions.highlight(function(d, i) {
         var obj = this,
-        highlightColor = plot.interactions.highlightColor(),
-        nts = plot.interactions.nucleotides(obj);
+            highlightColor = plot.interactions.highlightColor(),
+            nts = plot.interactions.nucleotides(obj);
 
         d3.select(obj).style('stroke', highlightColor(obj));
         plot.views.circular.addLetters()(nts[0]); // TODO: WTF?
@@ -181,7 +182,7 @@ Rna2D.views.circular = function(plot) {
         return nts.style('stroke', highlightColor(obj));
       });
 
-      plot.interactions.normalize(function() {
+      plot.interactions.normalize(function(d, i) {
         var obj = this;
         d3.select(obj).style('stroke', null);
         plot.views.circular.clearLetters()();

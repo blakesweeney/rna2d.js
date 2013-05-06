@@ -81,7 +81,7 @@ Rna2D.views.airport = function(plot) {
 
     // Compute the data to use for interactions
     var interactions = plot.interactions.valid(),
-    getNTs = plot.interactions.getNTs();
+        getNTs = plot.interactions.ntElements;
 
     interactions = $.map(interactions, function(obj, i) {
       try {
@@ -132,7 +132,7 @@ Rna2D.views.airport = function(plot) {
         current.missing = [];
 
         // Find the outer points.
-        var nts = plot.motifs.getNTs()(current);
+        var nts = plot.motifs.ntElements(current);
         $.each(nts, function(j, id) {
           var elem = Rna2D.utils.element(id);
 
@@ -214,18 +214,18 @@ Rna2D.views.airport = function(plot) {
         return plot.interactions.nucleotides(obj).style('stroke', null);
       });
 
-      plot.nucleotides.highlight(function() {
+      plot.nucleotides.highlight(function(d, i) {
         var obj = this,
             highlightColor = plot.nucleotides.highlightColor();
         d3.select(obj).style('stroke', highlightColor());
-        return plot.nucleotides.interactions(obj)
+        return plot.nucleotides.interactions(d, i)
           .style('stroke', highlightColor());
       });
 
-      plot.nucleotides.normalize(function() {
+      plot.nucleotides.normalize(function(d, i) {
         var obj = this;
         d3.select(obj).style('stroke', null);
-        return plot.nucleotides.interactions(obj)
+        return plot.nucleotides.interactions(d, i)
           .style('stroke', null);
       });
 

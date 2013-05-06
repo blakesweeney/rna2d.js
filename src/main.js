@@ -8,7 +8,7 @@ var Rna2D = window.Rna2D || function(config) {
 
     Rna2D.utils.attachHandlers(selection, type);
 
-    return selection.attr('id', type.getID())
+    return selection.attr('id', type.elementID)
       .attr('class', function(d, i) { return classOf(d, i).concat(klass).join(' '); })
       .attr('visibility', type.visibility);
   };
