@@ -48,19 +48,16 @@ Rna2D.components.jmol = {
     };
 
     // Display a selection.
-    plot.jmol.showSelection = function(matched) {
+    plot.jmol.showNTs = function(ntIDs) {
       plot.jmol.setup();
 
-      if (matched.length > plot.jmol.maxSize()) {
+      if (ntIDs.length > plot.jmol.maxSize()) {
         return plot.jmol.overflow();
       }
 
-      var data = $.map(matched, plot.nucleotides.getID());
-      data = data.join(',');
-
       $('#' + plot.jmol.tmpID()).remove();
       $('body').append("<input type='radio' id='" + plot.jmol.tmpID() +
-                       "' data-coord='" + data + "'>");
+                       "' data-coord='" + ntIDs.join(',') + "'>");
       $('#' + plot.jmol.tmpID()).hide();
       $('#' + plot.jmol.tmpID()).jmolTools({
         showNeighborhoodId: plot.jmol.neighborhoodID(),

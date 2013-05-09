@@ -49,29 +49,36 @@ Rna2D.components.brush = (function() {
         }
         return plot.brush.enable();
       };
+
+      plot.brush.jmol = function(nts) {
+        var idOf = plot.nucleotides.getID(),
+            ids = $.map(nts, idOf);
+        return plot.jmol.showNTs(ids);
+      };
     },
 
     generate: function(plot) {
 
       endBrush = function () {
-        var matched = [];
+        var nts = [];
 
         if (plot.brush().empty()) {
           plot.brush.clear();
         } else {
 
           var e = plot.brush().extent();
+
           plot.vis.selectAll('.' + plot.nucleotides['class']())
             .attr("selected", function(d) {
               if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
                   e[0][1] <= d.__y && d.__y <= e[1][1]) {
-                matched.push(d);
+                nts.push(d);
               return 'selected';
               }
               return '';
             });
 
-          plot.brush.update()(matched);
+          plot.brush.update()(nts);
         }
       };
 
