@@ -11,7 +11,7 @@ Rna2D.components.nucleotides = (function() {
         'class': 'nucleotide',
         classOf: function(d, i) { return [d.sequence]; },
         color: 'black',
-        click: function(d, i) { return plot.jmol.showSelection([d]); },
+        click: Object,
         mouseover: null,
         mouseout: null,
         getID: function(d) { return d.id; },
@@ -35,6 +35,11 @@ Rna2D.components.nucleotides = (function() {
         });
 
         return plot.nucleotides;
+      };
+
+      plot.nucleotides.jmol = function(d, i) {
+        var idOf = plot.nucleotides.getID();
+        return plot.jmol.showNTs([idOf(d, i)]);
       };
 
       plot.nucleotides.indexOf = function(ntId) {
