@@ -392,29 +392,36 @@ Rna2D.components.brush = (function() {
         }
         return plot.brush.enable();
       };
+
+      plot.brush.jmol = function(nts) {
+        var idOf = plot.nucleotides.getID(),
+            ids = $.map(nts, idOf);
+        return plot.jmol.showNTs(ids);
+      };
     },
 
     generate: function(plot) {
 
       endBrush = function () {
-        var matched = [];
+        var nts = [];
 
         if (plot.brush().empty()) {
           plot.brush.clear();
         } else {
 
           var e = plot.brush().extent();
+
           plot.vis.selectAll('.' + plot.nucleotides['class']())
             .attr("selected", function(d) {
               if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
                   e[0][1] <= d.__y && d.__y <= e[1][1]) {
-                matched.push(d);
+                nts.push(d);
               return 'selected';
               }
               return '';
             });
 
-          plot.brush.update()(matched);
+          plot.brush.update()(nts);
         }
       };
 
@@ -474,10 +481,7 @@ Rna2D.components.interactions = (function () {
         getNTs: function(d) { return [d.nt1, d.nt2]; },
         mouseover: null,
         mouseout: null,
-        click: function(d) {
-          var nts = plot.interactions.nucleotides(this);
-          plot.jmol.showSelection(nts.data());
-        },
+        click: Object,
         'class': 'interaction',
         classOf: function(d) { return [d.family]; },
         highlightColor: function() { return 'red'; },
@@ -540,22 +544,16 @@ Rna2D.components.interactions = (function () {
 
         return valid;
       };
+
+      plot.interactions.jmol = function(d, i) {
+        var getNTs = plot.interactions.getNTs();
+        return plot.jmol.showNTs(getNTs(d, i));
+      };
     },
 
     actions: function(plot) {
 
       plot.interactions.visible('cWW', 'ncWW');
-
-      //plot.interactions.jmol = function(callback) {
-        //return function(data) {
-        //};
-      //};
-
-      //plot.interactions.ntData = function(data) {
-        //var nts = plot.interactions.nucleotides(data);
-        //nts = $.map(nts, function(nt, i) { return 
-        //return nts;
-      //};
 
       plot.interactions.nucleotides = function(obj) {
         obj = obj || this;
@@ -620,19 +618,16 @@ Rna2D.components.jmol = {
     };
 
     // Display a selection.
-    plot.jmol.showSelection = function(matched) {
+    plot.jmol.showNTs = function(ntIDs) {
       plot.jmol.setup();
 
-      if (matched.length > plot.jmol.maxSize()) {
+      if (ntIDs.length > plot.jmol.maxSize()) {
         return plot.jmol.overflow();
       }
 
-      var data = $.map(matched, plot.nucleotides.getID());
-      data = data.join(',');
-
       $('#' + plot.jmol.tmpID()).remove();
       $('body').append("<input type='radio' id='" + plot.jmol.tmpID() +
-                       "' data-coord='" + data + "'>");
+                       "' data-coord='" + ntIDs.join(',') + "'>");
       $('#' + plot.jmol.tmpID()).hide();
       $('#' + plot.jmol.tmpID()).jmolTools({
         showNeighborhoodId: plot.jmol.neighborhoodID(),
@@ -683,10 +678,7 @@ Rna2D.components.motifs = (function () {
         classOf: function(d) { return [d.id.split("_")[0]]; },
         'class': 'motif',
         highlightColor: function() { return 'red'; },
-        click: function(d) {
-          var nts = plot.motifs.nucleotides(this).data();
-          return plot.jmol.showSelection(nts);
-        },
+        click: Object,
         mouseover: null,
         mouseout: null,
         getID: function(d) { return d.id; },
@@ -694,6 +686,13 @@ Rna2D.components.motifs = (function () {
         getNTs: function(d) { return d.nts; },
         highlight: Object,
         normalize: Object
+      };
+    },
+
+    sideffects: function(plot) {
+      plot.motifs.jmol = function(d, i) {
+        var getNTs = plot.motifs.getNTs();
+        return plot.jmol.showNTs(getNTs(d, i));
       };
     },
 
@@ -726,7 +725,7 @@ Rna2D.components.nucleotides = (function() {
         'class': 'nucleotide',
         classOf: function(d, i) { return [d.sequence]; },
         color: 'black',
-        click: function(d, i) { return plot.jmol.showSelection([d]); },
+        click: Object,
         mouseover: null,
         mouseout: null,
         getID: function(d) { return d.id; },
@@ -750,6 +749,11 @@ Rna2D.components.nucleotides = (function() {
         });
 
         return plot.nucleotides;
+      };
+
+      plot.nucleotides.jmol = function(d, i) {
+        var idOf = plot.nucleotides.getID();
+        return plot.jmol.showNTs([idOf(d, i)]);
       };
 
       plot.nucleotides.indexOf = function(ntId) {
