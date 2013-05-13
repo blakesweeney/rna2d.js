@@ -74,8 +74,8 @@ Rna2D.components.interactions = (function () {
       };
 
       plot.interactions.jmol = function(d, i) {
-        var getNts = plot.interactions.getNTs();
-        return plot.jmol.showNTs(getNTs(d));
+        var getNTs = plot.interactions.getNTs();
+        return plot.jmol.showNTs(getNTs(d, i));
       };
     },
 

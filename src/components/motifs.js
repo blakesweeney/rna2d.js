@@ -21,9 +21,8 @@ Rna2D.components.motifs = (function () {
 
     sideffects: function(plot) {
       plot.motifs.jmol = function(d, i) {
-        var nts = plot.motifs.getNTS()(d);
-            ids = $.map(nts, plot.nucleotides.getID());
-        return plot.jmol.showNTs(ids);
+        var getNTs = plot.motifs.getNTs();
+        return plot.jmol.showNTs(getNTs(d, i));
       };
     },
 
