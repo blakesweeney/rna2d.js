@@ -8,10 +8,7 @@ Rna2D.components.motifs = (function () {
         classOf: function(d) { return [d.id.split("_")[0]]; },
         'class': 'motif',
         highlightColor: function() { return 'red'; },
-        click: function(d) {
-          var nts = plot.motifs.nucleotides(this).data();
-          return plot.jmol.showSelection(nts);
-        },
+        click: Object,
         mouseover: null,
         mouseout: null,
         getID: function(d) { return d.id; },
