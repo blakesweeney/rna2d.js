@@ -34,7 +34,7 @@ $(document).ready(function() {
     $('#about-selection').children().remove();
     $('#about-selection').append(link);
     $('#about-selection').show();
-    return plot.jmol.showSelection(nts);
+    return plot.motifs.jmol(d, i);
   };
 
   plot.jmol.overflow(function() { alert("Too many nts selected"); });
@@ -44,10 +44,11 @@ $(document).ready(function() {
     .initial([[100, 36], [207, 132]]);
 
   plot.nucleotides.mouseover('highlight')
+    .click(plot.nucleotides.jmol)
     .encodeID(function(id) { return id.toLowerCase(); });
 
   plot.interactions
-    //.click(plot.jmol
+    .click(plot.interactions.jmol)
     .mouseover('highlight')
     ;
 
