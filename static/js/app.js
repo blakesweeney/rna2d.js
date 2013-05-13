@@ -40,8 +40,7 @@ $(document).ready(function() {
   plot.jmol.overflow(function() { alert("Too many nts selected"); });
 
   plot.brush.enabled(true)
-    .update(plot.jmol.showSelection)
-    .initial([[100, 36], [207, 132]]);
+    .update(plot.brush.jmol);
 
   plot.nucleotides.mouseover('highlight')
     .click(plot.nucleotides.jmol)
