@@ -9,10 +9,7 @@ Rna2D.components.interactions = (function () {
         getNTs: function(d) { return [d.nt1, d.nt2]; },
         mouseover: null,
         mouseout: null,
-        click: function(d) {
-          var nts = plot.interactions.nucleotides(this);
-          plot.jmol.showSelection(nts.data());
-        },
+        click: Object,
         'class': 'interaction',
         classOf: function(d) { return [d.family]; },
         highlightColor: function() { return 'red'; },
@@ -85,17 +82,6 @@ Rna2D.components.interactions = (function () {
     actions: function(plot) {
 
       plot.interactions.visible('cWW', 'ncWW');
-
-      //plot.interactions.jmol = function(callback) {
-        //return function(data) {
-        //};
-      //};
-
-      //plot.interactions.ntData = function(data) {
-        //var nts = plot.interactions.nucleotides(data);
-        //nts = $.map(nts, function(nt, i) { return 
-        //return nts;
-      //};
 
       plot.interactions.nucleotides = function(obj) {
         obj = obj || this;
