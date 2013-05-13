@@ -412,9 +412,6 @@ Rna2D.components.brush = (function() {
             return '';
           });
 
-        console.log(plot.brush.update());
-        console.log(plot.brush.jmol);
-
         return plot.brush.update()(nts);
       };
 
