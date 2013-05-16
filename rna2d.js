@@ -4,19 +4,6 @@
 
 var Rna2D = window.Rna2D || function(config) {
 
-  // A function to call when we are building the nts, interactions or motifs.
-  // All have some steps in common so we move them somewhere common.
-  var standardBuild = function(type, selection) {
-    var klass = type['class'](),
-        classOf = type.classOf();
-
-    Rna2D.utils.attachHandlers(selection, type);
-
-    return selection.attr('id', type.elementID)
-      .attr('class', function(d, i) { return classOf(d, i).concat(klass).join(' '); })
-      .attr('visibility', type.visibility);
-  };
-
   var plot = function() {
 
     // Compute the nucleotide ordering. This is often used when drawing
@@ -48,46 +35,50 @@ var Rna2D = window.Rna2D || function(config) {
     // Generate the components - brush, frame, zoom, etc
     plot.components();
 
+    plot.redraw();
+
+    return plot;
+  };
+
+  // Redraw all elements.
+  plot.redraw = function() {
+
+    // A function to call when we are building the nts, interactions or motifs.
+    // All have some steps in common so we move them somewhere common.
+    var standardBuild = function(type) {
+          return function(selection) {
+            var klass = type['class'](),
+                classOf = type.classOf();
+
+            Rna2D.utils.attachHandlers(selection, type);
+
+            return selection.attr('id', type.elementID)
+              .attr('class', function(d, i) { 
+                return classOf(d, i).concat(klass).join(' '); 
+              })
+              .attr('visibility', type.visibility);
+          };
+        };
+
     // Draw all coordinates and attach all standard data
     plot.coordinates(function(selection) {
 
       var x = plot.views[plot.view()].xCoord(),
           y = plot.views[plot.view()].yCoord();
 
-      standardBuild(plot.nucleotides, selection)
+      return standardBuild(plot.nucleotides)(selection)
         .datum(function(d, i) {
           d.__x = x(d, i);
           d.__y = y(d, i);
           return d;
-        })
-        .attr('data-sequence', plot.nucleotides.getSequence());
-
-      return selection;
+        });
     });
 
     // Draw all interactions and add all common data
-    plot.connections(function(selection) {
-      var ntsOf = plot.interactions.getNTs();
-
-      standardBuild(plot.interactions, selection)
-        .attr('data-nts', function(d, i) { return ntsOf(d).join(','); })
-        .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
-        .attr('nt2', function(d, i) { return ntsOf(d)[1]; });
-
-      return selection;
-    });
+    plot.connections(standardBuild(plot.interactions));
 
     // Draw motifs
-    plot.groups(function(selection) {
-      var ntsOf = plot.motifs.getNTs();
-
-      standardBuild(plot.motifs, selection)
-        .attr('data-nts', function(d) { return plot.motifs.getNTs()(d).join(','); });
-
-      return selection;
-    });
-
-    return plot;
+    plot.groups(standardBuild(plot.motifs));
   };
 
   // Configure the plot
@@ -776,6 +767,47 @@ Rna2D.components.nucleotides = (function() {
 
 }());
 
+Rna2D.components.zoom = (function() {
+
+  var zoom, 
+      translation = 0;
+
+  return {
+    config: function() {
+      return {
+        scaleExtent: [1, 10],
+        currentScale: 1,
+        onChange: Object
+      };
+    },
+
+    generate: function(plot) {
+      zoom = d3.behavior.zoom()
+        .x(plot.xScale())
+        .y(plot.yScale())
+        .scaleExtent(plot.zoom.scaleExtent())
+        .on("zoom", function() {
+          //plot.redraw();
+          var scale = d3.event.scale,
+              translate = d3.event.translate;
+          plot.zoom.currentScale(scale);
+          plot.zoom.onChange()();
+
+          if (scale === 1) {
+            translate = -translation;
+          }
+          translation += translate;
+
+          console.log(plot.vis.attr("transform"));
+
+          plot.vis.attr("transform", "translate(" + translate + ")" +
+                        "scale(" + scale + ")");
+        });
+
+      plot.vis.call(zoom);
+    }
+  };
+}());
 Rna2D.views.airport = function(plot) {
 
   // Common variables.

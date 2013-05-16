@@ -49,13 +49,12 @@ var Rna2D = window.Rna2D || function(config) {
             Rna2D.utils.attachHandlers(selection, type);
 
             return selection.attr('id', type.elementID)
-              .attr('class', function(d, i) { return classOf(d, i).concat(klass).join(' '); })
+              .attr('class', function(d, i) { 
+                return classOf(d, i).concat(klass).join(' '); 
+              })
               .attr('visibility', type.visibility);
           };
-        },
-        standardNts = standardBuild(plot.nucleotides),
-        standardGroups = standardBuild(plot.motifs),
-        standardInteractions = standardBuild(plot.interactions);
+        };
 
     // Draw all coordinates and attach all standard data
     plot.coordinates(function(selection) {
@@ -63,7 +62,7 @@ var Rna2D = window.Rna2D || function(config) {
       var x = plot.views[plot.view()].xCoord(),
           y = plot.views[plot.view()].yCoord();
 
-      return standardNts(selection)
+      return standardBuild(plot.nucleotides)(selection)
         .datum(function(d, i) {
           d.__x = x(d, i);
           d.__y = y(d, i);
@@ -72,10 +71,10 @@ var Rna2D = window.Rna2D || function(config) {
     });
 
     // Draw all interactions and add all common data
-    plot.connections(standardInteractions);
+    plot.connections(standardBuild(plot.interactions));
 
     // Draw motifs
-    plot.groups(standardGroups);
+    plot.groups(standardBuild(plot.motifs));
   };
 
   // Configure the plot
