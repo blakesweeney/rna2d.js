@@ -33,17 +33,19 @@ Rna2D.components = function(plot) {
   // effects, and rendering function.
   $.each(Rna2D.components, function(name, obj) {
 
-    // Generate the accessor function
-    (function(prop) {
-      var data = null;
-      plot[prop] = function(x) {
-        if (!arguments.length) {
-          return data;
-        }
-        data = x;
-        return plot[prop];
-      };
-    }(name));
+    // Generate the accessor function if needed
+    if (obj.dataStore) {
+      (function(prop) {
+        var data = null;
+        plot[prop] = function(x) {
+          if (!arguments.length) {
+            return data;
+          }
+          data = x;
+          return plot[prop];
+        };
+      }(name));
+    }
 
     Rna2D.utils.generateAccessors(plot[name], obj.config(plot));
 
