@@ -33,6 +33,9 @@ Rna2D.components.zoom = (function() {
           } else {
             translation += translate;
           }
+          // TODO: Consider using a spring like forcing function.
+          // This would cause the screen to snap back to the correct position
+          // more sharply. This could feel nice.
 
           plot.vis.attr("transform", "translate(" + translate + ")" +
                         "scale(" + scale + ")");
