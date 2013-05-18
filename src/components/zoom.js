@@ -20,6 +20,7 @@ Rna2D.components.zoom = (function() {
         .on("zoom", function() {
           var scale = d3.event.scale,
               translate = d3.event.translate;
+
           plot.zoom.currentScale(scale);
           plot.zoom.onChange()();
 
@@ -28,8 +29,10 @@ Rna2D.components.zoom = (function() {
           // This is done by undoing all translations so far.
           if (scale === 1) {
             translate = -translation;
+            translation = 0;
+          } else {
+            translation += translate;
           }
-          translation += translate;
 
           plot.vis.attr("transform", "translate(" + translate + ")" +
                         "scale(" + scale + ")");
