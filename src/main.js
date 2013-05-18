@@ -2,10 +2,6 @@ var Rna2D = window.Rna2D || function(config) {
 
   var plot = function() {
 
-    // Compute the nucleotide ordering. This is often used when drawing
-    // interactions.
-    plot.nucleotides.computeOrder();
-
     // Setup the view
     plot.view.setup();
 
