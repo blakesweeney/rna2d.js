@@ -2,6 +2,7 @@ Rna2D.components.motifs = (function () {
 
   return {
 
+    dataStore: true,
     togglable: true,
     config: function(plot) {
       return {
