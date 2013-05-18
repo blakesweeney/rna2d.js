@@ -2,6 +2,7 @@ Rna2D.components.interactions = (function () {
 
   return {
 
+    dataStore: true,
     togglable: true,
     config: function(plot) {
       return {
