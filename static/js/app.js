@@ -59,18 +59,18 @@ $(document).ready(function() {
 
   $("#rna-2d").rna2d({
     plot: plot,
-    nucleotides: {
-      url: "data/16S-ecoli.json",
+    chains: {
+      url: "data/2AW7/chains.json",
       parser: $.parseJSON
     },
 
     interactions: {
-      url: "data/16S-ecoli-interactions.csv",
+      url: "data/2AW7/interactions.csv",
       parser: d3.csv.parse
     },
 
     motifs: {
-      url: "data/2AW7_motifs.json",
+      url: "data/2AW7/motifs.json",
       parser: $.parseJSON
     },
 
