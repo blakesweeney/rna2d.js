@@ -7,7 +7,7 @@
         options = {
           "jmol": true,
           "failed_fetch": Object,
-          "nucleotides": {
+          "chains": {
             "url": false,
             "parser": function(text) { },
           },
@@ -69,7 +69,7 @@
     };
 
     // If we are given urls then fire off requests for each element.
-    var requests = $.map(['nucleotides', 'interactions', 'motifs'], function(type, i) {
+    var requests = $.map(['motifs', 'interactions', 'motifs'], function(type, i) {
       if (options[type].url) {
         return $.ajax({
           url: options[type].url, 
