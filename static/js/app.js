@@ -2,6 +2,8 @@ $(document).ready(function() {
   "use strict";
   /*global alert, Rna2D, d3, $ */
 
+  $('.chzn-select').chosen();
+
   var plot = Rna2D({ view: 'airport', width: 630, height: 795 });
 
   var colorBySequence = function() {
