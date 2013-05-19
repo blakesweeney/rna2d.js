@@ -69,7 +69,7 @@
     };
 
     // If we are given urls then fire off requests for each element.
-    var requests = $.map(['motifs', 'interactions', 'motifs'], function(type, i) {
+    var requests = $.map(['chains', 'interactions', 'motifs'], function(type, i) {
       if (options[type].url) {
         return $.ajax({
           url: options[type].url, 
