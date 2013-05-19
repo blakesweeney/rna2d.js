@@ -58,14 +58,15 @@ Rna2D.components.interactions = (function () {
             isForward = plot.interactions.isForward(),
             valid = [],
             seen = {},
-            indexOf = plot.nucleotides.indexOf;
+            encodeID = plot.nucleotides.encodeID(),
+            bboxOf = function (id) { return document.getElementById(encodeID(id)); };
 
         $.each(interactions, function(i, current) {
           var id = getID(current),
               nts = getNts(current);
 
           if (isForward(current) && !seen[id] && nts.length &&
-              indexOf(nts[0]) !== null && indexOf(nts[1]) !== null) {
+              bboxOf(nts[0]) !== null && bboxOf(nts[1]) !== null) {
             seen[id] = true;
             valid.push(current);
           }
