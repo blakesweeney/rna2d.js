@@ -9,12 +9,14 @@ Rna2D.views = function(plot) {
       return false;
     }
 
+    var domain = view.domain();
+
     // Overwrite all previous drawing functions
     plot.coordinates = view.coordinates;
     plot.connections = view.connections;
     plot.groups = view.groups;
-    plot.xDomain = view.xDomain;
-    plot.yDomain = view.yDomain;
+    plot.xDomain = domain.x;
+    plot.yDomain = domain.y;
 
     // Trigger the side effects
     view.sideffects();
