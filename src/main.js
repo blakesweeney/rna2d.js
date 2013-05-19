@@ -7,8 +7,8 @@ var Rna2D = window.Rna2D || function(config) {
 
     var margin = plot.margin(),
         selection = d3.select(plot.selection()),
-        scale = function(domainFn, max) { 
-          return d3.scale.linear().domain(domainFn()).range([0, max]);
+        scale = function(domain, max) {
+          return d3.scale.linear().domain(domain).range([0, max]);
         };
 
     // Setup the overall drawing area
@@ -27,14 +27,6 @@ var Rna2D = window.Rna2D || function(config) {
     // Generate the components - brush, frame, zoom, etc
     plot.components();
 
-    plot.redraw();
-
-    return plot;
-  };
-
-  // Redraw all elements.
-  plot.redraw = function() {
-
     // A function to call when we are building the nts, interactions or motifs.
     // All have some steps in common so we move them somewhere common.
     var standardBuild = function(type) {
@@ -45,8 +37,8 @@ var Rna2D = window.Rna2D || function(config) {
             Rna2D.utils.attachHandlers(selection, type);
 
             return selection.attr('id', type.elementID)
-              .attr('class', function(d, i) { 
-                return classOf(d, i).concat(klass).join(' '); 
+              .attr('class', function(d, i) {
+                return classOf(d, i).concat(klass).join(' ');
               })
               .attr('visibility', type.visibility);
           };
@@ -71,6 +63,8 @@ var Rna2D = window.Rna2D || function(config) {
 
     // Draw motifs
     plot.groups(standardBuild(plot.motifs));
+
+    return plot;
   };
 
   // Configure the plot
