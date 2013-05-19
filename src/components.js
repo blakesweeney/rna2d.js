@@ -45,6 +45,8 @@ Rna2D.components = function(plot) {
           return plot[prop];
         };
       }(name));
+    } else {
+      plot[name] = {};
     }
 
     Rna2D.utils.generateAccessors(plot[name], obj.config(plot));
