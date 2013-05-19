@@ -1,6 +1,7 @@
 Rna2D.components.nucleotides = (function() {
 
-  var ordered = {};
+  var ordered = {},
+      grouped = [];
 
   return {
 
@@ -26,35 +27,10 @@ Rna2D.components.nucleotides = (function() {
     },
 
     sideffects: function(plot) {
-      plot.nucleotides.computeOrder = function() {
-        var nts = plot.nucleotides(),
-        getID = plot.nucleotides.getID();
-
-        $.each(nts, function(i, nt) {
-          ordered[getID(nt)] = i;
-        });
-
-        return plot.nucleotides;
-      };
 
       plot.nucleotides.jmol = function(d, i) {
         var idOf = plot.nucleotides.getID();
         return plot.jmol.showNTs([idOf(d, i)]);
-      };
-
-      plot.nucleotides.indexOf = function(ntId) {
-        if (!ordered.hasOwnProperty(ntId)) {
-          return null;
-        }
-        return ordered[ntId];
-      };
-
-      plot.nucleotides.ordered = function(_) {
-        if (!arguments.length) {
-          return ordered;
-        }
-        ordered = _;
-        return plot.nucleotides;
       };
 
     },
@@ -62,6 +38,7 @@ Rna2D.components.nucleotides = (function() {
     actions: function(plot) {
       plot.nucleotides.visible('A', 'C', 'G', 'U');
 
+      // TODO: Use d3.selectAll().filter()
       plot.nucleotides.interactions = function(d, i) {
         var id = plot.nucleotides.getID()(d, i),
             selector = '[nt1=' + id + '], [nt2=' + id + ']';
