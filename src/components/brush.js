@@ -2,6 +2,7 @@ Rna2D.components.brush = (function() {
 
   return {
 
+    dataStore: true,
     config: function(plot) {
       return {
         enabled: true,
