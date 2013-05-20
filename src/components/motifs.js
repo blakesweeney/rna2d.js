@@ -31,11 +31,11 @@ Rna2D.components.motifs = (function () {
 
       plot.motifs.visible('IL', 'HL', 'J3');
 
-      plot.motifs.nucleotides = function(obj) {
-        var motifData = d3.select(obj).datum(),
-            nts = plot.motifs.ntElements(motifData),
-            selector = '#' + nts.join(', #');
-        return plot.vis.selectAll(selector);
+      plot.motifs.nucleotides = function(data, i) {
+        var nts = plot.motifs.getNTs()(data),
+            idOf = plot.nucleotides.getID();
+        return plot.vis.selectAll('.' + plot.nucleotides['class']())
+          .filter(function(d, i) { return $.inArray(idOf(d, i), nts) !== -1; });
       };
 
     }

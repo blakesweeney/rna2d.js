@@ -85,12 +85,11 @@ Rna2D.components.interactions = (function () {
 
       plot.interactions.visible('cWW', 'ncWW');
 
-      plot.interactions.nucleotides = function(obj) {
-        obj = obj || this;
-        var data = d3.select(obj).datum(),
-            nts = plot.interactions.ntElements(data),
-            selector = '#' + nts.join(', #');
-        return plot.vis.selectAll(selector);
+      plot.interactions.nucleotides = function(data, i) {
+        var nts = plot.interactions.getNTs()(data),
+            idOf = plot.nucleotides.getID();
+        return plot.vis.selectAll('.' + plot.nucleotides['class']())
+          .filter(function(d, i) { return $.inArray(idOf(d, i), nts) !== -1; });
       };
 
     }
