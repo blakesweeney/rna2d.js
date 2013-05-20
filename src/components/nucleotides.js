@@ -32,6 +32,14 @@ Rna2D.components.nucleotides = (function() {
         return plot.jmol.showNTs([idOf(d, i)]);
       };
 
+      plot.nucleotides.count = function() {
+        var count = 0,
+            getNTData = plot.chains.getNTData();
+        $.each(plot.chains(), function(_, chain) {
+          count += getNTData(chain).length;
+        });
+        return count;
+      };
     },
 
     actions: function(plot) {
