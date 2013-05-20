@@ -45,11 +45,11 @@ Rna2D.components.nucleotides = (function() {
     actions: function(plot) {
       plot.nucleotides.visible('A', 'C', 'G', 'U');
 
-      // TODO: Use d3.selectAll().filter()
       plot.nucleotides.interactions = function(d, i) {
         var id = plot.nucleotides.getID()(d, i),
-            selector = '[nt1=' + id + '], [nt2=' + id + ']';
-        return plot.vis.selectAll(selector);
+            getNTs = plot.interactions.getNTs();
+        return plot.vis.selectAll('.' + plot.interactions['class']())
+          .filter(function(d, i) { return $.inArray(getNTs(d), id) !== -1; });
       };
 
       plot.nucleotides.doColor = function() {
