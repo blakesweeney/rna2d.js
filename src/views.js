@@ -9,6 +9,10 @@ Rna2D.views = function(plot) {
       return false;
     }
 
+    if (view.hasOwnProperty('preprocess')) {
+      view.preprocess();
+    }
+
     var domain = view.domain();
 
     // Overwrite all previous drawing functions

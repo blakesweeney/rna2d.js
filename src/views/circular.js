@@ -3,8 +3,8 @@ Rna2D.views.circular = function(plot) {
   // We use the total count in a couple places.
   var ntCount;
 
-  // We need to track the nt -> index map.
-  var indexes = {};
+  // This is used to track some index values and the like
+  var computed = {};
 
   // Used to compute the centroid of a nucleotide on the backbone.
   var ntCentroid;
@@ -12,13 +12,22 @@ Rna2D.views.circular = function(plot) {
   // Function to generate arcs for both the nucleotides and finding centriods
   // for interactions
   var arcGenerator = function(inner, outer) {
-    return $.map(plot.chains(), function(chain, index) {
-      var angleSize = (2*Math.PI - plot.views.circular.arcGap()) / ntCount,
-          halfGap = plot.views.circular.arcGap() / 2,
-          breakSize = index * plot.views.circular.chainBreakSize(),
-          offset = halfGap + breakSize,
-          startAngle = function(d, i) { return i * angleSize + offset; },
-          endAngle = function(d, i) { return (i + 1) * angleSize + offset; };
+    var chainCount = plot.chains().length,
+        angleSize = (2*Math.PI - plot.views.circular.arcGap() - 
+                    (chainCount - 1) * plot.views.circular.chainBreakSize()) / ntCount,
+        offset = plot.views.circular.arcGap() / 2,
+        getNTData = plot.chains.getNTData();
+
+    return $.map(plot.chains(), function(chain, chainIndex) {
+      var startAngle = (function(shift) { 
+            return function(_, i) { return i * angleSize + shift; };
+          }(offset)),
+          endAngle = (function(shift) {
+            return function(_, i) { return (i + 1) * angleSize + shift; };
+          }(offset));
+
+      offset += (chainIndex + 1) * plot.views.circular.chainBreakSize() + 
+        angleSize * getNTData(chain).length;
 
       return d3.svg.arc()
         .innerRadius(inner)
@@ -28,14 +37,36 @@ Rna2D.views.circular = function(plot) {
     });
   };
 
+  // This is a function to compute all the things we need to draw, such as
+  // global index, index in chain, etc.
+  var globalIndex = 0;
+  var preprocess = function() {
+    var getNTData = plot.chains.getNTData(),
+        idOf = plot.nucleotides.getID();
+
+    $.each(plot.chains(), function(chainIndex, chain) {
+      $.each(getNTData(chain), function(ntIndex, nt) {
+        var id = idOf(nt);
+        computed[id] = {
+          globalIndex: globalIndex,
+          chainIndex: chainIndex,
+          ntIndex: ntIndex
+        };
+        globalIndex++;
+      });
+    });
+  };
+
   // Function to draw the arcs.
   var coordinates = function(standard) {
 
     ntCount = plot.nucleotides.count();
 
-    var center = plot.views.circular.center()(),
-        outerArcs = arcGenerator(plot.views.circular.radius()() - plot.views.circular.width(), plot.views.circular.radius()()),
-        arcFor = function(d, i) { return outerArcs[plot.chains.chainOf(d, i)]; };
+    var idOf = plot.nucleotides.getID(),
+        center = plot.views.circular.center()(),
+        radius = plot.views.circular.radius()(),
+        outerArcs = arcGenerator(radius - plot.views.circular.width(), radius),
+        arcFor = function(d, i) { return outerArcs[computed[idOf(d)].chainIndex]; };
 
     ntCentroid = function(d, i) {
       return arcFor(d, i).centroid(d, i);
@@ -53,7 +84,6 @@ Rna2D.views.circular = function(plot) {
         .data(plot.chains.getNTData()).enter()
           .append('svg:path')
           .attr('d', function(d, i) {
-            indexes[plot.nucleotides.getID()(d, i)] = i;
             return arcFor(d, i)(d, i);
           })
           .attr('fill', plot.nucleotides.color())
@@ -70,24 +100,14 @@ Rna2D.views.circular = function(plot) {
     var outerArcInnerRadius = plot.views.circular.radius()() - plot.views.circular.width(),
         innerArcInnerRadius = outerArcInnerRadius - plot.views.circular.interactionGap(),
         innerArcs = arcGenerator(innerArcInnerRadius, outerArcInnerRadius),
-        arcFor = function(d, i) { return innerArcs[plot.chains.chainOf(d, i)]; };
-
-    // We use the indexes map to get the index within the chain then determine
-    // the correct chain and add the length to get the total index of the
-    // nucleotide.
-    var indexOf = function(ntID) {
-        var index = indexes[ntID],
-            chainIndex = plot.chains.chainOf(ntID, index),
-            chainLength = plot.chains.getNTData()(plot.chains()[chainIndex]).length;
-        return chainLength + index;
-    };
+        arcFor = function(id) { return innerArcs[computed[id].chainIndex]; },
+        startAngleOf = function(id) { return arcFor(id).startAngle()(null, computed[id].ntIndex); },
+        centroidOf = function(id) { return arcFor(id).centroid(null, computed[id].ntIndex); };
 
     // Figure out the centroid position of the nucleotide with the given id in
     // the innerArc.
     var centriodPosition = function(ntID) {
-      var ntIndex = indexes[ntID],
-          innerArc = arcFor(ntID, ntIndex),
-          centroid = innerArc.centroid(null, ntIndex),
+      var centroid = centroidOf(ntID),
           c = plot.views.circular.center()();
       return { x: c.x + centroid[0], y: c.y + centroid[1] };
     };
@@ -95,8 +115,8 @@ Rna2D.views.circular = function(plot) {
     // A function to sort nucleotide ids based upon their index amoung all
     // nucleotides. This is used to draw arcs correctly.
     var sortFunc = function(nt1, nt2) {
-      var i1 = indexOf(nt1),
-          i2 = indexOf(nt2);
+      var i1 = computed[nt1].globalIndex,
+          i2 = computed[nt2].globalIndex;
       return (Math.abs(i1 - i2) > ntCount/2) ? (i2 - i1) : (i1 - i2);
     };
 
@@ -109,8 +129,7 @@ Rna2D.views.circular = function(plot) {
       var nts = plot.interactions.getNTs()(d, i).sort(sortFunc),
           from = centriodPosition(nts[0]),
           to = centriodPosition(nts[1]),
-          angleDiff = arcFor(nts[0], indexes[nts[0]]).startAngle()(nts[0], indexes[nts[0]]) -
-                      arcFor(nts[1], indexes[nts[1]]).startAngle()(nts[1], indexes[nts[1]]),
+          angleDiff = startAngleOf(nts[0]) - startAngleOf(nts[1]),
           radius = Math.abs(innerArcInnerRadius * Math.tan(angleDiff/2));
 
       return "M "  + from.x + " " + from.y +  // Start point
@@ -129,6 +148,7 @@ Rna2D.views.circular = function(plot) {
 
   return {
 
+    preprocess: preprocess,
     domain: function() { return { x: [0, 1000], y: [0, 1000] }; },
     coordinates: coordinates,
     connections: connections,
@@ -182,14 +202,17 @@ Rna2D.views.circular = function(plot) {
       clearLetters: function() {
         return plot.vis.selectAll('.' + plot.views.circular.letterClass()).remove();
       },
-      chainBreakSize: 0.01
+      chainBreakSize: 0.1
     },
 
     sideffects: function() {
 
       plot.nucleotides.highlight(function(d, i) {
         var highlightColor = plot.nucleotides.highlightColor()(d, i);
-            d3.select(this).style('stroke', highlightColor);
+
+        d3.select(this)
+          .style('stroke', highlightColor)
+          .style('fill', highlightColor);
 
         plot.views.circular.addLetters()([d]);
 
@@ -198,7 +221,9 @@ Rna2D.views.circular = function(plot) {
       });
 
       plot.nucleotides.normalize(function(d, i) {
-        d3.select(this).style('stroke', null);
+        d3.select(this)
+          .style('stroke', null)
+          .style('fill', null);
         plot.views.circular.clearLetters()();
         return plot.nucleotides.interactions(d, i)
           .style('stroke', null);
@@ -211,13 +236,17 @@ Rna2D.views.circular = function(plot) {
         d3.select(this).style('stroke', highlightColor);
         plot.views.circular.addLetters()(nts[0]); // TODO: WTF?
 
-        return nts.style('stroke', highlightColor);
+        return nts
+          .style('stroke', highlightColor)
+          .style('fill', highlightColor);
       });
 
       plot.interactions.normalize(function(d, i) {
         d3.select(this).style('stroke', null);
         plot.views.circular.clearLetters()();
-        plot.interactions.nucleotides(this).style('stroke', null);
+        plot.interactions.nucleotides(this)
+          .style('stroke', null)
+          .style('fill', null);
         return plot.interactions;
       });
     }
