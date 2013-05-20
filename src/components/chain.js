@@ -8,20 +8,21 @@ Rna2D.components.chains = (function () {
         'class': 'chain',
         classOf: function(d, i) { return []; },
         getNTData: function(d, i) { return d.nts; },
-        chainOf: function(d, i) {
-          var ntsOf = plot.chains.getNTData(),
-              chainIndex = -1;
-          $.each(plot.chains(), function(chain, index) {
-            if (ntsOf(chain)[i] === d) {
-              chainIndex = index;
-            }
-          });
-          return chainIndex;
-        }
       };
     },
 
-    sideffects: function() { },
+    sideffects: function(plot) { 
+      plot.chains.chainOf = function(d, i) {
+        var ntsOf = plot.chains.getNTData(),
+            chainIndex = -1;
+        $.each(plot.chains(), function(index, chain) {
+          if (ntsOf(chain)[i] === d) {
+            chainIndex = index;
+          }
+        });
+        return chainIndex;
+      };
+    },
 
     actions: function() {}
 
