@@ -1,7 +1,6 @@
 Rna2D.components.nucleotides = (function() {
 
-  var ordered = {},
-      grouped = [];
+  var grouped = [];
 
   return {
 
