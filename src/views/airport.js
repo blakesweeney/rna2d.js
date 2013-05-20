@@ -1,8 +1,5 @@
 Rna2D.views.airport = function(plot) {
 
-  // Common variables.
-  var coordMax = {};
-
   // We need to track if we are drawing across the letter in which case we
   // need to use the width + radius, otherwise we just need to use the radius.
   // The bounding box is the upper left of the objects.
@@ -50,28 +47,26 @@ Rna2D.views.airport = function(plot) {
     return { x: c.x + a, y: c.y + b };
   };
 
-  // A function to define the axes.
-  var domain = function(property) {
-    return function() { 
-      var max = d3.max(plot.nucleotides(), function(d) { return d[property]; });
-      coordMax[property] = max;
-      return [0, max]; 
-    };
-  };
-
   // We make a chart function which draws the nucleotides in the given
   // coordinates.
    var coordinates = function(standard) {
 
-    // Draw all nucleotides.
-    plot.vis.selectAll(plot.nucleotides['class']())
-      .data(plot.nucleotides()).enter().append('svg:text')
-      .call(standard)
-      .attr('x', function(d, i) { return plot.xScale()(plot.nucleotides.getX()(d, i)); })
-      .attr('y', function(d, i) { return plot.yScale()(plot.nucleotides.getY()(d, i)); })
-      .attr('font-size', plot.views.airport.fontSize())
-      .text(plot.nucleotides.getSequence())
-      .attr('fill', plot.nucleotides.color());
+    // Draw the nucleotides
+    plot.vis.selectAll(plot.chains['class']())
+      .append('g')
+      .data(plot.chains()).enter()
+        .append('g')
+        .attr('id', plot.chains.getID())
+        .attr('class', plot.chains['class']())
+        .selectAll(plot.nucleotides['class']())
+        .data(plot.chains.getNTData()).enter()
+          .append('svg:text')
+          .call(standard)
+          .attr('x', function(d, i) { return plot.xScale()(plot.nucleotides.getX()(d, i)); })
+          .attr('y', function(d, i) { return plot.yScale()(plot.nucleotides.getY()(d, i)); })
+          .attr('font-size', plot.views.airport.fontSize())
+          .text(plot.nucleotides.getSequence())
+          .attr('fill', plot.nucleotides.color());
 
     return plot;
   };
@@ -95,20 +90,21 @@ Rna2D.views.airport = function(plot) {
         console.log("Could not compute interaction line for", obj);
         return null;
       }
-      
+
       return obj;
     });
 
     // Draw the interactions
     plot.vis.selectAll(plot.interactions['class']())
-    .data(interactions)
-    .enter().append('svg:line')
-    .call(standard)
-    .attr('stroke', plot.interactions.color())
-    .attr('x1', function(d) { return d.line.x1; })
-    .attr('y1', function(d) { return d.line.y1; })
-    .attr('x2', function(d) { return d.line.x2; })
-    .attr('y2', function(d) { return d.line.y2; });
+      .data(interactions)
+      .enter()
+        .append('svg:line')
+        .call(standard)
+        .attr('stroke', plot.interactions.color())
+        .attr('x1', function(d) { return d.line.x1; })
+        .attr('y1', function(d) { return d.line.y1; })
+        .attr('x2', function(d) { return d.line.x2; })
+        .attr('y2', function(d) { return d.line.y2; });
 
     return plot;
   };
@@ -125,8 +121,8 @@ Rna2D.views.airport = function(plot) {
 
       $.each(motifs, function(i, current) {
         var left = 0,
-            right = coordMax.x,
-            top = coordMax.y,
+            right = Number.MAX_VALUE,
+            top = Number.MAX_VALUE,
             bottom = 0;
 
         current.missing = [];
@@ -157,10 +153,10 @@ Rna2D.views.airport = function(plot) {
         });
 
         // Store bounding box. It is very odd to get a bounding box that
-        // involves the outer edges. In this case we think that we have not
-        // actually found the nts so we log this and use a box that cannot
-        // be seen. This prevents bugs where we stop drawing boxes too early.
-        if (bottom === 0 || left === 0 || right === coordMax.x || top === coordMax.y) {
+        // involves the max number value. In this case we think that we have not
+        // actually found the nts so we log this and use a box that cannot be
+        // seen. This prevents bugs where we stop drawing boxes too early.
+        if (bottom === 0 || left === 0 || right === Number.MAX_VALUE || top === Number.MAX_VALUE) {
           console.log("Unlikely bounding box found for " + current.id);
           current.bounding = [{x: 0, y: 0}, {x: 0, y: 0}, {x: 0, y: 0}, {x: 0, y: 0}];
         } else {
@@ -189,55 +185,72 @@ Rna2D.views.airport = function(plot) {
   };
 
   return {
+    domain: function() {
+
+      // Compute the max and min of x and y coords for the scales.
+      var xMax = 0,
+          yMax = 0;
+
+      $.each(plot.chains(), function(_, chain) {
+        var getX = plot.nucleotides.getX(),
+            getY = plot.nucleotides.getY();
+        $.each(plot.chains.getNTData()(chain), function(_, nt) {
+          var x = getX(nt),
+              y = getY(nt);
+
+          if (x > xMax) {
+            xMax = x;
+          }
+          if (y > yMax) {
+            yMax = y;
+          }
+        });
+      });
+
+      return { x: [0, xMax], y: [0, yMax] };
+    },
+
     config: {
       fontSize: 11,
       gap: 1,
       xCoord: function(d, i) { return plot.xScale()(plot.nucleotides.getX()(d, i)); },
       yCoord: function(d, i) { return plot.yScale()(plot.nucleotides.getY()(d, i)); }
     },
-    xDomain: domain('x'),
-    yDomain: domain('y'),
     connections: connections,
     coordinates: coordinates,
     groups: groups,
     sideffects: function() {
-      plot.interactions.highlight(function() {
-        var obj = this,
-            highlightColor = plot.interactions.highlightColor();
-        d3.select(obj).style('stroke', highlightColor(obj));
-        return plot.interactions.nucleotides(obj).style('stroke', highlightColor(obj));
+      plot.interactions.highlight(function(d, i) {
+        var highlightColor = plot.interactions.highlightColor()(d, i);
+        d3.select(this).style('stroke', highlightColor);
+        return plot.interactions.nucleotides(this).style('stroke', highlightColor);
       });
 
       plot.interactions.normalize(function() {
-        var obj = this;
-        d3.select(obj).style('stroke', null);
-        return plot.interactions.nucleotides(obj).style('stroke', null);
+        d3.select(this).style('stroke', null);
+        return plot.interactions.nucleotides(this).style('stroke', null);
       });
 
       plot.nucleotides.highlight(function(d, i) {
-        var obj = this,
-            highlightColor = plot.nucleotides.highlightColor();
-        d3.select(obj).style('stroke', highlightColor());
+        var highlightColor = plot.nucleotides.highlightColor()(d, i);
+        d3.select(this).style('stroke', highlightColor);
         return plot.nucleotides.interactions(d, i)
-          .style('stroke', highlightColor());
+          .style('stroke', highlightColor);
       });
 
       plot.nucleotides.normalize(function(d, i) {
-        var obj = this;
-        d3.select(obj).style('stroke', null);
+        d3.select(this).style('stroke', null);
         return plot.nucleotides.interactions(d, i)
           .style('stroke', null);
       });
 
-      plot.motifs.highlight(function() {
-        var obj = this,
-            highlightColor = plot.motifs.highlightColor();
-        return plot.motifs.nucleotides(obj).style('stroke', highlightColor(obj));
+      plot.motifs.highlight(function(d, i) {
+        var highlightColor = plot.motifs.highlightColor();
+        return plot.motifs.nucleotides(this).style('stroke', highlightColor(d, i));
       });
 
-      plot.motifs.normalize(function() {
-        var obj = this;
-        return plot.motifs.nucleotides(obj).style('stroke', null);
+      plot.motifs.normalize(function(d, i) {
+        return plot.motifs.nucleotides(this).style('stroke', null);
       });
 
     }
