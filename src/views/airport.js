@@ -223,12 +223,14 @@ Rna2D.views.airport = function(plot) {
       plot.interactions.highlight(function(d, i) {
         var highlightColor = plot.interactions.highlightColor()(d, i);
         d3.select(this).style('stroke', highlightColor);
-        return plot.interactions.nucleotides(this).style('stroke', highlightColor);
+        return plot.interactions.nucleotides(d, i).style('stroke', highlightColor);
       });
+      // TODO: To speed up removal of highlight consider using a highlight class
+      // and then removing it from all nts.
 
-      plot.interactions.normalize(function() {
+      plot.interactions.normalize(function(d, i) {
         d3.select(this).style('stroke', null);
-        return plot.interactions.nucleotides(this).style('stroke', null);
+        return plot.interactions.nucleotides(d, i).style('stroke', null);
       });
 
       plot.nucleotides.highlight(function(d, i) {
@@ -246,11 +248,13 @@ Rna2D.views.airport = function(plot) {
 
       plot.motifs.highlight(function(d, i) {
         var highlightColor = plot.motifs.highlightColor();
-        return plot.motifs.nucleotides(this).style('stroke', highlightColor(d, i));
+        return plot.motifs.nucleotides(d, i)
+          .style('stroke', highlightColor(d, i));
       });
 
       plot.motifs.normalize(function(d, i) {
-        return plot.motifs.nucleotides(this).style('stroke', null);
+        return plot.motifs.nucleotides(d, i)
+          .style('stroke', null);
       });
 
     }
