@@ -30,19 +30,19 @@ var Rna2D = window.Rna2D || function(config) {
     // A function to call when we are building the nts, interactions or motifs.
     // All have some steps in common so we move them somewhere common.
     var standardBuild = function(type) {
-          return function(selection) {
-            var klass = type['class'](),
-                classOf = type.classOf();
+      return function(selection) {
+        var klass = type['class'](),
+            classOf = type.classOf();
 
-            Rna2D.utils.attachHandlers(selection, type);
+        Rna2D.utils.attachHandlers(selection, type);
 
-            return selection.attr('id', type.elementID)
-              .attr('class', function(d, i) {
-                return classOf(d, i).concat(klass).join(' ');
-              })
-              .attr('visibility', type.visibility);
-          };
-        };
+        return selection.attr('id', type.elementID)
+          .attr('class', function(d, i) {
+            return classOf(d, i).concat(klass).join(' ');
+          })
+          .attr('visibility', type.visibility);
+      };
+    };
 
     // Draw all coordinates and attach all standard data
     plot.coordinates(function(selection) {
