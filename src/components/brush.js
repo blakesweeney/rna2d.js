@@ -54,7 +54,7 @@ Rna2D.components.brush = (function() {
 
       var endBrush = function () {
         var nts = [],
-            e = plot.brush().extent();
+            extent = plot.brush().extent();
 
         if (plot.brush().empty()) {
           return plot.brush.clear()();
@@ -62,8 +62,8 @@ Rna2D.components.brush = (function() {
 
         plot.vis.selectAll('.' + plot.nucleotides['class']())
           .attr("selected", function(d) {
-            if (e[0][0] <= d.__x && d.__x <= e[1][0] &&
-                e[0][1] <= d.__y && d.__y <= e[1][1]) {
+            if (extent[0][0] <= d.__x && d.__x <= extent[1][0] &&
+                extent[0][1] <= d.__y && d.__y <= extent[1][1]) {
               nts.push(d);
             return 'selected';
             }
@@ -73,10 +73,15 @@ Rna2D.components.brush = (function() {
         return plot.brush.update()(nts);
       };
 
+      var scale = function(given) {
+        return d3.scale.identity()
+          .domain(given.domain());
+      };
+
       plot.brush(d3.svg.brush()
         .on('brushend', endBrush)
-        .x(plot.xScale())
-        .y(plot.yScale()));
+        .x(scale(plot.xScale()))
+        .y(scale(plot.yScale())));
 
       if (plot.brush.enabled()) {
         plot.brush.enable();
