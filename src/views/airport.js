@@ -219,6 +219,7 @@ Rna2D.views.airport = function(plot) {
     connections: connections,
     coordinates: coordinates,
     groups: groups,
+    labels: Object,
     sideffects: function() {
       plot.interactions.highlight(function(d, i) {
         var highlightColor = plot.interactions.highlightColor()(d, i);

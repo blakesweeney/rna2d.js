@@ -64,6 +64,8 @@ var Rna2D = window.Rna2D || function(config) {
     // Draw motifs
     plot.groups(standardBuild(plot.motifs));
 
+    plot.labels();
+
     return plot;
   };
 

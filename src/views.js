@@ -19,6 +19,7 @@ Rna2D.views = function(plot) {
     plot.coordinates = view.coordinates;
     plot.connections = view.connections;
     plot.groups = view.groups;
+    plot.labels = view.labels;
     plot.xDomain = domain.x;
     plot.yDomain = domain.y;
 
