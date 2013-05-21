@@ -16,10 +16,10 @@ Rna2D.components.frame = {
     // TODO: Change this to ignore margins.
     return plot.vis.append('svg:rect')
       .classed(plot.frame['class'](), true)
-      .attr('x', 0)
-      .attr('y', 0)
+      .attr('x', -plot.margin().left)
+      .attr('y', -plot.margin().above)
       .attr('width', plot.width() + plot.margin().left + plot.margin().right)
-      .attr('height', plot.height() + plot.margin().below + plot.margin().above)
+      .attr('height', plot.height() + plot.margin().above + plot.margin().below)
       .style('pointer-events', 'none');
   }
 };
