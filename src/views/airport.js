@@ -62,8 +62,8 @@ Rna2D.views.airport = function(plot) {
         .data(plot.chains.getNTData()).enter()
           .append('svg:text')
           .call(standard)
-          .attr('x', function(d, i) { return plot.xScale()(plot.nucleotides.getX()(d, i)); })
-          .attr('y', function(d, i) { return plot.yScale()(plot.nucleotides.getY()(d, i)); })
+          .attr('x', plot.views.airport.xCoord())
+          .attr('y', plot.views.airport.yCoord())
           .attr('font-size', plot.views.airport.fontSize())
           .text(plot.nucleotides.getSequence())
           .attr('fill', plot.nucleotides.color());
