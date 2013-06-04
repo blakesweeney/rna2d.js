@@ -155,6 +155,23 @@ Rna2D.views.circular = function(plot) {
 
     labelArcs = arcGenerator(innerLabelRadius, 
                              innerLabelRadius + plot.views.circular.labelSize());
+
+    plot.vis.selectAll(plot.labels['class']())
+      .append('g')
+      .data(plot.chains()).enter()
+        .append('g')
+        .attr('id', plot.chains.getID())
+        .attr('class', plot.chains['class']())
+        .attr('transform', 'translate(' + center.x + ',' + center.y + ')')
+        .selectAll(plot.nucleotides['class']())
+        .data(plot.chains.getNTData()).enter()
+          .append('svg:path')
+          .attr('d', function(d, i) {
+            return arcFor(d, i)(d, i);
+          })
+          .attr('fill', plot.nucleotides.color())
+          .call(standard);
+
   };
 
   return {
