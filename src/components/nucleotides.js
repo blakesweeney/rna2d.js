@@ -21,7 +21,9 @@ Rna2D.components.nucleotides = (function() {
         getSequence: function(d) { return d.sequence; },
         highlight: Object,
         normalize: Object,
-        toggleLetters: Object
+        toggleLetters: Object,
+        getNumber: function(d) { return d.id.split('|')[4]; },
+        getChain: function(d) { return d.id.split('|')[2]; }
       };
     },
 
