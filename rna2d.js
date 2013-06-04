@@ -349,17 +349,6 @@ Rna2D.components.brush = (function() {
       };
     },
 
-    sideffects: function(plot) {
-
-      // Jmol interface
-      plot.brush.jmol = function(nts) {
-        var idOf = plot.nucleotides.getID(),
-            ids = $.map(nts, idOf);
-        return plot.jmol.showNTs(ids);
-      };
-
-    },
-
     actions: function(plot) {
 
       // Show the brush
@@ -574,10 +563,6 @@ Rna2D.components.interactions = (function () {
         return valid;
       };
 
-      plot.interactions.jmol = function(d, i) {
-        var getNTs = plot.interactions.getNTs();
-        return plot.jmol.showNTs(getNTs(d, i));
-      };
     },
 
     actions: function(plot) {
@@ -596,7 +581,7 @@ Rna2D.components.interactions = (function () {
 
 }());
 
-Rna2D.components.jmol = {
+Rna2D.components.jmolTools = {
 
   config: function(plot) {
     return {
@@ -618,14 +603,14 @@ Rna2D.components.jmol = {
   },
 
   sideffects: function(plot) {
-    plot.jmol.setup = function() {
-      var $app = $('#' + plot.jmol.appID()),
-          $div = $('#' + plot.jmol.divID());
+    plot.jmolTools.setup = function() {
+      var $app = $('#' + plot.jmolTools.appID()),
+          $div = $('#' + plot.jmolTools.divID());
 
       // launch jmol if necessary
       if ($app.length === 0 ) {
-        $div.html(jmolApplet(plot.jmol.windowSize(), "", 0));
-        plot.jmol.windowBuild()($div);
+        $div.html(jmolApplet(plot.jmolTools.windowSize(), "", 0));
+        plot.jmolTools.windowBuild()($div);
         $div.show();
       }
 
@@ -634,38 +619,58 @@ Rna2D.components.jmol = {
       $.jmolTools.numModels = 0;
       $.jmolTools.stereo = false;
       $.jmolTools.neighborhood = false;
-      $('#' + plot.jmol.neighborhoodID()).val('Show neighborhood');
+      $('#' + plot.jmolTools.neighborhoodID()).val('Show neighborhood');
       $.jmolTools.models = {};
 
       // unbind all events
-      $('#' + plot.jmol.stereoID()).unbind();
-      $('#' + plot.jmol.neighborhoodID()).unbind();
-      $('#' + plot.jmol.numbersID()).unbind();
+      $('#' + plot.jmolTools.stereoID()).unbind();
+      $('#' + plot.jmolTools.neighborhoodID()).unbind();
+      $('#' + plot.jmolTools.numbersID()).unbind();
 
-      return plot.jmol;
+      return plot.jmolTools;
     };
 
     // Display a selection.
-    plot.jmol.showNTs = function(ntIDs) {
-      plot.jmol.setup();
+    plot.jmolTools.showNTs = function(ntIDs) {
+      plot.jmolTools.setup();
 
-      if (ntIDs.length > plot.jmol.maxSize()) {
-        return plot.jmol.overflow();
+      if (ntIDs.length > plot.jmolTools.maxSize()) {
+        return plot.jmolTools.overflow();
       }
 
-      $('#' + plot.jmol.tmpID()).remove();
-      $('body').append("<input type='radio' id='" + plot.jmol.tmpID() +
+      $('#' + plot.jmolTools.tmpID()).remove();
+      $('body').append("<input type='radio' id='" + plot.jmolTools.tmpID() +
                        "' data-coord='" + ntIDs.join(',') + "'>");
-      $('#' + plot.jmol.tmpID()).hide();
-      $('#' + plot.jmol.tmpID()).jmolTools({
-        showNeighborhoodId: plot.jmol.neighborhoodID(),
-        showNumbersId: plot.jmol.numbersID(),
-        showStereoId: plot.jmol.stereoID()
+      $('#' + plot.jmolTools.tmpID()).hide();
+      $('#' + plot.jmolTools.tmpID()).jmolToolsTools({
+        showNeighborhoodId: plot.jmolTools.neighborhoodID(),
+        showNumbersId: plot.jmolTools.numbersID(),
+        showStereoId: plot.jmolTools.stereoID()
       }).jmolToggle();
 
-      return plot.jmol;
+      return plot.jmolTools;
     };
 
+    plot.jmolTools.nucleotides = function(d, i) {
+      var idOf = plot.nucleotides.getID();
+      return plot.jmolTools.showNTs([idOf(d, i)]);
+    };
+
+    plot.jmolTools.interactions = function(d, i) {
+      var getNTs = plot.interactions.getNTs();
+      return plot.jmolTools.showNTs(getNTs(d, i));
+    };
+
+    plot.jmolTools.motifs = function(d, i) {
+      var getNTs = plot.motifs.getNTs();
+      return plot.jmolTools.showNTs(getNTs(d, i));
+    };
+
+    plot.jmolTools.brush = function(nts) {
+      var idOf = plot.nucleotides.getID(),
+          ids = $.map(nts, idOf);
+      return plot.jmolTools.showNTs(ids);
+    };
   }
 
 };
@@ -719,10 +724,6 @@ Rna2D.components.motifs = (function () {
     },
 
     sideffects: function(plot) {
-      plot.motifs.jmol = function(d, i) {
-        var getNTs = plot.motifs.getNTs();
-        return plot.jmol.showNTs(getNTs(d, i));
-      };
     },
 
     actions: function(plot) {
@@ -769,11 +770,6 @@ Rna2D.components.nucleotides = (function() {
     },
 
     sideffects: function(plot) {
-
-      plot.nucleotides.jmol = function(d, i) {
-        var idOf = plot.nucleotides.getID();
-        return plot.jmol.showNTs([idOf(d, i)]);
-      };
 
       plot.nucleotides.count = function() {
         var count = 0,
@@ -1272,6 +1268,23 @@ Rna2D.views.circular = function(plot) {
 
     labelArcs = arcGenerator(innerLabelRadius, 
                              innerLabelRadius + plot.views.circular.labelSize());
+
+    plot.vis.selectAll(plot.labels['class']())
+      .append('g')
+      .data(plot.chains()).enter()
+        .append('g')
+        .attr('id', plot.chains.getID())
+        .attr('class', plot.chains['class']())
+        .attr('transform', 'translate(' + center.x + ',' + center.y + ')')
+        .selectAll(plot.nucleotides['class']())
+        .data(plot.chains.getNTData()).enter()
+          .append('svg:path')
+          .attr('d', function(d, i) {
+            return arcFor(d, i)(d, i);
+          })
+          .attr('fill', plot.nucleotides.color())
+          .call(standard);
+
   };
 
   return {

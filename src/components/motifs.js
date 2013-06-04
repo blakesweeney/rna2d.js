@@ -21,10 +21,6 @@ Rna2D.components.motifs = (function () {
     },
 
     sideffects: function(plot) {
-      plot.motifs.jmol = function(d, i) {
-        var getNTs = plot.motifs.getNTs();
-        return plot.jmol.showNTs(getNTs(d, i));
-      };
     },
 
     actions: function(plot) {

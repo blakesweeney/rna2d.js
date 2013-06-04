@@ -12,17 +12,6 @@ Rna2D.components.brush = (function() {
       };
     },
 
-    sideffects: function(plot) {
-
-      // Jmol interface
-      plot.brush.jmol = function(nts) {
-        var idOf = plot.nucleotides.getID(),
-            ids = $.map(nts, idOf);
-        return plot.jmol.showNTs(ids);
-      };
-
-    },
-
     actions: function(plot) {
 
       // Show the brush

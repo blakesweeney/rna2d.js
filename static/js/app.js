@@ -37,20 +37,21 @@ $(document).ready(function() {
     $('#about-selection').children().remove();
     $('#about-selection').append(link);
     $('#about-selection').show();
-    return plot.motifs.jmol(d, i);
+    return plot.jmolTools.motifs(d, i);
   };
 
-  plot.jmol.overflow(function() { alert("Too many nts selected"); });
+  plot.jmolTools
+    .overflow(function() { alert("Too many nts selected"); });
 
   plot.brush.enabled(true)
-    .update(plot.brush.jmol);
+    .update(plot.jmolTools.brush);
 
   plot.nucleotides.mouseover('highlight')
-    .click(plot.nucleotides.jmol)
+    .click(plot.jmolTools.nucleotides)
     .encodeID(function(id) { return id.replace(/\|/g, '_').toLowerCase(); });
 
   plot.interactions
-    .click(plot.interactions.jmol)
+    .click(plot.jmolTools.interactions)
     .mouseover('highlight')
     ;
 

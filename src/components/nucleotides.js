@@ -27,11 +27,6 @@ Rna2D.components.nucleotides = (function() {
 
     sideffects: function(plot) {
 
-      plot.nucleotides.jmol = function(d, i) {
-        var idOf = plot.nucleotides.getID();
-        return plot.jmol.showNTs([idOf(d, i)]);
-      };
-
       plot.nucleotides.count = function() {
         var count = 0,
             getNTData = plot.chains.getNTData();
