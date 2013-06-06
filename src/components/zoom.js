@@ -6,6 +6,7 @@ Rna2D.components.zoom = (function() {
   return {
     config: function() {
       return {
+        enable: true,
         scaleExtent: [1, 10],
         currentScale: 1,
         onChange: Object
@@ -13,6 +14,10 @@ Rna2D.components.zoom = (function() {
     },
 
     generate: function(plot) {
+      if (!plot.zoom.enable()) {
+        return false;
+      }
+
       zoom = d3.behavior.zoom()
         .x(plot.xScale())
         .y(plot.yScale())
