@@ -64,13 +64,20 @@ var Rna2D = window.Rna2D || function(config) {
     // Draw motifs
     plot.groups(standardBuild(plot.motifs));
 
-    plot.labels();
-
     return plot;
   };
 
   // Configure the plot
-  Rna2D.config(plot, config);
+  Rna2D.utils.generateAccessors(plot, $.extend(config, {
+    labels: [],
+    margin: { left: 10, right: 10, above: 10, below: 10 },
+    view: 'circular',
+    width:  500,
+    height: 1000,
+    selection: null,
+    xScale: null,
+    yScale: null
+  }));
 
   // Add all components.
   Rna2D.components(plot);
