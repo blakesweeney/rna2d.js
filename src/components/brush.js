@@ -67,5 +67,6 @@ Rna2D.components.brush = function(plot) {
   var brush = new Brush();
   brush.attach(plot);
 
+  return brush;
 };
 

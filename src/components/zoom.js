@@ -7,18 +7,20 @@ Rna2D.components.zoom = function(plot) {
   });
 
   Zoom.prototype.draw = function() {
-    var translation = 0,
+
+    var self = this,
+        translation = 0,
         zoom = d3.behavior.zoom()
-          .x(this.plot.xScale())
-          .y(this.plot.yScale())
-          .scaleExcent(this.plot.zoom.scaleExtent());
+          .x(plot.xScale())
+          .y(plot.yScale())
+          .scaleExtent(this.scaleExtent());
 
       zoom.on("zoom", function() {
           var scale = d3.event.scale,
               translate = d3.event.translate;
 
-          this.plot.zoom.currentScale(scale);
-          this.plot.zoom.onChange()();
+          self.currentScale(scale);
+          self.onChange()();
 
           // What I am trying to do here is to ensure that as we zoom out we
           // always return to having the upper left corner in the upper left.
@@ -33,15 +35,17 @@ Rna2D.components.zoom = function(plot) {
           // This would cause the screen to snap back to the correct position
           // more sharply. This could feel nice.
 
-          this.plot.vis.attr("transform", "translate(" + translate + ")" +
+          plot.vis.attr("transform", "translate(" + translate + ")" +
                              "scale(" + scale + ")");
       });
 
-      this.plot.zoom(zoom);
-      this.plot.vis.call(zoom);
+      plot.zoom(zoom);
+      plot.vis.call(zoom);
   };
 
   var zoom = new Zoom();
   zoom.attach(plot);
 
+  return zoom;
 };
+

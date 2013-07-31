@@ -1,6 +1,6 @@
-Rna2D.components.nucleotides = function(plot) {
+Rna2D.components.Nucleotides = function(plot) {
 
-  var Nucleotides = Rna2D.setupComponent('nucleotides', {
+  var NTs = Rna2D.setupComponent('nucleotides', {
     highlightColor: function() { return 'red'; },
     'class': 'nucleotide',
     classOf: function(d, i) { return [d.sequence]; },
@@ -19,25 +19,13 @@ Rna2D.components.nucleotides = function(plot) {
     toggleLetters: Object,
     highlightText: function(d, i) {
       return plot.nucleotides.getSequence()(d, i) +
-        plot.nucleotides.getNumber(d, i);
+        plot.nucleotides.getNumber()(d, i);
     }
   });
 
-  // TODO: Extend with toggable
-  // $.extend(Nucleotide.prototype, Toggable.prototype)
+  var nts = new NTs();
 
-  Nucleotides.prototype.interactions = function(data, i) {
-    var id = plot.nucleotides.getID()(data, i),
-        getNTs = plot.interactions.getNTs();
-    return plot.vis.selectAll('.' + plot.interactions['class']())
-      .filter(function(d, _) { return $.inArray(id, getNTs(d)) !== -1; });
-  };
-
-  Nucleotides.prototype.doColor = function() {
-    return plot.nucleotides.all().attr('fill', plot.nucleotides.color());
-  };
-
-  Nucleotides.prototype.count = function() {
+  nts.count = function() {
     var count = 0,
         getNTData = plot.chains.getNTData();
     $.each(plot.chains(), function(_, chain) {
@@ -46,7 +34,18 @@ Rna2D.components.nucleotides = function(plot) {
     return count;
   };
 
-  var nts = new Nucleotides();
-  // nts.visible('A', 'C', 'G', 'U')
+  // We do not mix this into the prototype becasue if we do so then the methods
+  // will not be accessible outside of the prototype. We do not have access the
+  // the methods provided by the prototype outside of this function, this is a
+  // problem
+  Rna2D.withIdElement.call(nts);
+  Rna2D.asToggable.call(nts, plot);
+  Rna2D.withInteractions.call(nts, plot);
+  Rna2D.asColorable.call(nts);
+
+  nts.visible('A', 'C', 'G', 'U');
   nts.attach(plot);
+
+  return nts;
 };
+

@@ -11,49 +11,42 @@ function StandardTests(plot, name, accessor, value) {
   
   plot[name][accessor]('bob');
   equal(plot[name][accessor](), 'bob', 'Check accessors works');
-
-  equal(plot.components[name].generate, Rna2D.Component.prototype.generate,
-        'Check adds generate');
 }
 
 test("Nucleotides", function () {
-  var plot = {};
-  Rna2D.components.nucleotides(plot);
+  var plot = {},
+      nts = Rna2D.Components.Nucleotides(plot);
 
   StandardTests(plot, 'nucleotides');
 
-  equal(plot.components.nucleotides.generate(), false,
-        "Check does nothing for plotting");
+  equal(nts.generate(), false, "Check does nothing for plotting");
 });
 
 test("Interactions", function() {
-  var plot = {};
-  Rna2D.components.interactions(plot);
+  var plot = {},
+      inters = Rna2D.components.interactions(plot);
 
   StandardTests(plot, 'interactions');
 
-  equal(plot.components.interactions.generate(), false,
-        "Check does nothing for plotting");
+  equal(inters.generate(), false, "Check does nothing for plotting");
 });
 
 test("Motifs", function() {
-  var plot = {};
-  Rna2D.components.motifs(plot);
+  var plot = {},
+      motifs = Rna2D.components.motifs(plot);
 
   StandardTests(plot, 'motifs', 'click', Object);
 
-  equal(plot.components.motifs.generate(), false,
-        "Check does nothing for plotting");
+  equal(motifs.generate(), false, "Check does nothing for plotting");
 });
 
 test("Chain", function() {
-  var plot = {};
-  Rna2D.components.chains(plot);
+  var plot = {},
+      chains = Rna2D.components.chains(plot);
 
   StandardTests(plot, 'chains', 'class', 'chain');
 
-  equal(plot.components.chains.generate(), false,
-        "Check does nothing for plotting");
+  equal(chains.generate(), false, "Check does nothing for plotting");
 });
 
 test("Brush", function() {

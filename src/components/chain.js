@@ -28,5 +28,7 @@ Rna2D.components.chains = function(plot) {
 
   var chain = new Chains();
   chain.attach(plot);
+
+  return chain;
 };
 

@@ -33,7 +33,9 @@ Rna2D.components.jmolTools = function(plot) {
     }
   });
 
-  jmolTools.prototype.setup = function() {
+  var tool = new jmolTools();
+
+  tool.setup = function() {
     var $app = $('#' + this.appID()),
         $div = $('#' + this.divID());
 
@@ -61,32 +63,32 @@ Rna2D.components.jmolTools = function(plot) {
   };
 
   // Display a selection.
-  jmolTools.prototype.showNTs = function(ntIDs) {
-    this.setup();
+  tool.showNTs = function(ntIDs) {
+    tool.setup.call(tool);
 
     if (!ntIDs) {
-      return;
+      return false;
     }
 
-    if (ntIDs.length > this.maxSize()) {
-      return this.overflow();
+    if (ntIDs.length > tool.maxSize()) {
+      return tool.overflow();
     }
 
-    $('#' + this.tmpID()).remove();
-    $('body').append("<input type='radio' id='" + this.tmpID() +
+    $('#' + tool.tmpID()).remove();
+    $('body').append("<input type='radio' id='" + tool.tmpID() +
                      "' data-coord='" + ntIDs.join(',') + "'>");
-    $('#' + this.tmpID()).hide();
-    $('#' + this.tmpID()).jmolToolsTools({
-      showNeighborhoodId: this.neighborhoodID(),
-      showNumbersId: this.numbersID(),
-      showStereoId: this.stereoID()
+    $('#' + tool.tmpID()).hide();
+    $('#' + tool.tmpID()).jmolTools({
+      showNeighborhoodId: tool.neighborhoodID(),
+      showNumbersId: tool.numbersID(),
+      showStereoId: tool.stereoID()
     }).jmolToggle();
 
-    return this;
+    return tool;
   };
 
-  var tool = new jmolTools();
   tool.attach(plot);
 
+  return tool;
 };
 

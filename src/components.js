@@ -12,12 +12,6 @@ Component.prototype.attach = function(plot) {
 
   this.plot = plot;
 
-  if (!plot.components) {
-    Rna2D.components(plot);
-  }
-
-  plot.components[this._name] = this;
-
   (function(prop) {
     var data = null;
     plot[prop] = function(x) {
@@ -44,7 +38,7 @@ Component.prototype.generate = function() {
   }
 
   if (!this.plot) {
-    console.log("Must setup component prior to drawing");
+    console.log("Must setup " + this._name + " component prior to drawing");
     return false;
   }
 
@@ -69,61 +63,91 @@ Rna2D.setupComponent = function(name, config) {
   return Type;
 };
 
-Rna2D.components = function(plot) {
-  plot.components = function() {
-    var name;
-    for (name in plot.components) {
-      if (plot.components.hasOwnProperty(name)) {
-        plot.components[name].generate();
-      }
-    }
+Rna2D.withIdElement = function() {
+  var self = this;
+  this.elementID = function() {
+    var getID = self.getID(),
+        encodeID = self.encodeID();
+    return function(d, i) {
+      return encodeID(getID(d, i));
+    };
   };
 };
 
-//function(plot) {
+Rna2D.withNTElements = function(plot) {
+  var self = this;
+  this.ntElements = function() {
+    var getNTs = self.getNTs(),
+        encodeID = plot.nucleotides.encodeID();
+    return function(d, i) {
+      return $.map(getNTs(d, i), encodeID);
+    };
+  };
 
-  //var actions = false;
+  this.nucleotides = function(d, i) {
+    var nts = self.getNTs()(d, i),
+        idOf = plot.nucleotides.getID();
+    return plot.vis.selectAll('.' + plot.nucleotides['class']())
+      .filter(function(d, i) { return $.inArray(idOf(d, i), nts) !== -1; });
+  };
+};
 
-  //// Create the toplevel component which calls each subcomponent component
-  //plot.components = function() {
+Rna2D.withInteractions = function(plot) {
+  var self = this;
 
-    //$.each(Rna2D.components, function(name, obj) {
+  this.interactions = function(d, i) {
+    var id = self.getID()(d, i),
+        getNTs = plot.interactions.getNTs();
+    return plot.vis.selectAll('.' + plot.interactions['class']())
+      .filter(function(d, _) { return $.inArray(id, getNTs(d)) !== -1; });
+  };
+};
 
-      //if (obj.hasOwnProperty('actions') && !actions) {
-        //// If something is toggable we will add all the toggable functions.
-        //if (obj.togglable) {
-          //Rna2D.togglable(plot, name);
-        //}
+Rna2D.asToggable = function(plot) {
+  this._status = {};
+  var status = this._status,
+      type = this;
 
-        //obj.actions(plot);
-      //}
+  type.all = function(klass) {
+    klass = (klass && klass !== 'all' ? klass : type['class']());
+    return plot.vis.selectAll('.' + klass);
+  };
 
-    //});
+  type.visible = function() {
+    $.each(arguments, function(i, klass) { status[klass] = true; });
+  };
 
-    //actions = true;
-  //};
+  type.hidden = function() {
+    $.each(arguments, function(i, klass) { status[klass] = null;  });
+  };
 
-  //// Create each subcomponent with its accessor function, config, side
-  //// effects, and rendering function.
-  //$.each(Rna2D.components, function(name, obj) {
+  type.show = function(klass) {
+    status[klass] = true;
+    return type.all(klass).attr('visibility', function() { return 'visible'; });
+  };
 
-    //if (plot[name].hasOwnProperty('encodeID') && plot[name].hasOwnProperty('getID')) {
-      //plot[name].elementID = function(d, i) {
-        //var encode = plot[name].encodeID(),
-            //getID = plot[name].getID();
-        //return encode(getID(d, i));
-      //};
-    //}
+  type.hide = function(klass) {
+    status[klass] = null;
+    return type.all(klass).attr('visibility', function() { return 'hidden'; });
+  };
 
-    //if (plot[name].hasOwnProperty('getNTs')) {
-      //(function(prop) {
-        //plot[prop].ntElements = function(d, i) {
-          //var getNTs = plot[prop].getNTs();
-          //return $.map(getNTs(d, i), plot.nucleotides.encodeID());
-        //};
-      //}(name));
-    //}
+  type.toggle = function(klass) {
+    return (status[klass] ? type.hide(klass) : type.show(klass));
+  };
 
-    //plot.components[name] = obj;
-  //});
-//};
+  // Note that we use null above so here we can use the fact that jQuery's map
+  // is actually a map/filter to remove elements as we traverse.
+  type.visibility = function(d, i) {
+    var klasses = type.classOf()(d),
+        found = $.map(klasses, function(k, i) { return status[k]; });
+    return (found.length ? 'visible' : 'hidden');
+  };
+};
+
+Rna2D.asColorable = function() {
+  var self = this;
+  this.colorize = function() {
+    return self.all().attr('fill', self.color());
+  };
+};
+

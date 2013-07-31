@@ -13,5 +13,7 @@ Rna2D.components.frame = function(plot) {
 
   var frame = new Frame();
   frame.attach(plot);
+
+  return frame;
 };
 

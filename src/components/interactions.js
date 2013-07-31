@@ -36,49 +36,41 @@ Rna2D.components.interactions = function(plot) {
       return nts.join('-');
     },
     encodeID: function(id) { return id; },
-    color: 'black'
+    color: 'black',
+    valid: function() {
+      var getID = plot.interactions.getID(),
+          getNts = plot.interactions.getNTs(),
+          isForward = plot.interactions.isForward(),
+          valid = [],
+          seen = {},
+          encodeID = plot.nucleotides.encodeID(),
+          bboxOf = function (id) {
+            return document.getElementById(encodeID(id));
+          };
+
+      $.each(plot.interactions(), function(i, current) {
+        var id = getID(current),
+            nts = getNts(current);
+
+        if (isForward(current) && !seen[id] && nts.length &&
+            bboxOf(nts[0]) !== null && bboxOf(nts[1]) !== null) {
+          seen[id] = true;
+          valid.push(current);
+        }
+      });
+
+      return valid;
+    }
   });
 
-  // TODO: Extend with toggable
-  // $.extend(Interactions.prototype, Toggable.prototype)
-
-  Interactions.prototype.nucleotides = function(data, i) {
-    var nts = plot.interactions.getNTs()(data),
-        idOf = plot.nucleotides.getID();
-    return plot.vis.selectAll('.' + plot.nucleotides['class']())
-      .filter(function(d, i) { return $.inArray(idOf(d, i), nts) !== -1; });
-  };
-
-  // An interaction is valid if it is in the forward direction, it is not a
-  // duplicate, and it has nucleotides which have been indexed. Interactions
-  // are duplicate if their ID is the same.
-  Interactions.prototype.valid = function() {
-
-    var getID = this.getID(),
-        getNts = this.getNTs(),
-        isForward = this.isForward(),
-        valid = [],
-        seen = {},
-        encodeID = plot.nucleotides.encodeID(),
-        bboxOf = function (id) { return document.getElementById(encodeID(id)); };
-
-    $.each(plot.interactions(), function(i, current) {
-      var id = getID(current),
-          nts = getNts(current);
-
-      if (isForward(current) && !seen[id] && nts.length &&
-          bboxOf(nts[0]) !== null && bboxOf(nts[1]) !== null) {
-        seen[id] = true;
-        valid.push(current);
-      }
-    });
-
-    return valid;
-  };
-
   var interactions = new Interactions();
-  // interactions.visible('cWW', 'ncWW');
+  Rna2D.withIdElement.call(interactions);
+  Rna2D.withNTElements.call(interactions, plot);
+  Rna2D.asToggable.call(interactions, plot);
+
+  interactions.visible('cWW', 'ncWW');
   interactions.attach(plot);
 
+  return interactions;
 };
 

@@ -1,4 +1,6 @@
 Rna2D.views.circular = function(plot) {
+  'use strict';
+  /*globals d3, $ */
 
   // We use the total count in a couple places.
   var ntCount;
@@ -14,36 +16,28 @@ Rna2D.views.circular = function(plot) {
 
   // Function to generate arcs for both the nucleotides and finding centriods
   // for interactions
-  var arcGenerator = function(inner, outer) {
-    var chainCount = plot.chains().length,
-        angleSize = (2*Math.PI - plot.views.circular.arcGap() - 
-                    (chainCount - 1) * plot.views.circular.chainBreakSize()) / ntCount,
-        offset = plot.views.circular.arcGap() / 2,
-        getNTData = plot.chains.getNTData();
+  var arcGenerator;
 
-    return $.map(plot.chains(), function(chain, chainIndex) {
-      var startAngle = (function(shift) { 
-            return function(_, i) { return i * angleSize + shift; };
-          }(offset)),
-          endAngle = (function(shift) {
-            return function(_, i) { return (i + 1) * angleSize + shift; };
-          }(offset));
+  // The center of where the arc
+  var CENTER;
 
-      offset += (chainIndex + 1) * plot.views.circular.chainBreakSize() + 
-        angleSize * getNTData(chain).length;
+  var Circular = Rna2D.setupView('circular', {
+    radius: function() { return plot.width() / 4; },
+    width: 4,
+    arcGap: 0.2,
+    interactionGap: 3,
+    letterClass: 'nucleotide-letter',
+    center: function() {
+      return { x: plot.width() / 2, y: plot.height() / 2 };
+    },
+    letterSize: 20,
+    chainBreakSize: 0.1,
+    labelGap: 3,
+    labelSize: 10
+  });
 
-      return d3.svg.arc()
-        .innerRadius(inner)
-        .outerRadius(outer)
-        .startAngle(startAngle)
-        .endAngle(endAngle);
-    });
-  };
-
-  // This is a function to compute all the things we need to draw, such as
-  // global index, index in chain, etc.
   var globalIndex = 0;
-  var preprocess = function() {
+  Circular.prototype.preprocess = function() {
     var getNTData = plot.chains.getNTData(),
         idOf = plot.nucleotides.getID();
 
@@ -60,15 +54,24 @@ Rna2D.views.circular = function(plot) {
     });
   };
 
+  Circular.prototype.xCoord = function() {
+    return function(d, i) { return CENTER.x + ntCentroid(d, i)[0]; };
+  };
+
+  Circular.prototype.yCoord = function() {
+    return function(d, i) { return CENTER.y + ntCentroid(d, i)[1]; };
+  };
+
   // Function to draw the arcs.
-  var coordinates = function(standard) {
+  Circular.prototype.coordinates = function() {
 
     ntCount = plot.nucleotides.count();
 
+    CENTER = this.center()();
+
     var idOf = plot.nucleotides.getID(),
-        center = plot.views.circular.center()(),
-        radius = plot.views.circular.radius()(),
-        outerArcs = arcGenerator(radius - plot.views.circular.width(), radius),
+        radius = this.radius()(),
+        outerArcs = arcGenerator(radius - this.width(), radius),
         arcFor = function(d, i) { return outerArcs[computed[idOf(d)].chainIndex]; };
 
     ntCentroid = function(d, i) {
@@ -79,29 +82,31 @@ Rna2D.views.circular = function(plot) {
     plot.vis.selectAll(plot.chains['class']())
       .append('g')
       .data(plot.chains()).enter()
-        .append('g')
-        .attr('id', plot.chains.getID())
-        .attr('class', plot.chains['class']())
-        .attr('transform', 'translate(' + center.x + ',' + center.y + ')')
-        .selectAll(plot.nucleotides['class']())
-        .data(plot.chains.getNTData()).enter()
-          .append('svg:path')
-          .attr('d', function(d, i) {
-            return arcFor(d, i)(d, i);
-          })
-          .attr('fill', plot.nucleotides.color())
-          .call(standard);
+      .append('g')
+      .attr('id', plot.chains.getID())
+      .attr('class', plot.chains['class']())
+      .attr('transform', 'translate(' + CENTER.x + ',' + CENTER.y + ')')
+      .selectAll(plot.nucleotides['class']())
+      .data(plot.chains.getNTData()).enter()
+      .append('svg:path')
+      .attr('d', function(d, i) {
+        return arcFor(d, i)(d, i);
+      })
+      .attr('fill', plot.nucleotides.color())
+      .call(this.standardCoordinates());
 
     return plot;
   };
 
   // Function to draw all connections.
-  var connections = function(standard) {
+  Circular.prototype.connections = function() {
+
+    var self = this;
 
     // Arc generator for finding the centroid of the nucleotides on the inner
     // circle, which has the interaction endpoints.
-    var outerArcInnerRadius = plot.views.circular.radius()() - plot.views.circular.width(),
-        innerArcInnerRadius = outerArcInnerRadius - plot.views.circular.interactionGap(),
+    var outerArcInnerRadius = this.radius()() - this.width(),
+        innerArcInnerRadius = outerArcInnerRadius - this.interactionGap(),
         innerArcs = arcGenerator(innerArcInnerRadius, outerArcInnerRadius),
         arcFor = function(id) { return innerArcs[computed[id].chainIndex]; },
         startAngleOf = function(id) { return arcFor(id).startAngle()(null, computed[id].ntIndex); },
@@ -110,9 +115,8 @@ Rna2D.views.circular = function(plot) {
     // Figure out the centroid position of the nucleotide with the given id in
     // the innerArc.
     var centriodPosition = function(ntID) {
-      var centroid = centroidOf(ntID),
-          c = plot.views.circular.center()();
-      return { x: c.x + centroid[0], y: c.y + centroid[1] };
+      var centroid = centroidOf(ntID);
+      return { x: CENTER.x + centroid[0], y: CENTER.y + centroid[1] };
     };
 
     // A function to sort nucleotide ids based upon their index amoung all
@@ -143,159 +147,165 @@ Rna2D.views.circular = function(plot) {
 
     return plot.vis.selectAll(plot.interactions['class']())
       .data(plot.interactions.valid()).enter().append('path')
-      .call(standard)
+      .call(this.standardConnections())
       .attr('d', curve)
       .attr('fill', 'none')
       .attr('stroke', plot.interactions.color());
   };
 
-  var labels = function(standard) {
-    var innerLabelRadius = plot.views.circular.radius()() + 
-                           plot.views.circular.labelGap();
-
-    labelArcs = arcGenerator(innerLabelRadius, 
-                             innerLabelRadius + plot.views.circular.labelSize());
-
-    plot.vis.selectAll(plot.labels['class']())
-      .append('g')
-      .data(plot.chains()).enter()
-        .append('g')
-        .attr('id', plot.chains.getID())
-        .attr('class', plot.chains['class']())
-        .attr('transform', 'translate(' + center.x + ',' + center.y + ')')
-        .selectAll(plot.nucleotides['class']())
-        .data(plot.chains.getNTData()).enter()
-          .append('svg:path')
-          .attr('d', function(d, i) {
-            return arcFor(d, i)(d, i);
-          })
-          .attr('fill', plot.nucleotides.color())
-          .call(standard);
-
+  Circular.prototype.groups = function() {
+    return this;
   };
 
-  return {
+  Circular.prototype.labels = function() {
+    var innerLabelRadius = this.radius()() + this.labelGap();
 
-    preprocess: preprocess,
-    domain: function() { return { x: [0, 1000], y: [0, 1000] }; },
-    coordinates: coordinates,
-    connections: connections,
-    groups: function(standard) { return plot; },
-    labels: labels,
+    labelArcs = arcGenerator(innerLabelRadius,
+                             innerLabelRadius + this.labelSize());
 
-    config: {
-      radius: function() {
-        return plot.width() / 4;
-      },
-      width: 4,
-      arcGap: 0.2,
-      interactionGap: 3,
-      letterClass: 'nucleotide-letter',
-      xCoord: function(d, i) {
-        return ntCentroid(d, i).x;
-      },
-      yCoord: function(d, i) {
-        return ntCentroid(d, i).y;
-      },
-      center: function() {
-        return { x: plot.width() / 2, y: plot.height() / 2 };
-      },
-      letterSize: 20,
-      chainBreakSize: 0.1,
-      labelGap: 3,
-      labelSize: 10
+    //plot.vis.selectAll(plot.labels['class']())
+      //.append('g')
+      //.data(plot.chains()).enter()
+        //.append('g')
+        //.attr('id', plot.chains.getID())
+        //.attr('class', plot.chains['class']())
+        //.attr('transform', 'translate(' + center.x + ',' + center.y + ')')
+        //.selectAll(plot.nucleotides['class']())
+        //.data(plot.chains.getNTData()).enter()
+          //.append('svg:path')
+          //.attr('d', function(d, i) {
+            //return arcFor(d, i)(d, i);
+          //})
+          //.attr('fill', plot.nucleotides.color())
+          //.call(this.standardLabels);
+  };
+
+  Circular.prototype.update = function() {
+    var self = this;
+    plot.nucleotides.highlight(function(d, i) {
+      var highlightColor = plot.nucleotides.highlightColor()(d, i);
+
+      d3.select(this)
+        .style('stroke', highlightColor)
+        .style('fill', highlightColor);
+
+      self.addLetter([d]);
+
+      plot.nucleotides.interactions(d, i)
+        .style('stroke', highlightColor);
+
+      return plot.nucleotides;
+    });
+
+    plot.nucleotides.normalize(function(d, i) {
+      d3.select(this)
+        .style('stroke', null)
+        .style('fill', null);
+
+      self.clearLetters();
+
+      plot.nucleotides.interactions(d, i)
+        .style('stroke', null);
+
+      return plot.nucleotides;
+    });
+
+    plot.interactions.highlight(function(d, i) {
+      var highlightColor = plot.interactions.highlightColor()(d, i),
+          nts = plot.interactions.nucleotides(d, i),
+          ntData = [];
+
+      d3.select(this).style('stroke', highlightColor);
+
+      nts.style('stroke', highlightColor)
+        .style('fill', highlightColor)
+        .datum(function(d, i) {
+          ntData.push(d);
+          return d;
+        });
+
+      self.addLetter(ntData);
+
+      return plot.interactions;
+    });
+
+    plot.interactions.normalize(function(d, i) {
+      d3.select(this).style('stroke', null);
+      self.clearLetters();
+      plot.interactions.nucleotides(d, i)
+        .style('stroke', null)
+        .style('fill', null);
+      return plot.interactions;
+    });
+  };
+
+  Circular.prototype.addLetter = function(ntData) {
+    var innerLabelRadius = this.radius()() + this.labelGap();
+    labelArcs = arcGenerator(innerLabelRadius,
+                             innerLabelRadius + this.labelSize());
+
+    var labelCentroidFor = function(data) {
+      var info = computed[plot.nucleotides.getID()(data)];
+      return labelArcs[info.chainIndex].centroid(data, info.ntIndex);
     },
-
-    sideffects: function() {
-
-      plot.views.circular.addLetter =  function(ntData) {
-
-        var labelCentroidFor = function(data) { 
-          var info = computed[plot.nucleotides.getID()(data)];
-          return labelArcs[info.chainIndex].centroid(data, info.ntIndex);
-        },
-        positionOf = function(data) {
-          var centriodPosition = labelCentroidFor(data),
-              center = plot.views.circular.center()();
-          return { x: center.x + centriodPosition[0], y: center.y + centriodPosition[1] };
-        };
-
-        plot.vis.selectAll(plot.views.circular.letterClass())
-          .data(ntData).enter().append('svg:text')
-          .attr('id', function(d, i) { return 'letter-' + i; })
-          .attr('class', plot.views.circular.letterClass())
-          .attr('x', function(d) { return positionOf(d).x; })
-          .attr('y', function(d) { return positionOf(d).y; })
-          .attr('font-size', plot.views.circular.letterSize())
-          .attr('pointer-events', 'none')
-          .text(plot.nucleotides.getSequence())
-          .attr('fill', plot.nucleotides.highlightColor());
-
-        return plot.views.circular;
+    positionOf = function(data) {
+      var centriodPosition = labelCentroidFor(data);
+      return {
+        x: CENTER.x + centriodPosition[0],
+        y: CENTER.y + centriodPosition[1]
       };
+    };
 
-      plot.views.circular.clearLetters = function() {
-        plot.vis.selectAll('.' + plot.views.circular.letterClass()).remove();
-        return plot.views.circular;
-      };
+    plot.vis.selectAll(this.letterClass())
+      .data(ntData).enter().append('svg:text')
+      .attr('id', function(d, i) { return 'letter-' + i; })
+      .attr('class', this.letterClass())
+      .attr('x', function(d) { return positionOf(d).x; })
+      .attr('y', function(d) { return positionOf(d).y; })
+      .attr('font-size', this.letterSize())
+      .attr('pointer-events', 'none')
+      .text(plot.nucleotides.highlightText())
+      .attr('fill', plot.nucleotides.highlightColor());
 
-      plot.nucleotides.highlight(function(d, i) {
-        var highlightColor = plot.nucleotides.highlightColor()(d, i);
-
-        d3.select(this)
-          .style('stroke', highlightColor)
-          .style('fill', highlightColor);
-
-        plot.views.circular.addLetter([d]);
-
-        plot.nucleotides.interactions(d, i)
-          .style('stroke', highlightColor);
-
-        return plot.nucleotides;
-      });
-
-      plot.nucleotides.normalize(function(d, i) {
-        d3.select(this)
-          .style('stroke', null)
-          .style('fill', null);
-
-        plot.views.circular.clearLetters();
-
-        plot.nucleotides.interactions(d, i)
-          .style('stroke', null);
-
-        return plot.nucleotides;
-      });
-
-      plot.interactions.highlight(function(d, i) {
-        var highlightColor = plot.interactions.highlightColor()(d, i),
-            nts = plot.interactions.nucleotides(d, i),
-            ntData = [];
-
-        d3.select(this).style('stroke', highlightColor);
-
-        nts.style('stroke', highlightColor)
-          .style('fill', highlightColor)
-          .datum(function(d, i) {
-            ntData.push(d);
-            return d;
-          });
-
-        plot.views.circular.addLetter(ntData);
-
-        return plot.interactions;
-      });
-
-      plot.interactions.normalize(function(d, i) {
-        d3.select(this).style('stroke', null);
-        plot.views.circular.clearLetters();
-        plot.interactions.nucleotides(d, i)
-          .style('stroke', null)
-          .style('fill', null);
-        return plot.interactions;
-      });
-    }
+    return this;
   };
 
+  Circular.prototype.clearLetters = function() {
+    plot.vis.selectAll('.' + this.letterClass()).remove();
+    return this;
+  };
+
+  var view = new Circular();
+  view.domain = { x: [0, plot.width()], y: [0, plot.height()] };
+
+  arcGenerator = function(inner, outer) {
+    var chainCount = plot.chains().length,
+        angleSize = (2*Math.PI - view.arcGap() -
+                    (chainCount - 1) * view.chainBreakSize()) / ntCount,
+        offset = view.arcGap() / 2,
+        getNTData = plot.chains.getNTData();
+
+    return $.map(plot.chains(), function(chain, chainIndex) {
+      var startAngle = (function(shift) {
+            return function(_, i) { return i * angleSize + shift; };
+          }(offset)),
+          endAngle = (function(shift) {
+            return function(_, i) { return (i + 1) * angleSize + shift; };
+          }(offset));
+
+      offset += (chainIndex + 1) * view.chainBreakSize() +
+        angleSize * getNTData(chain).length;
+
+      return d3.svg.arc()
+        .innerRadius(inner)
+        .outerRadius(outer)
+        .startAngle(startAngle)
+        .endAngle(endAngle);
+    });
+  };
+
+  view.attach(plot);
+
+  return view;
 };
 
