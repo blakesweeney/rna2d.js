@@ -1,6 +1,6 @@
 Rna2D.components.brush = function(plot) {
 
-  var Brush = Rna2D.setupComponent('brush', {
+  var Brush = inhert(Rna2D.Component, 'brush', {
     enabled: true,
     'class': 'brush',
     update: Object,

@@ -1,5 +1,5 @@
 Rna2D.components.jmolTools = function(plot) {
-  var jmolTools = Rna2D.setupComponent('jmolTools', {
+  var jmolTools = inhert(Rna2D.Component, 'jmolTools', {
     divID: 'jmol',
     appID: 'jmolApplet0',
     tmpID: 'tempJmolToolsObj',

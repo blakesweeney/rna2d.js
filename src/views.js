@@ -86,17 +86,6 @@ View.prototype = {
 
 Rna2D.View = View;
 
-Rna2D.setupView = function(name, config) {
-  function Type() {
-    Rna2D.View.call(this, name, config);
-  }
-
-  Type.prototype = new Rna2D.View(name, config);
-  Type.prototype.constructor = Type;
-
-  return Type;
-};
-
 function Views() { 
   Components.call(this);
   this._namespace = Rna2D.views;

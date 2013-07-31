@@ -122,16 +122,17 @@ Component.prototype.generate = function() {
 
 Rna2D.Component = Component;
 
-Rna2D.setupComponent = function(name, config) {
+function inhert(klass, name, options) {
+
   function Type() {
-    Rna2D.Component.call(this, name, config);
+    klass.call(this, name, options);
   }
 
-  Type.prototype = new Rna2D.Component(name, config);
+  Type.prototype = new klass(name, options);
   Type.prototype.constructor = Type;
 
   return Type;
-};
+}
 
 Rna2D.withIdElement = function() {
   var self = this;
@@ -394,17 +395,6 @@ View.prototype = {
 
 Rna2D.View = View;
 
-Rna2D.setupView = function(name, config) {
-  function Type() {
-    Rna2D.View.call(this, name, config);
-  }
-
-  Type.prototype = new Rna2D.View(name, config);
-  Type.prototype.constructor = Type;
-
-  return Type;
-};
-
 function Views() { 
   Components.call(this);
   this._namespace = Rna2D.views;
@@ -429,7 +419,7 @@ Rna2D.Views = Views;
 
 Rna2D.components.brush = function(plot) {
 
-  var Brush = Rna2D.setupComponent('brush', {
+  var Brush = inhert(Rna2D.Component, 'brush', {
     enabled: true,
     'class': 'brush',
     update: Object,
@@ -501,7 +491,7 @@ Rna2D.components.brush = function(plot) {
 
 Rna2D.components.chains = function(plot) {
 
-  var Chains = Rna2D.setupComponent('chains', {
+  var Chains = inhert(Rna2D.Component, 'chains', {
     getID: function(d, i) { return d.id; },
     'class': 'chain',
     classOf: function(d, i) { return []; },
@@ -534,7 +524,7 @@ Rna2D.components.chains = function(plot) {
 };
 
 Rna2D.components.frame = function(plot) {
-  var Frame = Rna2D.setupComponent('frame', { add: true, 'class': 'frame' });
+  var Frame = inhert(Rna2D.Component, 'frame', { add: true, 'class': 'frame' });
 
   Frame.prototype.draw = function() {
     return plot.vis.append('svg:rect')
@@ -553,7 +543,7 @@ Rna2D.components.frame = function(plot) {
 };
 
 Rna2D.components.interactions = function(plot) {
-  var Interactions = Rna2D.setupComponent('interactions', {
+  var Interactions = inhert(Rna2D.Component, 'interactions', {
     getFamily: function(d) { return d.family; },
     getNTs: function(d) { return [d.nt1, d.nt2]; },
     mouseover: null,
@@ -629,7 +619,7 @@ Rna2D.components.interactions = function(plot) {
 };
 
 Rna2D.components.jmolTools = function(plot) {
-  var jmolTools = Rna2D.setupComponent('jmolTools', {
+  var jmolTools = inhert(Rna2D.Component, 'jmolTools', {
     divID: 'jmol',
     appID: 'jmolApplet0',
     tmpID: 'tempJmolToolsObj',
@@ -724,7 +714,7 @@ Rna2D.components.jmolTools = function(plot) {
 
 Rna2D.components.motifs = function(plot) {
 
-  var Motifs = Rna2D.setupComponent('motifs', {
+  var Motifs = inhert(Rna2D.Component, 'motifs', {
     classOf: function(d) { return [d.id.split("_")[0]]; },
     'class': 'motif',
     highlightColor: function() { return 'red'; },
@@ -811,7 +801,7 @@ Rna2D.components.motifs = function(plot) {
 };
 Rna2D.components.Nucleotides = function(plot) {
 
-  var NTs = Rna2D.setupComponent('nucleotides', {
+  var NTs = inhert(Rna2D.Component, 'nucleotides', {
     highlightColor: function() { return 'red'; },
     'class': 'nucleotide',
     classOf: function(d, i) { return [d.sequence]; },
@@ -862,7 +852,7 @@ Rna2D.components.Nucleotides = function(plot) {
 
 Rna2D.components.zoom = function(plot) {
 
-  var Zoom = Rna2D.setupComponent('zoom', {
+  var Zoom = inhert(Rna2D.Component, 'zoom', {
     scaleExtent: [1, 10],
     currentScale: 1,
     onChange: Object
@@ -913,7 +903,11 @@ Rna2D.components.zoom = function(plot) {
 
 Rna2D.views.airport = function(plot) {
 
-  var Airport = Rna2D.setupView('airport', { fontSize: 11, gap: 1, });
+  var Airport = inhert(Rna2D.View, 'airport', { 
+    fontSize: 11, 
+    gap: 1, 
+    highlightSize: 20
+  });
 
   // We need to track if we are drawing across the letter in which case we
   // need to use the width + radius, otherwise we just need to use the radius.
@@ -1080,6 +1074,8 @@ Rna2D.views.airport = function(plot) {
 
   Airport.prototype.update = function() {
 
+    var self = this;
+
     plot.interactions.highlight(function(d, i) {
       var highlightColor = plot.interactions.highlightColor()(d, i);
       d3.select(this).style('stroke', highlightColor);
@@ -1096,13 +1092,19 @@ Rna2D.views.airport = function(plot) {
 
     plot.nucleotides.highlight(function(d, i) {
       var highlightColor = plot.nucleotides.highlightColor()(d, i);
-      d3.select(this).style('stroke', highlightColor);
+      d3.select(this).style('stroke', highlightColor)
+        .attr('fill', highlightColor)
+        .attr('font-size', self.highlightSize())
+        .text(plot.nucleotides.highlightText());
       return plot.nucleotides.interactions(d, i)
         .style('stroke', highlightColor);
     });
 
     plot.nucleotides.normalize(function(d, i) {
-      d3.select(this).style('stroke', null);
+      d3.select(this).style('stroke', null)
+        .attr('fill', null)
+        .attr('font-size', self.fontSize())
+        .text(plot.nucleotides.getSequence());
       return plot.nucleotides.interactions(d, i)
         .style('stroke', null);
     });
@@ -1124,12 +1126,7 @@ Rna2D.views.airport = function(plot) {
   return air;
 };
 
-
-    //return {
-
 Rna2D.views.circular = function(plot) {
-  'use strict';
-  /*globals d3, $ */
 
   // We use the total count in a couple places.
   var ntCount;
@@ -1150,7 +1147,7 @@ Rna2D.views.circular = function(plot) {
   // The center of where the arc
   var CENTER;
 
-  var Circular = Rna2D.setupView('circular', {
+  var Circular = inhert(Rna2D.View, 'circular', {
     radius: function() { return plot.width() / 4; },
     width: 4,
     arcGap: 0.2,

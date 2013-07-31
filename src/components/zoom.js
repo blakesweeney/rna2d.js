@@ -1,6 +1,6 @@
 Rna2D.components.zoom = function(plot) {
 
-  var Zoom = Rna2D.setupComponent('zoom', {
+  var Zoom = inhert(Rna2D.Component, 'zoom', {
     scaleExtent: [1, 10],
     currentScale: 1,
     onChange: Object

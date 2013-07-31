@@ -1,5 +1,5 @@
 Rna2D.components.interactions = function(plot) {
-  var Interactions = Rna2D.setupComponent('interactions', {
+  var Interactions = inhert(Rna2D.Component, 'interactions', {
     getFamily: function(d) { return d.family; },
     getNTs: function(d) { return [d.nt1, d.nt2]; },
     mouseover: null,

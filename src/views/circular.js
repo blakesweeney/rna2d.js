@@ -1,6 +1,4 @@
 Rna2D.views.circular = function(plot) {
-  'use strict';
-  /*globals d3, $ */
 
   // We use the total count in a couple places.
   var ntCount;
@@ -21,7 +19,7 @@ Rna2D.views.circular = function(plot) {
   // The center of where the arc
   var CENTER;
 
-  var Circular = Rna2D.setupView('circular', {
+  var Circular = inhert(Rna2D.View, 'circular', {
     radius: function() { return plot.width() / 4; },
     width: 4,
     arcGap: 0.2,

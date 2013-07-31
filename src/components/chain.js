@@ -1,6 +1,6 @@
 Rna2D.components.chains = function(plot) {
 
-  var Chains = Rna2D.setupComponent('chains', {
+  var Chains = inhert(Rna2D.Component, 'chains', {
     getID: function(d, i) { return d.id; },
     'class': 'chain',
     classOf: function(d, i) { return []; },

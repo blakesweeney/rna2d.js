@@ -1,6 +1,10 @@
 Rna2D.views.airport = function(plot) {
 
-  var Airport = Rna2D.setupView('airport', { fontSize: 11, gap: 1, });
+  var Airport = inhert(Rna2D.View, 'airport', { 
+    fontSize: 11, 
+    gap: 1, 
+    highlightSize: 20
+  });
 
   // We need to track if we are drawing across the letter in which case we
   // need to use the width + radius, otherwise we just need to use the radius.
@@ -167,6 +171,8 @@ Rna2D.views.airport = function(plot) {
 
   Airport.prototype.update = function() {
 
+    var self = this;
+
     plot.interactions.highlight(function(d, i) {
       var highlightColor = plot.interactions.highlightColor()(d, i);
       d3.select(this).style('stroke', highlightColor);
@@ -183,13 +189,19 @@ Rna2D.views.airport = function(plot) {
 
     plot.nucleotides.highlight(function(d, i) {
       var highlightColor = plot.nucleotides.highlightColor()(d, i);
-      d3.select(this).style('stroke', highlightColor);
+      d3.select(this).style('stroke', highlightColor)
+        .attr('fill', highlightColor)
+        .attr('font-size', self.highlightSize())
+        .text(plot.nucleotides.highlightText());
       return plot.nucleotides.interactions(d, i)
         .style('stroke', highlightColor);
     });
 
     plot.nucleotides.normalize(function(d, i) {
-      d3.select(this).style('stroke', null);
+      d3.select(this).style('stroke', null)
+        .attr('fill', null)
+        .attr('font-size', self.fontSize())
+        .text(plot.nucleotides.getSequence());
       return plot.nucleotides.interactions(d, i)
         .style('stroke', null);
     });
@@ -210,7 +222,4 @@ Rna2D.views.airport = function(plot) {
   air.attach(plot);
   return air;
 };
-
-
-    //return {
 

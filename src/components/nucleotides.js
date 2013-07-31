@@ -1,6 +1,6 @@
 Rna2D.components.Nucleotides = function(plot) {
 
-  var NTs = Rna2D.setupComponent('nucleotides', {
+  var NTs = inhert(Rna2D.Component, 'nucleotides', {
     highlightColor: function() { return 'red'; },
     'class': 'nucleotide',
     classOf: function(d, i) { return [d.sequence]; },

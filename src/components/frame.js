@@ -1,5 +1,5 @@
 Rna2D.components.frame = function(plot) {
-  var Frame = Rna2D.setupComponent('frame', { add: true, 'class': 'frame' });
+  var Frame = inhert(Rna2D.Component, 'frame', { add: true, 'class': 'frame' });
 
   Frame.prototype.draw = function() {
     return plot.vis.append('svg:rect')

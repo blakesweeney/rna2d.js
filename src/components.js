@@ -52,16 +52,17 @@ Component.prototype.generate = function() {
 
 Rna2D.Component = Component;
 
-Rna2D.setupComponent = function(name, config) {
+function inhert(klass, name, options) {
+
   function Type() {
-    Rna2D.Component.call(this, name, config);
+    klass.call(this, name, options);
   }
 
-  Type.prototype = new Rna2D.Component(name, config);
+  Type.prototype = new klass(name, options);
   Type.prototype.constructor = Type;
 
   return Type;
-};
+}
 
 Rna2D.withIdElement = function() {
   var self = this;

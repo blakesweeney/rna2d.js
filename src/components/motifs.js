@@ -1,6 +1,6 @@
 Rna2D.components.motifs = function(plot) {
 
-  var Motifs = Rna2D.setupComponent('motifs', {
+  var Motifs = inhert(Rna2D.Component, 'motifs', {
     classOf: function(d) { return [d.id.split("_")[0]]; },
     'class': 'motif',
     highlightColor: function() { return 'red'; },
