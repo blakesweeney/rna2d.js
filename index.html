@@ -5,6 +5,7 @@
   <meta charset='utf-8'>
   <link href='static/css/bootstrap.min.css' rel='stylesheet'>
   <link href='static/css/bootstrap-toggle-buttons.css' rel='stylesheet'>
+  <link href="static/css/chosen.css" rel='stylesheet'>
   <link rel="stylesheet" href="static/css/github-fork-ribbon.css" />
   <!--[if IE]>
       <link rel="stylesheet" href="static/css/github-fork-ribbon.ie.css" />
@@ -14,8 +15,8 @@
   <script src='static/jmol/Jmol.js'></script>
   <script src='static/js/sizzle.js'></script>
   <script src='static/js/jquery.min.js'></script>
-  <script src='static/js/jquery.toggle.buttons.js'></script>
   <script src='static/js/jquery.jmolTools.js'></script>
+  <script src='static/js/chosen.jquery.js'></script>
   <script src='static/js/d3.js'></script>
   <script src='static/js/bootstrap.min.js'></script>
 
@@ -47,7 +48,15 @@
   </div>
 
   <div id='view-div' class='row'>
-    <div class="span3 offset4">
+
+    <div id="structures" class='span2'>
+      <select id="structure-select" class="chzn-select">
+         <option value="2AW7">2AW7</option>
+         <option value="1J5E">3F4G</option>
+       </select>
+    </div>
+
+    <div class="span3 offset2">
       <div id='view-buttons' class='btn-group' data-toggle='buttons-radio'>
         <button id='airpot-view' class="btn active view-control" data-view='airport'>
           Airport

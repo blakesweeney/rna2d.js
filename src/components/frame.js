@@ -1,26 +1,19 @@
-Rna2D.components.frame = {
+Rna2D.components.frame = function(plot) {
+  var Frame = inhert(Rna2D.Component, 'frame', { add: true, 'class': 'frame' });
 
-  config: function(plot) {
-    return {
-      add: true,
-      'class': 'frame'
-    };
-  },
-
-  generate: function(plot) {
-
-    if (!plot.frame.add()) {
-      return plot.vis;
-    }
-
-    // TODO: Change this to ignore margins.
+  Frame.prototype.draw = function() {
     return plot.vis.append('svg:rect')
       .classed(plot.frame['class'](), true)
-      .attr('x', 0)
-      .attr('y', 0)
+      .attr('x', -plot.margin().left)
+      .attr('y', -plot.margin().above)
       .attr('width', plot.width() + plot.margin().left + plot.margin().right)
-      .attr('height', plot.height() + plot.margin().below + plot.margin().above)
+      .attr('height', plot.height() + plot.margin().above + plot.margin().below)
       .style('pointer-events', 'none');
-  }
+  };
+
+  var frame = new Frame();
+  frame.attach(plot);
+
+  return frame;
 };
 

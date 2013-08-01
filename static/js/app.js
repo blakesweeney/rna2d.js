@@ -2,7 +2,10 @@ $(document).ready(function() {
   "use strict";
   /*global alert, Rna2D, d3, $ */
 
-  var plot = Rna2D({ view: 'airport', width: 630, height: 795 });
+  $('.chzn-select').chosen();
+
+  var pdb = '2AVY',
+      plot = Rna2D({ view: 'airport', width: 630, height: 795 });
 
   var colorBySequence = function() {
     plot.nucleotides.color(function(d, i) {
@@ -18,12 +21,12 @@ $(document).ready(function() {
       }
       return '#0C5DA5';
     });
-    plot.nucleotides.doColor();
+    plot.nucleotides.colorize();
   };
 
   var normalColor = function() {
     plot.nucleotides.color(function(d, i) { return 'black'; });
-    plot.nucleotides.doColor();
+    plot.nucleotides.colorize();
   };
 
  var motifClick = function(d, i) {
@@ -34,20 +37,22 @@ $(document).ready(function() {
     $('#about-selection').children().remove();
     $('#about-selection').append(link);
     $('#about-selection').show();
-    return plot.motifs.jmol(d, i);
+    return plot.jmolTools.motifs()(d, i);
   };
 
-  plot.jmol.overflow(function() { alert("Too many nts selected"); });
+  plot.jmolTools
+    .overflow(function() { alert("Too many nts selected"); });
 
   plot.brush.enabled(true)
-    .update(plot.brush.jmol);
+    .update(plot.jmolTools.brush());
 
   plot.nucleotides.mouseover('highlight')
-    .click(plot.nucleotides.jmol)
-    .encodeID(function(id) { return id.toLowerCase(); });
+    .click(plot.jmolTools.nucleotides())
+    .getNumber(function(d) { return d.id.split('_')[4]; })
+    .encodeID(function(id) { return id.replace(/\|/g, '_').toLowerCase(); });
 
   plot.interactions
-    .click(plot.interactions.jmol)
+    .click(plot.jmolTools.interactions())
     .mouseover('highlight')
     ;
 
@@ -57,18 +62,18 @@ $(document).ready(function() {
 
   $("#rna-2d").rna2d({
     plot: plot,
-    nucleotides: {
-      url: "data/16S-ecoli.json",
+    chains: {
+      url: "data/2AW7/chains.json",
       parser: $.parseJSON
     },
 
     interactions: {
-      url: "data/16S-ecoli-interactions.csv",
+      url: "data/2AW7/interactions.csv",
       parser: d3.csv.parse
     },
 
     motifs: {
-      url: "data/2AW7_motifs.json",
+      url: "data/2AW7/motifs.json",
       parser: $.parseJSON
     },
 
@@ -96,6 +101,58 @@ $(document).ready(function() {
     } else {
       normalColor();
     }
+  });
+
+  // TODO: Should do something to simplify this. Possibly make these functions
+  // accessible outside the jquery plugin. Or I could add this control to the
+  // plugin.
+  $("#structure-select").change(function(event) {
+    var pdbID = $(this).find(':selected').text();
+    if (pdbID === pdb) {
+      return true;
+    }
+    pdb = pdbID;
+
+    var urls = {
+      chains: {
+        url: 'data/' + pdbID + '/chains.json',
+        parser: $.parseJSON
+      },
+      interactions: {
+        url: 'data/' + pdbID + '/interactions.csv',
+        parser: d3.csv.parse
+      },
+      motifs: {
+        url: 'data/' + pdbID + '/motifs.json',
+        parser: $.parseJSON
+      }
+    };
+
+    var setter = function(type, parser) {
+      return function(data, status, xhr) {
+        try {
+          var parsed = parser(data);
+          plot[type](parsed);
+        } catch(err) {
+          console.log("Error caught when trying to parse loaded data for " + type);
+          console.log(err);
+        }
+      };
+    };
+
+    var requests = $.map(['chains', 'interactions', 'motifs'], function(type, i) {
+      if (urls[type].url) {
+        return $.ajax({
+          url: urls[type].url,
+          success: setter(type, urls[type].parser),
+          dataType: "text"
+        });
+      }
+
+      return null;
+    });
+
+    $.when.apply($, requests).done(plot);
   });
 
 });

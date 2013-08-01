@@ -1,34 +1,11 @@
 var Rna2D = window.Rna2D || function(config) {
 
-  // A function to call when we are building the nts, interactions or motifs.
-  // All have some steps in common so we move them somewhere common.
-  var standardBuild = function(type, selection) {
-    var klass = type['class'](),
-        classOf = type.classOf();
-
-    Rna2D.utils.attachHandlers(selection, type);
-
-    return selection.attr('id', type.elementID)
-      .attr('class', function(d, i) { return classOf(d, i).concat(klass).join(' '); })
-      .attr('visibility', type.visibility);
-  };
-
   var plot = function() {
 
-    // Compute the nucleotide ordering. This is often used when drawing
-    // interactions.
-    plot.nucleotides.computeOrder();
-
-    // Setup the view
-    plot.view.setup();
-
+    // Setup the drawing area
     var margin = plot.margin(),
-        selection = d3.select(plot.selection()),
-        scale = function(domainFn, max) { 
-          return d3.scale.linear().domain(domainFn()).range([0, max]);
-        };
+        selection = d3.select(plot.selection());
 
-    // Setup the overall drawing area
     selection.select('svg').remove();
     var top = selection.append('svg')
       .attr('width', plot.width() + margin.left + margin.right)
@@ -37,66 +14,53 @@ var Rna2D = window.Rna2D || function(config) {
     plot.vis = top.append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.above + ")");
 
-    // Setup the scales
-    plot.xScale(scale(plot.xDomain, plot.width() - margin.right));
-    plot.yScale(scale(plot.yDomain, plot.height() - margin.above));
+    // Generate the view
+    var view = views.current();
+    if (view) {
+      var scale = function(domain, max) {
+          return d3.scale.linear().domain(domain).range([0, max]);
+        };
 
-    // Generate the components - brush, frame, zoom, etc
-    plot.components();
+      view.preprocess();
 
-    // Draw all coordinates and attach all standard data
-    plot.coordinates(function(selection) {
+      // Setup the scales
+      plot.xScale(scale(view.xDomain(), plot.width() - margin.right));
+      plot.yScale(scale(view.yDomain(), plot.height() - margin.above));
 
-      var x = plot.views[plot.view()].xCoord(),
-          y = plot.views[plot.view()].yCoord();
+      // Generate the components - brush, frame, zoom, etc
+      components.generate();
 
-      standardBuild(plot.nucleotides, selection)
-        .datum(function(d, i) {
-          d.__x = x(d, i);
-          d.__y = y(d, i);
-          return d;
-        })
-        .attr('data-sequence', plot.nucleotides.getSequence());
-
-      return selection;
-    });
-
-    // Draw all interactions and add all common data
-    plot.connections(function(selection) {
-      var ntsOf = plot.interactions.getNTs();
-
-      standardBuild(plot.interactions, selection)
-        .attr('data-nts', function(d, i) { return ntsOf(d).join(','); })
-        .attr('nt1', function(d, i) { return ntsOf(d)[0]; })
-        .attr('nt2', function(d, i) { return ntsOf(d)[1]; });
-
-      return selection;
-    });
-
-    // Draw motifs
-    plot.groups(function(selection) {
-      var ntsOf = plot.motifs.getNTs();
-
-      standardBuild(plot.motifs, selection)
-        .attr('data-nts', function(d) { return plot.motifs.getNTs()(d).join(','); });
-
-      return selection;
-    });
+      view.generate();
+    }
 
     return plot;
   };
 
   // Configure the plot
-  Rna2D.config(plot, config);
+  Rna2D.utils.generateAccessors(plot, $.extend({
+    labels: [],
+    margin: { left: 10, right: 10, above: 10, below: 10 },
+    view: 'circular',
+    width:  500,
+    height: 1000,
+    selection: null,
+    xScale: null,
+    yScale: null
+  }, config));
 
-  // Add all components.
-  Rna2D.components(plot);
+  // Add all components and views.
+  var components = new Rna2D.Components(),
+      views = new Rna2D.Views();
 
-  // Add the views
-  Rna2D.views(plot);
+  components.attach(plot);
+  views.attach(plot);
 
   return plot;
 };
+
+// Some namespaces.
+Rna2D.views = {};
+Rna2D.components = {};
 
 window.Rna2D = Rna2D;
 

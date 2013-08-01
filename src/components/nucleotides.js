@@ -1,78 +1,51 @@
-Rna2D.components.nucleotides = (function() {
+Rna2D.components.Nucleotides = function(plot) {
 
-  var ordered = {};
-
-  return {
-
-    togglable: true,
-    config: function(plot) {
-      return {
-        highlightColor: function() { return 'red'; },
-        'class': 'nucleotide',
-        classOf: function(d, i) { return [d.sequence]; },
-        color: 'black',
-        click: Object,
-        mouseover: null,
-        mouseout: null,
-        getID: function(d) { return d.id; },
-        getX: function(d) { return d.x; },
-        getY: function(d) { return d.y; },
-        encodeID: function(id) { return id; },
-        getSequence: function(d) { return d.sequence; },
-        highlight: Object,
-        normalize: Object,
-        toggleLetters: Object
-      };
-    },
-
-    sideffects: function(plot) {
-      plot.nucleotides.computeOrder = function() {
-        var nts = plot.nucleotides(),
-        getID = plot.nucleotides.getID();
-
-        $.each(nts, function(i, nt) {
-          ordered[getID(nt)] = i;
-        });
-
-        return plot.nucleotides;
-      };
-
-      plot.nucleotides.jmol = function(d, i) {
-        var idOf = plot.nucleotides.getID();
-        return plot.jmol.showNTs([idOf(d, i)]);
-      };
-
-      plot.nucleotides.indexOf = function(ntId) {
-        if (!ordered.hasOwnProperty(ntId)) {
-          return null;
-        }
-        return ordered[ntId];
-      };
-
-      plot.nucleotides.ordered = function(_) {
-        if (!arguments.length) {
-          return ordered;
-        }
-        ordered = _;
-        return plot.nucleotides;
-      };
-
-    },
-
-    actions: function(plot) {
-      plot.nucleotides.visible('A', 'C', 'G', 'U');
-
-      plot.nucleotides.interactions = function(d, i) {
-        var id = plot.nucleotides.getID()(d, i),
-            selector = '[nt1=' + id + '], [nt2=' + id + ']';
-        return plot.vis.selectAll(selector);
-      };
-
-      plot.nucleotides.doColor = function() {
-        return plot.nucleotides.all().attr('fill', plot.nucleotides.color());
-      };
+  var NTs = inhert(Rna2D.Component, 'nucleotides', {
+    highlightColor: function() { return 'red'; },
+    'class': 'nucleotide',
+    classOf: function(d, i) { return [d.sequence]; },
+    color: 'black',
+    click: Object,
+    mouseover: null,
+    mouseout: null,
+    getID: function(d) { return d.id; },
+    getX: function(d) { return d.x; },
+    getY: function(d) { return d.y; },
+    encodeID: function(id) { return id; },
+    getSequence: function(d) { return d.sequence; },
+    getNumber: function(d) { return d.id.split('|')[4]; },
+    highlight: Object,
+    normalize: Object,
+    toggleLetters: Object,
+    highlightText: function(d, i) {
+      return plot.nucleotides.getSequence()(d, i) +
+        plot.nucleotides.getNumber()(d, i);
     }
+  });
+
+  var nts = new NTs();
+
+  nts.count = function() {
+    var count = 0,
+        getNTData = plot.chains.getNTData();
+    $.each(plot.chains(), function(_, chain) {
+      count += getNTData(chain).length;
+    });
+    return count;
   };
 
-}());
+  // We do not mix this into the prototype becasue if we do so then the methods
+  // will not be accessible outside of the prototype. We do not have access the
+  // the methods provided by the prototype outside of this function, this is a
+  // problem
+  Rna2D.withIdElement.call(nts);
+  Rna2D.asToggable.call(nts, plot);
+  Rna2D.withInteractions.call(nts, plot);
+  Rna2D.asColorable.call(nts);
+
+  nts.visible('A', 'C', 'G', 'U');
+  nts.attach(plot);
+
+  return nts;
+};
 

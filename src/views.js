@@ -1,37 +1,110 @@
-Rna2D.views = function(plot) { 
+// TODO: Inhert from component
+function View(name, config) {
+  this._name = name;
+  this.domain = { x: null, y: null };
+  Rna2D.utils.generateAccessors(this, config);
+}
 
-  // Generate the setup function, which draws the view.
-  plot.view.setup = function() {
-    var view = Rna2D.views[plot.view()];
+View.prototype = {
+  attach: function(plot) {
 
-    if (view === undefined) {
-      console.log("Unknown view " + plot.view());
-      return false;
-    }
+    plot[this._name] = {};
 
-    // Overwrite all previous drawing functions
-    plot.coordinates = view.coordinates;
-    plot.connections = view.connections;
-    plot.groups = view.groups;
-    plot.xDomain = view.xDomain;
-    plot.yDomain = view.yDomain;
+    this.plot = plot;
 
-    // Trigger the side effects
-    view.sideffects();
-  };
-
-  plot.views = {};
-
-  // Add all config
-  $.each(Rna2D.views, function(name, view) {
-      view = view(plot);
-      var config = view.config;
-      if (typeof(config) === "function") {
-        config = config(plot);
+    var prop;
+    for(prop in this) {
+      if (this.hasOwnProperty(prop) && prop[0] !== '_') {
+        plot[this._name][prop] = this[prop];
       }
-      plot.views[name] = {};
-      Rna2D.utils.generateAccessors(plot.views[name], config);
-      Rna2D.views[name] = view;
-    });
+    }
+  },
+
+  generate: function(){
+    this.update();
+    this.coordinates();
+    this.connections();
+    this.groups();
+    this.labels();
+  },
+
+  drawStandard: function(type) {
+    return function(selection) {
+      var klass = type['class'](),
+          classOf = type.classOf();
+
+      Rna2D.utils.attachHandlers(selection, type);
+
+      return selection.attr('id', type.elementID())
+        .attr('class', function(d, i) {
+          return classOf(d, i).concat(klass).join(' ');
+        })
+        .attr('visibility', type.visibility);
+    };
+  },
+
+  standardCoordinates: function() {
+    var self = this;
+    return function(selection) {
+      var x = self.xCoord(),
+          y = self.yCoord();
+
+      return self.drawStandard(self.plot.nucleotides)(selection)
+        .datum(function(d, i) {
+          d.__x = x(d, i);
+          d.__y = y(d, i);
+          return d;
+        });
+    };
+  },
+
+  standardConnections: function() {
+    return this.drawStandard(this.plot.interactions);
+  },
+
+  standardGroups: function() {
+    return this.drawStandard(this.plot.motifs);
+  },
+
+  standardLabels: function() {
+    return this.drawStandard(this.plot.labels);
+  },
+
+  xDomain: function() { return this.domain.x; },
+
+  yDomain: function() { return this.domain.y; },
+
+  labels: function() { return false; },
+  xCoord: function() { return false; },
+  yCoord: function() { return false; },
+  update: function() { return false; },
+  groups: function() { return false; },
+  preprocess: function() { return false; },
+  coordinates: function() { return false; },
+  connections: function() { return false; },
 };
+
+Rna2D.View = View;
+
+function Views() { 
+  Components.call(this);
+  this._namespace = Rna2D.views;
+}
+
+Views.prototype = new Components();
+Views.prototype.constructor = Views;
+
+Views.prototype.current = function() {
+  var plot = this._plot,
+      name = plot.view();
+
+  if (!this._components.hasOwnProperty(name)) {
+    console.log("Unknown view " + plot.view());
+    return false;
+  }
+
+  return this._components[name];
+};
+
+Rna2D.Views = Views;
 
