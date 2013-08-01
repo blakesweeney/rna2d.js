@@ -21,12 +21,12 @@ $(document).ready(function() {
       }
       return '#0C5DA5';
     });
-    plot.nucleotides.doColor();
+    plot.nucleotides.colorize();
   };
 
   var normalColor = function() {
     plot.nucleotides.color(function(d, i) { return 'black'; });
-    plot.nucleotides.doColor();
+    plot.nucleotides.colorize();
   };
 
  var motifClick = function(d, i) {
@@ -37,21 +37,22 @@ $(document).ready(function() {
     $('#about-selection').children().remove();
     $('#about-selection').append(link);
     $('#about-selection').show();
-    return plot.jmolTools.motifs(d, i);
+    return plot.jmolTools.motifs()(d, i);
   };
 
   plot.jmolTools
     .overflow(function() { alert("Too many nts selected"); });
 
   plot.brush.enabled(true)
-    .update(plot.jmolTools.brush);
+    .update(plot.jmolTools.brush());
 
   plot.nucleotides.mouseover('highlight')
-    .click(plot.jmolTools.nucleotides)
+    .click(plot.jmolTools.nucleotides())
+    .getNumber(function(d) { return d.id.split('_')[4]; })
     .encodeID(function(id) { return id.replace(/\|/g, '_').toLowerCase(); });
 
   plot.interactions
-    .click(plot.jmolTools.interactions)
+    .click(plot.jmolTools.interactions())
     .mouseover('highlight')
     ;
 

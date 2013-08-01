@@ -1,33 +1,26 @@
-Rna2D.components.zoom = (function() {
+Rna2D.components.zoom = function(plot) {
 
-  var zoom, 
-      translation = 0;
+  var Zoom = inhert(Rna2D.Component, 'zoom', {
+    scaleExtent: [1, 10],
+    currentScale: 1,
+    onChange: Object
+  });
 
-  return {
-    config: function() {
-      return {
-        enable: true,
-        scaleExtent: [1, 10],
-        currentScale: 1,
-        onChange: Object
-      };
-    },
+  Zoom.prototype.draw = function() {
 
-    generate: function(plot) {
-      if (!plot.zoom.enable()) {
-        return false;
-      }
+    var self = this,
+        translation = 0,
+        zoom = d3.behavior.zoom()
+          .x(plot.xScale())
+          .y(plot.yScale())
+          .scaleExtent(this.scaleExtent());
 
-      zoom = d3.behavior.zoom()
-        .x(plot.xScale())
-        .y(plot.yScale())
-        .scaleExtent(plot.zoom.scaleExtent())
-        .on("zoom", function() {
+      zoom.on("zoom", function() {
           var scale = d3.event.scale,
               translate = d3.event.translate;
 
-          plot.zoom.currentScale(scale);
-          plot.zoom.onChange()();
+          self.currentScale(scale);
+          self.onChange()();
 
           // What I am trying to do here is to ensure that as we zoom out we
           // always return to having the upper left corner in the upper left.
@@ -43,10 +36,16 @@ Rna2D.components.zoom = (function() {
           // more sharply. This could feel nice.
 
           plot.vis.attr("transform", "translate(" + translate + ")" +
-                        "scale(" + scale + ")");
-        });
+                             "scale(" + scale + ")");
+      });
 
+      plot.zoom(zoom);
       plot.vis.call(zoom);
-    }
   };
-}());
+
+  var zoom = new Zoom();
+  zoom.attach(plot);
+
+  return zoom;
+};
+
