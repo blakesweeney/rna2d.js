@@ -67,6 +67,7 @@ Rna2D.components.interactions = function(plot) {
   Rna2D.withIdElement.call(interactions);
   Rna2D.withNTElements.call(interactions, plot);
   Rna2D.asToggable.call(interactions, plot);
+  Rna2D.asColorable.call(interactions);
 
   interactions.visible('cWW', 'ncWW');
   interactions.attach(plot);
