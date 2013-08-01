@@ -611,6 +611,7 @@ Rna2D.components.interactions = function(plot) {
   Rna2D.withIdElement.call(interactions);
   Rna2D.withNTElements.call(interactions, plot);
   Rna2D.asToggable.call(interactions, plot);
+  Rna2D.asColorable.call(interactions);
 
   interactions.visible('cWW', 'ncWW');
   interactions.attach(plot);
@@ -793,6 +794,7 @@ Rna2D.components.motifs = function(plot) {
   Rna2D.withIdElement.call(motifs);
   Rna2D.withNTElements.call(motifs, plot);
   Rna2D.asToggable.call(motifs, plot);
+  Rna2D.asColorable.call(motifs);
 
   motifs.visible('IL', 'HL', 'J3');
   motifs.attach(plot);

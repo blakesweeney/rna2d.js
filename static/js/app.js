@@ -21,12 +21,12 @@ $(document).ready(function() {
       }
       return '#0C5DA5';
     });
-    plot.nucleotides.doColor();
+    plot.nucleotides.colorize();
   };
 
   var normalColor = function() {
     plot.nucleotides.color(function(d, i) { return 'black'; });
-    plot.nucleotides.doColor();
+    plot.nucleotides.colorize();
   };
 
  var motifClick = function(d, i) {
