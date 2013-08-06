@@ -93,7 +93,7 @@
               <button id="il-toggle" type="button" class="btn btn-block
                 active motif-control" data-toggle="button" data-type='IL'>IL</button>
               <button id="hl-toggle" type="button" class="btn btn-block
-                active motif-control" data-toggle="button" data-type='HL'>HL</button>
+                motif-control" data-toggle="button" data-type='HL'>HL</button>
             </div>
           </div>
         </div>
@@ -126,6 +126,15 @@
 
           <div id="interaction-control-buttons" class="accordion-body collapse in">
             <div class="accordion-inner" data-toggle="buttons-checkbox">
+
+              <div class="btn-toolbar">
+                <button type="button" id='all-toggle' 
+                  class="btn btn-block interaction-toggle" 
+                  data-family='cWW,tWW,cWS,tWS,cWH,tWH,cSH,tSH,cSS,tSS,cHH,tHH'>
+                  All
+                </button>
+              </div>
+
               <div class="btn-toolbar">
                 <button type="button" id='cWW-toggle' class="btn btn-block
                   interaction-toggle active" data-family='cWW'>cWW</button>

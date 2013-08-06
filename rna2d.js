@@ -175,43 +175,21 @@ Rna2D.withInteractions = function(plot) {
 };
 
 Rna2D.asToggable = function(plot) {
-  this._status = {};
-  var status = this._status,
-      type = this;
+  var type = this;
 
   type.all = function(klass) {
     klass = (klass && klass !== 'all' ? klass : type['class']());
     return plot.vis.selectAll('.' + klass);
   };
 
-  type.visible = function() {
-    $.each(arguments, function(i, klass) { status[klass] = true; });
+  type.visibility = function() {
+    var isVisible = type.visible();
+    return function(d, i) { 
+      return (isVisible(d, i) ? 'visible' : 'hidden'); };
   };
 
-  type.hidden = function() {
-    $.each(arguments, function(i, klass) { status[klass] = null;  });
-  };
-
-  type.show = function(klass) {
-    status[klass] = true;
-    return type.all(klass).attr('visibility', function() { return 'visible'; });
-  };
-
-  type.hide = function(klass) {
-    status[klass] = null;
-    return type.all(klass).attr('visibility', function() { return 'hidden'; });
-  };
-
-  type.toggle = function(klass) {
-    return (status[klass] ? type.hide(klass) : type.show(klass));
-  };
-
-  // Note that we use null above so here we can use the fact that jQuery's map
-  // is actually a map/filter to remove elements as we traverse.
-  type.visibility = function(d, i) {
-    var klasses = type.classOf()(d),
-        found = $.map(klasses, function(k, i) { return status[k]; });
-    return (found.length ? 'visible' : 'hidden');
+  type.updateVisibility = function() {
+    type.all().attr('visibility', type.visibility());
   };
 };
 
@@ -348,7 +326,7 @@ View.prototype = {
         .attr('class', function(d, i) {
           return classOf(d, i).concat(klass).join(' ');
         })
-        .attr('visibility', type.visibility);
+        .attr('visibility', type.visibility());
     };
   },
 
@@ -604,6 +582,11 @@ Rna2D.components.interactions = function(plot) {
       });
 
       return valid;
+    },
+    visible: function(d, i) {
+      var getFamily = plot.interactions.getFamily(),
+          family = getFamily(d);
+      return family === 'cWW' || family === 'ncWW';
     }
   });
 
@@ -613,7 +596,6 @@ Rna2D.components.interactions = function(plot) {
   Rna2D.asToggable.call(interactions, plot);
   Rna2D.asColorable.call(interactions);
 
-  interactions.visible('cWW', 'ncWW');
   interactions.attach(plot);
 
   return interactions;
@@ -815,7 +797,8 @@ Rna2D.components.motifs = function(plot) {
     getNTs: function(d) { return d.nts; },
     highlight: Object,
     normalize: Object,
-    plotIfIncomplete: true
+    plotIfIncomplete: true,
+    visible: function(d, i) { return true; }
   });
 
   var motifs = new Motifs();
@@ -884,7 +867,6 @@ Rna2D.components.motifs = function(plot) {
   Rna2D.asToggable.call(motifs, plot);
   Rna2D.asColorable.call(motifs);
 
-  motifs.visible('IL', 'HL', 'J3');
   motifs.attach(plot);
 
   return motifs;
@@ -911,7 +893,8 @@ Rna2D.components.Nucleotides = function(plot) {
     highlightText: function(d, i) {
       return plot.nucleotides.getSequence()(d, i) +
         plot.nucleotides.getNumber()(d, i);
-    }
+    },
+    visible: function(d, i) { return true; }
   });
 
   var nts = new NTs();
@@ -934,7 +917,6 @@ Rna2D.components.Nucleotides = function(plot) {
   Rna2D.withInteractions.call(nts, plot);
   Rna2D.asColorable.call(nts);
 
-  nts.visible('A', 'C', 'G', 'U');
   nts.attach(plot);
 
   return nts;

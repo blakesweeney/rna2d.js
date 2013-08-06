@@ -20,7 +20,8 @@ Rna2D.components.Nucleotides = function(plot) {
     highlightText: function(d, i) {
       return plot.nucleotides.getSequence()(d, i) +
         plot.nucleotides.getNumber()(d, i);
-    }
+    },
+    visible: function(d, i) { return true; }
   });
 
   var nts = new NTs();
@@ -43,7 +44,6 @@ Rna2D.components.Nucleotides = function(plot) {
   Rna2D.withInteractions.call(nts, plot);
   Rna2D.asColorable.call(nts);
 
-  nts.visible('A', 'C', 'G', 'U');
   nts.attach(plot);
 
   return nts;

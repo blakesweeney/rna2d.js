@@ -39,7 +39,7 @@ View.prototype = {
         .attr('class', function(d, i) {
           return classOf(d, i).concat(klass).join(' ');
         })
-        .attr('visibility', type.visibility);
+        .attr('visibility', type.visibility());
     };
   },
 
