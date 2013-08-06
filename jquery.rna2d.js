@@ -28,7 +28,7 @@
               "selector": ".motif-toggle",
               'callback': Object,
               'data': 'type',
-              'defaultVisible': ['IL', 'J3']
+              'defaultVisible': ['IL', 'HL', 'J3']
             },
             "interactions": {
               "selector": ".interaction-toggle",
