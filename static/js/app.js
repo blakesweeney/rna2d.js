@@ -103,6 +103,26 @@ $(document).ready(function() {
     }
   });
 
+  $("#all-toggle").on('click', function(e) {
+    var $btn = $(this),
+        toggles = $(".interaction-toggle")
+          .filter(":not(#all-toggle)")
+          .filter(":not(#cWW-toggle)");
+
+    if ($btn.hasClass('active')) {
+      toggles.removeClass('active');
+    } else {
+      toggles.addClass('active');
+    }
+  });
+
+  $(".interaction-toggle").on('click', function(e) {
+    var $btn = $(this);
+    if ($btn.attr('id') !== 'all-toggle') {
+      $("#all-toggle").removeClass('active');
+    }
+  });
+
   // TODO: Should do something to simplify this. Possibly make these functions
   // accessible outside the jquery plugin. Or I could add this control to the
   // plugin.

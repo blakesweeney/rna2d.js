@@ -60,6 +60,11 @@ Rna2D.components.interactions = function(plot) {
       });
 
       return valid;
+    },
+    visible: function(d, i) {
+      var getFamily = plot.interactions.getFamily(),
+          family = getFamily(d);
+      return family === 'cWW' || family === 'ncWW';
     }
   });
 
@@ -69,7 +74,6 @@ Rna2D.components.interactions = function(plot) {
   Rna2D.asToggable.call(interactions, plot);
   Rna2D.asColorable.call(interactions);
 
-  interactions.visible('cWW', 'ncWW');
   interactions.attach(plot);
 
   return interactions;

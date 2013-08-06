@@ -12,7 +12,8 @@ Rna2D.components.motifs = function(plot) {
     getNTs: function(d) { return d.nts; },
     highlight: Object,
     normalize: Object,
-    plotIfIncomplete: true
+    plotIfIncomplete: true,
+    visible: function(d, i) { return true; }
   });
 
   var motifs = new Motifs();
@@ -81,7 +82,6 @@ Rna2D.components.motifs = function(plot) {
   Rna2D.asToggable.call(motifs, plot);
   Rna2D.asColorable.call(motifs);
 
-  motifs.visible('IL', 'HL', 'J3');
   motifs.attach(plot);
 
   return motifs;
