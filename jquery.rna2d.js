@@ -27,13 +27,11 @@
             "motifs": {
               "selector": ".motif-toggle",
               'callback': Object,
-              'data': 'type',
-              'defaultVisible': ['IL', 'J3']
+              'defaultVisible': ['IL', 'HL', 'J3']
             },
             "interactions": {
               "selector": ".interaction-toggle",
               'callback': Object,
-              'data': 'family',
               'near': true,
               'defaultVisible': ['cWW', 'ncWW']
             },
@@ -113,39 +111,61 @@
         currentlyVisible[value] = true;
       });
 
-      plot[type].visible(function(d, i) {
-        var klasses = plot[type].classOf()(d, i),
-            visible = false;
+      $(options.selector).on('click', function(event) {
+        var $btn = $(this);
 
-        if (currentlyVisible.all) {
-          return true;
-        }
+        plot[type].visible(function(d, i) {
+          var klasses = plot[type].classOf()(d, i),
+              visible = false;
 
-        $.each(klasses, function(_, value) {
-          if (currentlyVisible[value]) {
-            visible = true;
+          if (currentlyVisible.all) {
+            return true;
           }
+
+          $.each(klasses, function(_, value) {
+            if (currentlyVisible[value]) {
+              visible = true;
+            }
+          });
+
+          return visible;
         });
 
-        return visible;
-      });
-
-      $(options.selector).on('click', function(event) {
-        var $btn = $(this),
-            klass = $btn.data(options.data).split(',');
-
-        if (options.near) {
-          $.each(klass, function(_, k) {
-            klass.push('n' + k);
-          });
+        function getKlassess(name) {
+          var data = $btn.data(name);
+          data = (data ? data.split(',') : []);
+          if (options.near) {
+            $.each(data, function(_, k) {
+              data.push('n' + k);
+            });
+          }
+          return data;
         }
 
+        var toggleKlasses = getKlassess('toggable');
+
         if (!$btn.hasClass('active')) {
-          $.each(klass, function(_, value) {
+          toggleKlasses = toggleKlasses.concat(getKlassess('activate'));
+
+          $.each(toggleKlasses, function(_, value) {
+
+            $(options.selector)
+              .filter("[data-toggable=" + value + "]")
+              .filter(":not(#" + $btn.attr('id') + ")")
+              .addClass('active');
+
             currentlyVisible[value] = true;
           });
         } else {
-          $.each(klass, function(_, value) {
+          toggleKlasses = toggleKlasses.concat(getKlassess('deactivate'));
+
+          $.each(toggleKlasses, function(_, value) {
+
+            $(options.selector)
+              .filter("[data-toggable*=" + value + "]")
+              .filter(":not(#" + $btn.attr('id') + ")")
+              .removeClass('active');
+
             currentlyVisible[value] = false;
           });
         }

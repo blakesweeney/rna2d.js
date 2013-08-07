@@ -184,7 +184,7 @@ Rna2D.asToggable = function(plot) {
 
   type.visibility = function() {
     var isVisible = type.visible();
-    return function(d, i) { 
+    return function(d, i) {
       return (isVisible(d, i) ? 'visible' : 'hidden'); };
   };
 
