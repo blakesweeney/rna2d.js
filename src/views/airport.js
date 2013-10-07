@@ -56,11 +56,11 @@ Rna2D.views.airport = function(plot) {
   Airport.prototype.preprocess = function() {
     // Compute the max and min of x and y coords for the scales.
     var xMax = 0,
-        yMax = 0;
+        yMax = 0,
+        getX = plot.nucleotides.getX(),
+        getY = plot.nucleotides.getY();
 
     $.each(plot.chains(), function(_, chain) {
-      var getX = plot.nucleotides.getX(),
-          getY = plot.nucleotides.getY();
       $.each(plot.chains.getNTData()(chain), function(_, nt) {
         var x = getX(nt),
             y = getY(nt);
