@@ -1,56 +1,25 @@
 Rna2D.views.airport = function(plot) {
 
-  var Airport = inhert(Rna2D.View, 'airport', { 
-    fontSize: 11, 
-    gap: 1, 
+  var Airport = inhert(Rna2D.View, 'airport', {
+    fontSize: 11,
+    gap: 1,
     highlightSize: 20
   });
 
-  // We need to track if we are drawing across the letter in which case we
-  // need to use the width + radius, otherwise we just need to use the radius.
-  // The bounding box is the upper left of the objects.
-  var intersectPoint = function(obj1, obj2, r) {
+  var intersectPoint = function(obj1, obj2) {
     var bbox1 = obj1.getBBox(),
         bbox2 = obj2.getBBox(),
-        x1 = bbox1.x,
-        y1 = bbox1.y,
-        x2 = bbox2.x,
-        y2 = bbox2.y,
-        dx = x2 - x1,
-        dy = y2 - y1,
-        almostFlat = 0.004;
-
-    // Useful functions
-    var sign = function(v) { return (v < 0 ? -1 : 1); },
+        z = 2, // TODO: Scale this with font size
         centerOf = function(bbox) { return { x: bbox.x + bbox.width/2, y: bbox.y + bbox.height/2 }; },
-        dist = function(x, y) { return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)); };
+        c1 = centerOf(bbox1),
+        c2 = centerOf(bbox2),
+        t = { x: c1.x - c2.x, y: c1.y - c2.y },
+        d = Math.sqrt(Math.pow(t.x, 2) + Math.pow(t.y, 2));
 
-    // Special case lines that are horizontal
-    if (Math.abs(dy) < almostFlat) {
-      y1 = y1 + bbox1.height/2;
-      if (x1 < x2) {
-        return { x: x1 + bbox1.width + r, y: y1 };
-      }
-      return { x : x1 - r, y: y1 };
-    }
-
-    // Special case lines that are vertical
-    if (Math.abs(dx) < almostFlat) {
-      x1 = x1 + bbox1.width/2;
-      if (y1 > y2) {
-        return { x: x1, y: y1 };
-      }
-      return { x: x1, y: y1 + bbox1.height };
-    }
-
-    // All other lines
-    r = 1;
-    var c = centerOf(bbox1),
-        d = dist(dx, dy),
-        a = sign(dx) * Math.abs(dx * r / d),
-        b = sign(dy) * dist(r, a);
-
-    return { x: c.x + a, y: c.y + b };
+    return {
+      x1: c1.x - z * t.x / d, y1: c1.y - z * t.y / d,
+      x2: c2.x + z * t.x / d, y2: c2.y + z * t.y / d
+   };
   };
 
   Airport.prototype.preprocess = function() {
@@ -76,7 +45,7 @@ Rna2D.views.airport = function(plot) {
 
     this.domain = { x: [0, xMax], y: [0, yMax] };
   };
-  
+
 
   Airport.prototype.xCoord = function() {
     var scale = plot.xScale(),
@@ -121,10 +90,12 @@ Rna2D.views.airport = function(plot) {
       try {
         var nts = getNTs(obj),
             nt1 = Rna2D.utils.element(nts[0]),
-            nt2 = Rna2D.utils.element(nts[1]),
-            p1 = intersectPoint(nt1, nt2, gap),
-            p2 = intersectPoint(nt2, nt1, gap);
-        obj._line = { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };
+            nt2 = Rna2D.utils.element(nts[1])
+            ;
+            //p1 = intersectPoint(nt1, nt2, gap),
+            //p2 = intersectPoint(nt2, nt1, gap);
+
+        obj._line = intersectPoint(nt1, nt2); // { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };
       } catch (err) {
         console.log("Could not compute interaction line for", obj);
         console.log(err);
@@ -167,6 +138,19 @@ Rna2D.views.airport = function(plot) {
         .attr('d', function(d) { return motifLine(d.bounding) + "Z"; });
 
      return plot;
+  };
+
+  Airport.prototype.addLetter = function(ntData) {
+    plot.vis.selectAll()
+      .attr('id', function(d, i) { return 'letter-' + i; })
+      .attr('class', this.letterClass())
+      .attr('x', this.xCoord())
+      .attr('y', this.yCoord())
+      .attr('font-size', this.fontSize())
+      .attr('font-size', this.letterSize())
+      .attr('pointer-events', 'none')
+      .text(plot.nucleotides.highlightText())
+      .attr('fill', plot.nucleotides.highlightColor());
   };
 
   Airport.prototype.update = function() {
