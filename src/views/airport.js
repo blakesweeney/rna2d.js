@@ -90,12 +90,9 @@ Rna2D.views.airport = function(plot) {
       try {
         var nts = getNTs(obj),
             nt1 = Rna2D.utils.element(nts[0]),
-            nt2 = Rna2D.utils.element(nts[1])
-            ;
-            //p1 = intersectPoint(nt1, nt2, gap),
-            //p2 = intersectPoint(nt2, nt1, gap);
+            nt2 = Rna2D.utils.element(nts[1]);
 
-        obj._line = intersectPoint(nt1, nt2); // { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };
+        obj._line = intersectPoint(nt1, nt2);
       } catch (err) {
         console.log("Could not compute interaction line for", obj);
         console.log(err);
