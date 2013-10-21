@@ -104,7 +104,6 @@ View.prototype = {
 
   yDomain: function() { return this.domain.y; },
 
-  labels: function() { return false; },
   xCoord: function() { return false; },
   yCoord: function() { return false; },
   update: function() { return false; },
@@ -114,6 +113,7 @@ View.prototype = {
   coordinateData: function(s) { return s; },
   connectionData: function(s) { return s; },
   groupData: function(s) { return s; },
+  labelData: function(s) { return s; },
 
   coordinateValidor: function(o, i) { return o; },
   interactionValidator: function(o, i) { return o; },
@@ -159,6 +159,15 @@ View.prototype = {
     this.groupData(sele)
       .attr('missing-nts', function(d) { return d.__missing.join(' '); })
       .call(this.drawStandard(plot.motifs));
+  },
+
+  labels: function() { 
+    var plot = this.plot,
+        sele = plot.vis.selectAll(plot.labels['class']())
+          .data(plot.labels()).enter();
+
+    this.labelData(sele)
+      .call(this.drawStandard(plot.labels));
   },
 
   highlightLetters: function(nts, lettersOnly) {
