@@ -15,7 +15,6 @@ Rna2D.components.Nucleotides = function(plot) {
     getNumber: function(d) { return d.id.split('|')[4]; },
     highlight: Object,
     normalize: Object,
-    toggleLetters: Object,
     visible: function(d, i) { return true; }
   });
 
