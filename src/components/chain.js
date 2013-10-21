@@ -4,7 +4,9 @@ Rna2D.components.chains = function(plot) {
     getID: function(d, i) { return d.id; },
     'class': 'chain',
     classOf: function(d, i) { return []; },
+    encodeID: function(id) { return id; },
     getNTData: function(d, i) { return d.nts; },
+    visible: function(d, i) { return true; },
     chainOf: function(d, i) {
       var ntsOf = plot.chains.getNTData(),
           chainIndex = -1,
@@ -27,6 +29,10 @@ Rna2D.components.chains = function(plot) {
   });
 
   var chain = new Chains();
+  Rna2D.withIdElement.call(chain);
+  Rna2D.asToggable.call(chain, plot);
+  Rna2D.asColorable.call(chain);
+  Rna2D.withAttrs.call(chain);
   chain.attach(plot);
 
   return chain;

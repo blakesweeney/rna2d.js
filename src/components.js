@@ -130,3 +130,43 @@ Rna2D.asColorable = function() {
   };
 };
 
+Rna2D.withAttrs = function() {
+  var self = this;
+  this._attrs = {};
+  this.attr = function(key, value) {
+    self._attrs[key] = value;
+  };
+
+  this.applyAttrs = function(selection) {
+    $.each(self._attrs, function(key, value) {
+      selection.attr(key, value);
+    });
+  };
+};
+
+Rna2D.canValidate = function(plot) {
+  var self = this;
+
+  this.valid = function(fn) {
+    var seen = {},
+        getID = self.getID(),
+        validator = function(o, _) { return o; };
+
+    if (self.hasOwnProperty('validator')) {
+      validator = self.validator()();
+    }
+
+    return $.map(plot[self._name](), function(value, key) {
+      var id = getID(value);
+      if (seen[id] || !validator(value, key)) {
+        return null;
+      }
+
+      var obj = fn(value, key);
+      if (obj) {
+        seen[id] = true;
+      }
+      return obj;
+    });
+  };
+}

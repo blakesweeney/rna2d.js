@@ -1,18 +1,14 @@
 Rna2D.views.airport = function(plot) {
 
   var Airport = inhert(Rna2D.View, 'airport', {
-    fontSize: 11,
-    gap: 1,
-    highlightSize: 20
+    gap: 1
   });
 
   var intersectPoint = function(obj1, obj2) {
-    var bbox1 = obj1.getBBox(),
-        bbox2 = obj2.getBBox(),
+    var centerOf = function(bbox) { return { x: bbox.x + bbox.width/2, y: bbox.y + bbox.height/2 }; },
         z = 2, // TODO: Scale this with font size
-        centerOf = function(bbox) { return { x: bbox.x + bbox.width/2, y: bbox.y + bbox.height/2 }; },
-        c1 = centerOf(bbox1),
-        c2 = centerOf(bbox2),
+        c1 = centerOf(obj1.getBBox()),
+        c2 = centerOf(obj2.getBBox()),
         t = { x: c1.x - c2.x, y: c1.y - c2.y },
         d = Math.sqrt(Math.pow(t.x, 2) + Math.pow(t.y, 2));
 
@@ -20,6 +16,77 @@ Rna2D.views.airport = function(plot) {
       x1: c1.x - z * t.x / d, y1: c1.y - z * t.y / d,
       x2: c2.x + z * t.x / d, y2: c2.y + z * t.y / d
    };
+  };
+
+  Airport.prototype.interactionValidator = function(obj, i) {
+    var nts = plot.interactions.getNTs()(obj),
+        encodeID = plot.nucleotides.encodeID(),
+        nt1 = document.getElementById(encodeID(nts[0])),
+        nt2 = document.getElementById(encodeID(nts[1]));
+
+    if (!nt1 || !nt2) {
+      console.log("Could not compute interaction line for", obj);
+      return null;
+    }
+
+    obj.__line = intersectPoint(nt1, nt2);
+    return obj;
+  };
+
+  Airport.prototype.groupsValidator = function(current, i) {
+    var left = Number.MIN_VALUE,
+        right = Number.MAX_VALUE,
+        top = Number.MAX_VALUE,
+        bottom = Number.MIN_VALUE;
+
+    current.__missing = [];
+
+    // Find the outer points.
+    var nts = plot.motifs.ntElements()(current);
+    $.each(nts, function(j, id) {
+      var elem = document.getElementById(id);
+
+      if (elem === null) {
+        console.log('Missing nt ' + id + ' in motif: ', current);
+        current.__missing.push(id);
+      } else {
+        var bbox = elem.getBBox();
+        if (bbox.x < right) {
+          right = bbox.x;
+        }
+        if (bbox.x + bbox.width > left) {
+          left = bbox.x + bbox.width;
+        }
+        if (bbox.y + bbox.height > bottom) {
+          bottom = bbox.y + bbox.height;
+        }
+        if (bbox.y < top) {
+          top = bbox.y;
+        }
+      }
+    });
+
+    // Store bounding box. It is very odd to get a bounding box that
+    // involves the max number value. In this case we think that we have not
+    // actually found the nts so we log this and use a box that cannot be
+    // seen. This prevents bugs where we stop drawing boxes too early.
+    if (bottom === Number.MIN_VALUE || left === Number.MIN_VALUE || 
+        right === Number.MAX_VALUE || top === Number.MAX_VALUE) {
+      console.log("Unlikely bounding box found for " + current.id);
+    }
+
+    if (current.missing && !plot.motifs.plotIfIncomplete()) {
+      return null;
+    }
+
+    current.__bounding = [
+      { x: left, y: top },
+      { x: left, y: bottom },
+      { x: right, y: bottom },
+      { x: right, y: top }
+    ];
+
+    return current;
   };
 
   Airport.prototype.preprocess = function() {
@@ -46,7 +113,6 @@ Rna2D.views.airport = function(plot) {
     this.domain = { x: [0, xMax], y: [0, yMax] };
   };
 
-
   Airport.prototype.xCoord = function() {
     var scale = plot.xScale(),
         getX = plot.nucleotides.getX();
@@ -60,143 +126,39 @@ Rna2D.views.airport = function(plot) {
   };
 
   // Draw the nucleotides
-  Airport.prototype.coordinates = function() {
-
-    plot.vis.selectAll(plot.chains['class']())
-      .append('g')
-      .data(plot.chains()).enter()
-        .append('g')
-        .attr('id', plot.chains.getID())
-        .attr('class', plot.chains['class']())
-        .selectAll(plot.nucleotides['class']())
-        .data(plot.chains.getNTData()).enter()
-          .append('svg:text')
-          .call(this.standardCoordinates())
-          .attr('x', this.xCoord())
-          .attr('y', this.yCoord())
-          .attr('font-size', this.fontSize())
-          .text(plot.nucleotides.getSequence())
-          .attr('fill', plot.nucleotides.color());
+  Airport.prototype.coordinateData = function(selection) {
+    return selection
+      .append('svg:text')
+      .attr('x', this.xCoord())
+      .attr('y', this.yCoord())
+      .attr('fill', plot.nucleotides.color())
+      .text(plot.nucleotides.getSequence());
   };
 
-  Airport.prototype.connections = function() {
-
-    // Compute the data to use for interactions
-    var interactions = plot.interactions.valid()(),
-        getNTs = plot.interactions.ntElements(),
-        gap = this.gap();
-
-    interactions = $.map(interactions, function(obj, i) {
-      try {
-        var nts = getNTs(obj),
-            nt1 = Rna2D.utils.element(nts[0]),
-            nt2 = Rna2D.utils.element(nts[1]);
-
-        obj._line = intersectPoint(nt1, nt2);
-      } catch (err) {
-        console.log("Could not compute interaction line for", obj);
-        console.log(err);
-        return null;
-      }
-
-      return obj;
-    });
-
-    // Draw the interactions
-    plot.vis.selectAll(plot.interactions['class']())
-      .data(interactions)
-      .enter()
-        .append('svg:line')
-        .call(this.standardConnections())
-        .attr('stroke', plot.interactions.color())
-        .attr('x1', function(d) { return d._line.x1; })
-        .attr('y1', function(d) { return d._line.y1; })
-        .attr('x2', function(d) { return d._line.x2; })
-        .attr('y2', function(d) { return d._line.y2; });
+  Airport.prototype.connectionData = function(selection) {
+    return selection
+      .append('svg:line')
+      .attr('stroke', plot.interactions.color())
+      .attr('x1', function(d) { return d.__line.x1; })
+      .attr('y1', function(d) { return d.__line.y1; })
+      .attr('x2', function(d) { return d.__line.x2; })
+      .attr('y2', function(d) { return d.__line.y2; });
   };
 
-  Airport.prototype.groups = function() {
-      // Compute a box around the motif
-      var motifs = plot.motifs.boundingBoxes(plot.motifs());
-
-      if (!motifs || !motifs.length) {
-        return plot;
-      }
-
+  Airport.prototype.groupData = function(selection) {
       var motifLine = d3.svg.line()
         .x(function(d) { return d.x; })
         .y(function(d) { return d.y; });
 
-      // Draw the motif boxes
-      plot.vis.selectAll(plot.motifs['class']())
-        .data(plot.motifs()).enter().append('svg:path')
-        .call(this.standardGroups())
-        .attr('missing-nts', function(d) { return d.missing.join(' '); })
-        .attr('d', function(d) { return motifLine(d.bounding) + "Z"; });
-
-     return plot;
+      return selection
+        .append('svg:path')
+        .attr('d', function(d) { return motifLine(d.__bounding) + "Z"; });
   };
 
-  Airport.prototype.addLetter = function(ntData) {
-    plot.vis.selectAll()
-      .attr('id', function(d, i) { return 'letter-' + i; })
-      .attr('class', this.letterClass())
-      .attr('x', this.xCoord())
-      .attr('y', this.yCoord())
-      .attr('font-size', this.fontSize())
-      .attr('font-size', this.letterSize())
-      .attr('pointer-events', 'none')
-      .text(plot.nucleotides.highlightText())
-      .attr('fill', plot.nucleotides.highlightColor());
-  };
-
-  Airport.prototype.update = function() {
-
-    var self = this;
-
-    plot.interactions.highlight(function(d, i) {
-      var highlightColor = plot.interactions.highlightColor()(d, i);
-      d3.select(this).style('stroke', highlightColor);
-      return plot.interactions.nucleotides(d, i).style('stroke', highlightColor);
-    });
-
-    // TODO: To speed up removal of highlight consider using a highlight class
-    // and then removing it from all nts.
-
-    plot.interactions.normalize(function(d, i) {
-      d3.select(this).style('stroke', null);
-      return plot.interactions.nucleotides(d, i).style('stroke', null);
-    });
-
-    plot.nucleotides.highlight(function(d, i) {
-      var highlightColor = plot.nucleotides.highlightColor()(d, i);
-      d3.select(this).style('stroke', highlightColor)
-        .attr('fill', highlightColor)
-        .attr('font-size', self.highlightSize())
-        .text(plot.nucleotides.highlightText());
-      return plot.nucleotides.interactions(d, i)
-        .style('stroke', highlightColor);
-    });
-
-    plot.nucleotides.normalize(function(d, i) {
-      d3.select(this).style('stroke', null)
-        .attr('fill', null)
-        .attr('font-size', self.fontSize())
-        .text(plot.nucleotides.getSequence());
-      return plot.nucleotides.interactions(d, i)
-        .style('stroke', null);
-    });
-
-    plot.motifs.highlight(function(d, i) {
-      var highlightColor = plot.motifs.highlightColor();
-      return plot.motifs.nucleotides(d, i)
-        .style('stroke', highlightColor(d, i));
-    });
-
-    plot.motifs.normalize(function(d, i) {
-      return plot.motifs.nucleotides(d, i)
-        .style('stroke', null);
-    });
+  Airport.prototype.highlightLetterData = function(selection) {
+    return selection
+      .attr('x', air.xCoord())
+      .attr('y', air.yCoord());
   };
 
   var air = new Airport();

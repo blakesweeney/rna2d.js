@@ -37,29 +37,19 @@ Rna2D.components.interactions = function(plot) {
     },
     encodeID: function(id) { return id; },
     color: 'black',
-    valid: function() {
-      var getID = plot.interactions.getID(),
-          getNts = plot.interactions.getNTs(),
+    validator: function() {
+      var getNts = plot.interactions.getNTs(),
           isForward = plot.interactions.isForward(),
-          valid = [],
-          seen = {},
           encodeID = plot.nucleotides.encodeID(),
           bboxOf = function (id) {
             return document.getElementById(encodeID(id));
           };
 
-      $.each(plot.interactions(), function(i, current) {
-        var id = getID(current),
-            nts = getNts(current);
-
-        if (isForward(current) && !seen[id] && nts.length &&
-            bboxOf(nts[0]) !== null && bboxOf(nts[1]) !== null) {
-          seen[id] = true;
-          valid.push(current);
-        }
-      });
-
-      return valid;
+      return function(current, i) {
+        var nts = getNts(current);
+        return isForward(current) && nts.length &&
+              bboxOf(nts[0]) !== null && bboxOf(nts[1]) !== null;
+      };
     },
     visible: function(d, i) {
       var getFamily = plot.interactions.getFamily(),
@@ -73,6 +63,8 @@ Rna2D.components.interactions = function(plot) {
   Rna2D.withNTElements.call(interactions, plot);
   Rna2D.asToggable.call(interactions, plot);
   Rna2D.asColorable.call(interactions);
+  Rna2D.canValidate.call(interactions, plot);
+  Rna2D.withAttrs.call(interactions);
 
   interactions.attach(plot);
 
