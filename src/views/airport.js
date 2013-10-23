@@ -1,7 +1,9 @@
 Rna2D.views.airport = function(plot) {
 
   var Airport = inhert(Rna2D.View, 'airport', {
-    gap: 1
+    gap: 1,
+    type: "letter",
+    radius: 4
   });
 
   var intersectPoint = function(obj1, obj2) {
@@ -125,8 +127,18 @@ Rna2D.views.airport = function(plot) {
     return function(d, i) { return scale(getY(d, i)); };
   };
 
-  // Draw the nucleotides
   Airport.prototype.coordinateData = function(selection) {
+    if (this.type() === "letter") {
+      return this.drawLetters(selection);
+    } 
+    if (this.type() === "circle") {
+      return this.drawCircles(selection);
+    }
+    console.log("Unknown type of drawing.");
+    return selection;
+  };
+
+  Airport.prototype.drawLetters = function(selection) {
     return selection
       .append('svg:text')
       .attr('x', this.xCoord())
@@ -134,6 +146,17 @@ Rna2D.views.airport = function(plot) {
       .attr('fill', plot.nucleotides.color())
       .text(plot.nucleotides.getSequence());
   };
+
+  Airport.prototype.drawCircles = function(selection) {
+    return selection
+      .append('svg:circle')
+      .attr('cx', this.xCoord())
+      .attr('cy', this.yCoord())
+      .attr('fill', plot.nucleotides.color())
+      .attr('r', this.radius());
+  };
+  
+
 
   Airport.prototype.connectionData = function(selection) {
     return selection
@@ -144,7 +167,7 @@ Rna2D.views.airport = function(plot) {
       .attr('x2', function(d) { return d.__line.x2; })
       .attr('y2', function(d) { return d.__line.y2; });
   };
-
+  
   Airport.prototype.groupData = function(selection) {
       var motifLine = d3.svg.line()
         .x(function(d) { return d.x; })
