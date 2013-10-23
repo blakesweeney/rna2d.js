@@ -34,8 +34,15 @@ View.prototype = {
     var self = this,
         plot = this.plot;
 
-    //if (plot.nucleotides.highlight() === Object) {
-    //}
+    if (plot.nucleotides.highlight() === Object) {
+      plot.nucleotides.highlight(function(d, i) {
+        self.highlightLetters([d]);
+      });
+
+      plot.nucleotides.normalize(function(d, i) {
+        self.clearHighlightLetters();
+      });
+    }
 
     if (plot.nucleotides.highlight() === Object) {
       plot.interactions.highlight(function(d, i) {
