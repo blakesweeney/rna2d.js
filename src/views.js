@@ -21,17 +21,12 @@ View.prototype = {
   },
 
   generate: function(){
-
-    var self = this,
-        plot = this.plot;
-
     this.generateHandlers();
     this.coordinates();
     this.connections();
     this.groups();
-    this.labels();
+    this.helixes();
     this.update();
-
   },
 
   generateHandlers: function() {
@@ -39,37 +34,31 @@ View.prototype = {
     var self = this,
         plot = this.plot;
 
-    plot.nucleotides.highlight(function(d, i) {
-      var highlightColor = plot.highlights.color()(d, i);
-      self.highlightLetters([d]);
-      plot.nucleotides.interactions(d, i).style('stroke', highlightColor);
-      return plot.nucleotides;
-    });
+    //if (plot.nucleotides.highlight() === Object) {
+    //}
 
-    plot.nucleotides.normalize(function(d, i) {
-      self.clearHighlightLetters();
-      plot.nucleotides.interactions(d, i).style('stroke', null);
-      return plot.nucleotides;
-    });
+    if (plot.nucleotides.highlight() === Object) {
+      plot.interactions.highlight(function(d, i) {
+        var highlightColor = plot.interactions.highlightColor()(d, i),
+        ntData = [];
 
-    plot.interactions.highlight(function(d, i) {
-      var highlightColor = plot.interactions.highlightColor()(d, i),
-          ntData = [];
+        d3.select(this).style('stroke', highlightColor);
 
-      d3.select(this).style('stroke', highlightColor);
-
-      plot.interactions.nucleotides(d, i)
+        plot.interactions.nucleotides(d, i)
         .datum(function(d, i) { ntData.push(d); return d; });
-      self.highlightLetters(ntData);
+        self.highlightLetters(ntData);
 
-      return plot.interactions;
-    });
+        return plot.interactions;
+      });
+    }
 
-    plot.interactions.normalize(function(d, i) {
-      d3.select(this).style('stroke', null);
-      self.clearHighlightLetters();
-      return plot.interactions;
-    });
+    if (plot.nucleotides.highlight() === Object) {
+      plot.interactions.normalize(function(d, i) {
+        d3.select(this).style('stroke', null);
+        self.clearHighlightLetters();
+        return plot.interactions;
+      });
+    }
 
     plot.motifs.highlight(function(d, i) {
       var data = [];
@@ -113,7 +102,7 @@ View.prototype = {
   coordinateData: function(s) { return s; },
   connectionData: function(s) { return s; },
   groupData: function(s) { return s; },
-  labelData: function(s) { return s; },
+  helixData: function(s) { return s; },
 
   coordinateValidor: function(o, i) { return o; },
   interactionValidator: function(o, i) { return o; },
@@ -126,8 +115,10 @@ View.prototype = {
 
     var sele = plot.vis.selectAll(plot.chains['class']())
       .append('g')
+      .attr('id', 'all-chains')
       .data(plot.chains()).enter()
         .append('g')
+        .attr('id', 'all-nts')
         .call(this.chainData)
         .call(this.drawStandard(plot.chains))
         .selectAll(plot.nucleotides['class']())
@@ -152,36 +143,45 @@ View.prototype = {
   },
 
   groups: function() {
-    var plot = this.plot;
-    var sele = plot.vis.selectAll(plot.motifs['class']())
-      .data(plot.motifs.valid(this.groupsValidator)).enter();
+    var plot = this.plot,
+        sele = plot.vis.selectAll(plot.motifs['class']())
+          .append('g')
+          .attr('id', 'all-motifs')
+          .data(plot.motifs.valid(this.groupsValidator)).enter();
 
     this.groupData(sele)
       .attr('missing-nts', function(d) { return d.__missing.join(' '); })
       .call(this.drawStandard(plot.motifs));
   },
 
-  labels: function() { 
+  helixes: function() { 
     var plot = this.plot,
-        sele = plot.vis.selectAll(plot.labels['class']())
-          .data(plot.labels()).enter();
+        data = plot.helixes() || [];
 
-    this.labelData(sele)
-      .call(this.drawStandard(plot.labels));
+    plot.vis.selectAll(plot.helixes['class']())
+      .append('g')
+      .attr('id', 'all-helixes')
+      .data(data).enter()
+        .append('svg:text')
+        .text(plot.helixes.getText())
+        .attr('fill', plot.helixes.color())
+        .call(this.helixData)
+        .call(this.drawStandard(plot.helixes));
   },
 
   highlightLetters: function(nts, lettersOnly) {
     var plot = this.plot;
 
     plot.vis.selectAll(plot.highlights['class']())
-      .data(nts).enter().append('svg:text')
-      .attr('font-size', plot.highlights.size())
-      .attr('pointer-events', 'none')
-      .text(plot.highlights.text()(lettersOnly))
-      .attr('fill', plot.highlights.color())
-      .attr('stroke', plot.highlights.color())
-      .call(this.highlightLetterData)
-      .call(this.drawStandard(plot.highlights));
+      .data(nts).enter()
+        .append('svg:text')
+        .attr('font-size', plot.highlights.size())
+        .attr('pointer-events', 'none')
+        .text(plot.highlights.text()(lettersOnly))
+        .attr('fill', plot.highlights.color())
+        .attr('stroke', plot.highlights.color())
+        .call(this.highlightLetterData)
+        .call(this.drawStandard(plot.highlights));
   },
 
   clearHighlightLetters: function() {
@@ -191,6 +191,18 @@ View.prototype = {
 };
 
 Rna2D.View = View;
+View.defaultNucleotideHighlight = function(d, i) {
+  var highlightColor = plot.highlights.color()(d, i);
+  self.highlightLetters([d]);
+  plot.nucleotides.interactions(d, i).style('stroke', highlightColor);
+  return plot.nucleotides;
+};
+
+View.defaultNucleotideClear = function(d, i) {
+  self.clearHighlightLetters();
+  plot.nucleotides.interactions(d, i).style('stroke', null);
+  return plot.nucleotides;
+};
 
 function Views() { 
   Components.call(this);

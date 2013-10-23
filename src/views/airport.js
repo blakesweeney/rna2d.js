@@ -155,10 +155,17 @@ Rna2D.views.airport = function(plot) {
         .attr('d', function(d) { return motifLine(d.__bounding) + "Z"; });
   };
 
+  // TODO: This is a horrible hack, I need to fix.
   Airport.prototype.highlightLetterData = function(selection) {
     return selection
-      .attr('x', air.xCoord())
-      .attr('y', air.yCoord());
+      .attr('x', function(d, i) { return d.__x; })
+      .attr('y', function(d, i) { return d.__y; });
+  };
+
+  Airport.prototype.helixData = function(selection) {
+    return selection
+      .attr('x', plot.helixes.getX())
+      .attr('y', plot.helixes.getY());
   };
 
   var air = new Airport();

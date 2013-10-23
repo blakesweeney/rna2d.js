@@ -329,17 +329,12 @@ View.prototype = {
   },
 
   generate: function(){
-
-    var self = this,
-        plot = this.plot;
-
     this.generateHandlers();
     this.coordinates();
     this.connections();
     this.groups();
-    this.labels();
+    this.helixes();
     this.update();
-
   },
 
   generateHandlers: function() {
@@ -347,37 +342,31 @@ View.prototype = {
     var self = this,
         plot = this.plot;
 
-    plot.nucleotides.highlight(function(d, i) {
-      var highlightColor = plot.highlights.color()(d, i);
-      self.highlightLetters([d]);
-      plot.nucleotides.interactions(d, i).style('stroke', highlightColor);
-      return plot.nucleotides;
-    });
+    //if (plot.nucleotides.highlight() === Object) {
+    //}
 
-    plot.nucleotides.normalize(function(d, i) {
-      self.clearHighlightLetters();
-      plot.nucleotides.interactions(d, i).style('stroke', null);
-      return plot.nucleotides;
-    });
+    if (plot.nucleotides.highlight() === Object) {
+      plot.interactions.highlight(function(d, i) {
+        var highlightColor = plot.interactions.highlightColor()(d, i),
+        ntData = [];
 
-    plot.interactions.highlight(function(d, i) {
-      var highlightColor = plot.interactions.highlightColor()(d, i),
-          ntData = [];
+        d3.select(this).style('stroke', highlightColor);
 
-      d3.select(this).style('stroke', highlightColor);
-
-      plot.interactions.nucleotides(d, i)
+        plot.interactions.nucleotides(d, i)
         .datum(function(d, i) { ntData.push(d); return d; });
-      self.highlightLetters(ntData);
+        self.highlightLetters(ntData);
 
-      return plot.interactions;
-    });
+        return plot.interactions;
+      });
+    }
 
-    plot.interactions.normalize(function(d, i) {
-      d3.select(this).style('stroke', null);
-      self.clearHighlightLetters();
-      return plot.interactions;
-    });
+    if (plot.nucleotides.highlight() === Object) {
+      plot.interactions.normalize(function(d, i) {
+        d3.select(this).style('stroke', null);
+        self.clearHighlightLetters();
+        return plot.interactions;
+      });
+    }
 
     plot.motifs.highlight(function(d, i) {
       var data = [];
@@ -412,7 +401,6 @@ View.prototype = {
 
   yDomain: function() { return this.domain.y; },
 
-  labels: function() { return false; },
   xCoord: function() { return false; },
   yCoord: function() { return false; },
   update: function() { return false; },
@@ -422,6 +410,7 @@ View.prototype = {
   coordinateData: function(s) { return s; },
   connectionData: function(s) { return s; },
   groupData: function(s) { return s; },
+  helixData: function(s) { return s; },
 
   coordinateValidor: function(o, i) { return o; },
   interactionValidator: function(o, i) { return o; },
@@ -434,8 +423,10 @@ View.prototype = {
 
     var sele = plot.vis.selectAll(plot.chains['class']())
       .append('g')
+      .attr('id', 'all-chains')
       .data(plot.chains()).enter()
         .append('g')
+        .attr('id', 'all-nts')
         .call(this.chainData)
         .call(this.drawStandard(plot.chains))
         .selectAll(plot.nucleotides['class']())
@@ -460,27 +451,45 @@ View.prototype = {
   },
 
   groups: function() {
-    var plot = this.plot;
-    var sele = plot.vis.selectAll(plot.motifs['class']())
-      .data(plot.motifs.valid(this.groupsValidator)).enter();
+    var plot = this.plot,
+        sele = plot.vis.selectAll(plot.motifs['class']())
+          .append('g')
+          .attr('id', 'all-motifs')
+          .data(plot.motifs.valid(this.groupsValidator)).enter();
 
     this.groupData(sele)
       .attr('missing-nts', function(d) { return d.__missing.join(' '); })
       .call(this.drawStandard(plot.motifs));
   },
 
+  helixes: function() { 
+    var plot = this.plot,
+        data = plot.helixes() || [];
+
+    plot.vis.selectAll(plot.helixes['class']())
+      .append('g')
+      .attr('id', 'all-helixes')
+      .data(data).enter()
+        .append('svg:text')
+        .text(plot.helixes.getText())
+        .attr('fill', plot.helixes.color())
+        .call(this.helixData)
+        .call(this.drawStandard(plot.helixes));
+  },
+
   highlightLetters: function(nts, lettersOnly) {
     var plot = this.plot;
 
     plot.vis.selectAll(plot.highlights['class']())
-      .data(nts).enter().append('svg:text')
-      .attr('font-size', plot.highlights.size())
-      .attr('pointer-events', 'none')
-      .text(plot.highlights.text()(lettersOnly))
-      .attr('fill', plot.highlights.color())
-      .attr('stroke', plot.highlights.color())
-      .call(this.highlightLetterData)
-      .call(this.drawStandard(plot.highlights));
+      .data(nts).enter()
+        .append('svg:text')
+        .attr('font-size', plot.highlights.size())
+        .attr('pointer-events', 'none')
+        .text(plot.highlights.text()(lettersOnly))
+        .attr('fill', plot.highlights.color())
+        .attr('stroke', plot.highlights.color())
+        .call(this.highlightLetterData)
+        .call(this.drawStandard(plot.highlights));
   },
 
   clearHighlightLetters: function() {
@@ -490,6 +499,18 @@ View.prototype = {
 };
 
 Rna2D.View = View;
+View.defaultNucleotideHighlight = function(d, i) {
+  var highlightColor = plot.highlights.color()(d, i);
+  self.highlightLetters([d]);
+  plot.nucleotides.interactions(d, i).style('stroke', highlightColor);
+  return plot.nucleotides;
+};
+
+View.defaultNucleotideClear = function(d, i) {
+  self.clearHighlightLetters();
+  plot.nucleotides.interactions(d, i).style('stroke', null);
+  return plot.nucleotides;
+};
 
 function Views() { 
   Components.call(this);
@@ -642,6 +663,37 @@ Rna2D.components.frame = function(plot) {
   frame.attach(plot);
 
   return frame;
+};
+
+Rna2D.components.Helixes = function(plot) {
+
+  var Helixes = inhert(Rna2D.Component, 'helixes', {
+    'class': 'helix-label',
+    classOf: function(d, i) { return []; },
+    color: 'black',
+    click: Object,
+    mouseover: null,
+    mouseout: null,
+    getNTs: function(d) { return d.nts; },
+    getText: function(d) { return d.text; },
+    getID: function(d) { return d.id; },
+    getX: function(d) { return d.x; },
+    getY: function(d) { return d.y; },
+    encodeID: function(id) { return id; },
+    visible: function(d, i) { return true; }
+  });
+
+  var helixes = new Helixes();
+
+  Rna2D.withIdElement.call(helixes);
+  Rna2D.withNTElements.call(helixes, plot);
+  Rna2D.asToggable.call(helixes, plot);
+  Rna2D.asColorable.call(helixes);
+  Rna2D.withAttrs.call(helixes);
+
+  helixes.attach(plot);
+
+  return helixes;
 };
 
 Rna2D.components.Highlights = function(plot) {
@@ -981,7 +1033,6 @@ Rna2D.components.Nucleotides = function(plot) {
     getNumber: function(d) { return d.id.split('|')[4]; },
     highlight: Object,
     normalize: Object,
-    toggleLetters: Object,
     visible: function(d, i) { return true; }
   });
 
@@ -1219,10 +1270,17 @@ Rna2D.views.airport = function(plot) {
         .attr('d', function(d) { return motifLine(d.__bounding) + "Z"; });
   };
 
+  // TODO: This is a horrible hack, I need to fix.
   Airport.prototype.highlightLetterData = function(selection) {
     return selection
-      .attr('x', air.xCoord())
-      .attr('y', air.yCoord());
+      .attr('x', function(d, i) { return d.__x; })
+      .attr('y', function(d, i) { return d.__y; });
+  };
+
+  Airport.prototype.helixData = function(selection) {
+    return selection
+      .attr('x', plot.helixes.getX())
+      .attr('y', plot.helixes.getY());
   };
 
   var air = new Airport();
@@ -1241,15 +1299,12 @@ Rna2D.views.circular = function(plot) {
   // Used to compute the centroid of a nucleotide on the backbone.
   var ntCentroid;
 
-  // Used to compute the positions of labels
-  var labelArcs;
-
   // Function to generate arcs for both the nucleotides and finding centriods
   // for interactions
   var arcGenerator;
 
   var Circular = inhert(Rna2D.View, 'circular', {
-    radius: function() { return plot.width() / 2; },
+    radius: function() { return plot.width() / 2.5; },
     width: 4,
     arcGap: 0.2,
     interactionGap: 3,
@@ -1257,13 +1312,14 @@ Rna2D.views.circular = function(plot) {
       return { x: plot.width() / 2, y: plot.height() / 2 };
     },
     chainBreakSize: 0.1,
-    labelGap: 3,
+    helixGap: 3,
+    highlightGap: 8,
     labelSize: 10
   });
 
-  var globalIndex = 0;
   Circular.prototype.preprocess = function() {
-    var getNTData = plot.chains.getNTData(),
+    var globalIndex = 0,
+        getNTData = plot.chains.getNTData(),
         idOf = plot.nucleotides.getID();
 
     $.each(plot.chains(), function(chainIndex, chain) {
@@ -1277,6 +1333,8 @@ Rna2D.views.circular = function(plot) {
         globalIndex++;
       });
     });
+
+    ntCount = globalIndex;
   };
 
   Circular.prototype.xCoord = function() {
@@ -1297,8 +1355,6 @@ Rna2D.views.circular = function(plot) {
 
   // Function to draw the arcs.
   Circular.prototype.coordinateData = function(selection) {
-
-    ntCount = plot.nucleotides.count();
 
     var idOf = plot.nucleotides.getID(),
         radius = this.radius()(),
@@ -1372,11 +1428,49 @@ Rna2D.views.circular = function(plot) {
     return this;
   };
 
-  Circular.prototype.labels = function() {
-    var innerLabelRadius = this.radius()() + this.labelGap();
+  Circular.prototype.helixData = function(selection) {
+    var getLabelID = plot.helixes.getID(),
+        getNTs = plot.helixes.getNTs(),
+        innerLabelRadius = view.radius()() + view.helixGap(),
+        labelArcs = arcGenerator(innerLabelRadius, innerLabelRadius + 5),
+        arcFor = function(data) {
+          var nt = getNTs(data)[0],
+              info = computed[nt];
+              // TODO: Fix above getting the correct nt and getting the centriod
+              // position using nt data
 
-    labelArcs = arcGenerator(innerLabelRadius,
-                             innerLabelRadius + this.labelSize());
+              return {
+                'arc': labelArcs[info.chainIndex],
+                'nt': nt,
+                'index': info.ntIndex
+              };
+        },
+        positionOf = function(data) {
+          var arc = arcFor(data, 'centroid'),
+              centriodPosition = arc.arc.centroid(arc.nt, arc.index),
+              center = view.center()();
+
+          return {
+            x: center.x + centriodPosition[0],
+            y: center.y + centriodPosition[1]
+          };
+        };
+
+    return selection
+      .attr('transform', function(d, i) {
+        var arc = arcFor(d),
+            angle = arc.arc.startAngle()(arc.nt, arc.index);
+        return 'rotate(' + angle + ')';
+      })
+      .attr('x', function(d, i) { return positionOf(d, i).x; })
+      .attr('y', function(d, i) { return positionOf(d, i).y; });
+  };
+
+  Circular.prototype.ticksData = function(selection) {
+    //var innerLabelRadius = this.radius()() + this.labelGap();
+
+    //labelArcs = arcGenerator(innerLabelRadius,
+                             //innerLabelRadius + this.labelSize());
 
     //plot.vis.selectAll(plot.labels['class']())
       //.append('g')
@@ -1396,22 +1490,18 @@ Rna2D.views.circular = function(plot) {
   };
 
   Circular.prototype.highlightLetterData = function(selection) {
-    var innerLabelRadius = view.radius()() + view.labelGap();
-    labelArcs = arcGenerator(innerLabelRadius,
-                             innerLabelRadius + view.labelSize());
-
-    var labelCentroidFor = function(data) {
-      var info = computed[plot.nucleotides.getID()(data)];
-      return labelArcs[info.chainIndex].centroid(data, info.ntIndex);
-    },
-    positionOf = function(data) {
-      var center = view.center()(),
-          centriodPosition = labelCentroidFor(data);
-      return {
-        x: center.x + centriodPosition[0],
-        y: center.y + centriodPosition[1]
-      };
-    };
+    var innerLabelRadius = view.radius()() + view.highlightGap(),
+        labelArcs = arcGenerator(innerLabelRadius,
+                                 innerLabelRadius + view.labelSize()),
+        positionOf = function(data) {
+          var center = view.center()(),
+              info = computed[plot.nucleotides.getID()(data)],
+              centriodPosition = labelArcs[info.chainIndex].centroid(data, info.ntIndex);
+          return {
+            x: center.x + centriodPosition[0],
+            y: center.y + centriodPosition[1]
+          };
+        };
 
     return selection
       .attr('x', function(d) { return positionOf(d).x; })

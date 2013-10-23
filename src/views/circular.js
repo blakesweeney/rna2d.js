@@ -9,15 +9,12 @@ Rna2D.views.circular = function(plot) {
   // Used to compute the centroid of a nucleotide on the backbone.
   var ntCentroid;
 
-  // Used to compute the positions of labels
-  var labelArcs;
-
   // Function to generate arcs for both the nucleotides and finding centriods
   // for interactions
   var arcGenerator;
 
   var Circular = inhert(Rna2D.View, 'circular', {
-    radius: function() { return plot.width() / 2; },
+    radius: function() { return plot.width() / 2.5; },
     width: 4,
     arcGap: 0.2,
     interactionGap: 3,
@@ -25,13 +22,14 @@ Rna2D.views.circular = function(plot) {
       return { x: plot.width() / 2, y: plot.height() / 2 };
     },
     chainBreakSize: 0.1,
-    labelGap: 3,
+    helixGap: 3,
+    highlightGap: 8,
     labelSize: 10
   });
 
-  var globalIndex = 0;
   Circular.prototype.preprocess = function() {
-    var getNTData = plot.chains.getNTData(),
+    var globalIndex = 0,
+        getNTData = plot.chains.getNTData(),
         idOf = plot.nucleotides.getID();
 
     $.each(plot.chains(), function(chainIndex, chain) {
@@ -45,6 +43,8 @@ Rna2D.views.circular = function(plot) {
         globalIndex++;
       });
     });
+
+    ntCount = globalIndex;
   };
 
   Circular.prototype.xCoord = function() {
@@ -65,8 +65,6 @@ Rna2D.views.circular = function(plot) {
 
   // Function to draw the arcs.
   Circular.prototype.coordinateData = function(selection) {
-
-    ntCount = plot.nucleotides.count();
 
     var idOf = plot.nucleotides.getID(),
         radius = this.radius()(),
@@ -140,11 +138,49 @@ Rna2D.views.circular = function(plot) {
     return this;
   };
 
-  Circular.prototype.labels = function() {
-    var innerLabelRadius = this.radius()() + this.labelGap();
+  Circular.prototype.helixData = function(selection) {
+    var getLabelID = plot.helixes.getID(),
+        getNTs = plot.helixes.getNTs(),
+        innerLabelRadius = view.radius()() + view.helixGap(),
+        labelArcs = arcGenerator(innerLabelRadius, innerLabelRadius + 5),
+        arcFor = function(data) {
+          var nt = getNTs(data)[0],
+              info = computed[nt];
+              // TODO: Fix above getting the correct nt and getting the centriod
+              // position using nt data
 
-    labelArcs = arcGenerator(innerLabelRadius,
-                             innerLabelRadius + this.labelSize());
+              return {
+                'arc': labelArcs[info.chainIndex],
+                'nt': nt,
+                'index': info.ntIndex
+              };
+        },
+        positionOf = function(data) {
+          var arc = arcFor(data, 'centroid'),
+              centriodPosition = arc.arc.centroid(arc.nt, arc.index),
+              center = view.center()();
+
+          return {
+            x: center.x + centriodPosition[0],
+            y: center.y + centriodPosition[1]
+          };
+        };
+
+    return selection
+      .attr('transform', function(d, i) {
+        var arc = arcFor(d),
+            angle = arc.arc.startAngle()(arc.nt, arc.index);
+        return 'rotate(' + angle + ')';
+      })
+      .attr('x', function(d, i) { return positionOf(d, i).x; })
+      .attr('y', function(d, i) { return positionOf(d, i).y; });
+  };
+
+  Circular.prototype.ticksData = function(selection) {
+    //var innerLabelRadius = this.radius()() + this.labelGap();
+
+    //labelArcs = arcGenerator(innerLabelRadius,
+                             //innerLabelRadius + this.labelSize());
 
     //plot.vis.selectAll(plot.labels['class']())
       //.append('g')
@@ -164,22 +200,18 @@ Rna2D.views.circular = function(plot) {
   };
 
   Circular.prototype.highlightLetterData = function(selection) {
-    var innerLabelRadius = view.radius()() + view.labelGap();
-    labelArcs = arcGenerator(innerLabelRadius,
-                             innerLabelRadius + view.labelSize());
-
-    var labelCentroidFor = function(data) {
-      var info = computed[plot.nucleotides.getID()(data)];
-      return labelArcs[info.chainIndex].centroid(data, info.ntIndex);
-    },
-    positionOf = function(data) {
-      var center = view.center()(),
-          centriodPosition = labelCentroidFor(data);
-      return {
-        x: center.x + centriodPosition[0],
-        y: center.y + centriodPosition[1]
-      };
-    };
+    var innerLabelRadius = view.radius()() + view.highlightGap(),
+        labelArcs = arcGenerator(innerLabelRadius,
+                                 innerLabelRadius + view.labelSize()),
+        positionOf = function(data) {
+          var center = view.center()(),
+              info = computed[plot.nucleotides.getID()(data)],
+              centriodPosition = labelArcs[info.chainIndex].centroid(data, info.ntIndex);
+          return {
+            x: center.x + centriodPosition[0],
+            y: center.y + centriodPosition[1]
+          };
+        };
 
     return selection
       .attr('x', function(d) { return positionOf(d).x; })
