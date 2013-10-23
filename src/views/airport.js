@@ -163,9 +163,14 @@ Rna2D.views.airport = function(plot) {
   };
 
   Airport.prototype.helixData = function(selection) {
-    return selection
-      .attr('x', plot.helixes.getX())
-      .attr('y', plot.helixes.getY());
+      var xScale = plot.xScale(),
+          yScale = plot.yScale(),
+          getX = plot.helixes.getX(),
+          getY = plot.helixes.getY();
+
+      return selection
+        .attr('x', function(d, i) { return xScale(getX(d, i)); })
+        .attr('y', function(d, i) { return yScale(getY(d, i)); });
   };
 
   var air = new Airport();
