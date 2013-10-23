@@ -60,6 +60,10 @@ $(document).ready(function() {
     .mouseover('highlight')
     .click(motifClick);
 
+  $.get("data/2AW7/helices.json", function(data) {
+    plot.helixes($.parseJSON(data));
+  });
+
   $("#rna-2d").rna2d({
     plot: plot,
     chains: {
