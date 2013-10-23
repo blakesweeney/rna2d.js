@@ -461,7 +461,7 @@ View.prototype = {
     plot.vis.selectAll(plot.highlights['class']())
       .data(nts).enter()
         .append('svg:text')
-        .attr('font-size', plot.highlights.size())
+        .attr('font-size', plot.highlights.size() / Math.sqrt(plot.zoom.currentScale()))
         .attr('pointer-events', 'none')
         .text(plot.highlights.text()(lettersOnly))
         .attr('fill', plot.highlights.color())
