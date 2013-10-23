@@ -55,6 +55,8 @@ var Rna2D = window.Rna2D || function(config) {
   components.attach(plot);
   views.attach(plot);
 
+  plot.currentView = function() { return views.current(); };
+
   return plot;
 };
 

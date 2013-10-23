@@ -59,6 +59,26 @@ Rna2D.components.interactions = function(plot) {
   });
 
   var interactions = new Interactions();
+
+  interactions.defaultHighlight = function(d, i) {
+    var highlightColor = plot.interactions.highlightColor()(d, i),
+    ntData = [];
+
+    d3.select(this).style('stroke', highlightColor);
+
+    plot.interactions.nucleotides(d, i)
+      .datum(function(d, i) { ntData.push(d); return d; });
+    plot.currentView().highlightLetters(ntData);
+
+    return plot.interactions;
+  };
+
+  interactions.defaultNormalize = function(d, i) {
+    d3.select(this).style('stroke', null);
+    plot.currentView().clearHighlightLetters();
+    return plot.interactions;
+  };
+
   Rna2D.withIdElement.call(interactions);
   Rna2D.withNTElements.call(interactions, plot);
   Rna2D.asToggable.call(interactions, plot);

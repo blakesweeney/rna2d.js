@@ -20,6 +20,17 @@ Rna2D.components.Nucleotides = function(plot) {
 
   var nts = new NTs();
 
+  nts.defaultHighlight = function(d, i) {
+    var highlightColor = plot.highlights.color()(d, i);
+    plot.currentView().highlightLetters([d]);
+    plot.nucleotides.interactions(d, i).style('stroke', highlightColor);
+  };
+
+  nts.defaultNormalize = function(d, i) {
+    plot.currentView().clearHighlightLetters();
+    plot.nucleotides.interactions(d, i).style('stroke', null);
+  };
+
   // We do not mix this into the prototype becasue if we do so then the methods
   // will not be accessible outside of the prototype. We do not have access the
   // the methods provided by the prototype outside of this function, this is a

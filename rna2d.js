@@ -59,6 +59,8 @@ var Rna2D = window.Rna2D || function(config) {
   components.attach(plot);
   views.attach(plot);
 
+  plot.currentView = function() { return views.current(); };
+
   return plot;
 };
 
@@ -339,46 +341,22 @@ View.prototype = {
 
   generateHandlers: function() {
 
-    var self = this,
-        plot = this.plot;
-
-    //if (plot.nucleotides.highlight() === Object) {
-    //}
+    var plot = this.plot;
 
     if (plot.nucleotides.highlight() === Object) {
-      plot.interactions.highlight(function(d, i) {
-        var highlightColor = plot.interactions.highlightColor()(d, i),
-        ntData = [];
-
-        d3.select(this).style('stroke', highlightColor);
-
-        plot.interactions.nucleotides(d, i)
-        .datum(function(d, i) { ntData.push(d); return d; });
-        self.highlightLetters(ntData);
-
-        return plot.interactions;
-      });
+      plot.nucleotides.highlight(plot.nucleotides.defaultHighlight);
+      plot.nucleotides.normalize(plot.nucleotides.defaultNormalize);
     }
 
-    if (plot.nucleotides.highlight() === Object) {
-      plot.interactions.normalize(function(d, i) {
-        d3.select(this).style('stroke', null);
-        self.clearHighlightLetters();
-        return plot.interactions;
-      });
+    if (plot.interactions.highlight() === Object) {
+      plot.interactions.highlight(plot.interactions.defaultHighlight);
+      plot.interactions.normalize(plot.interactions.defaultNormalize);
     }
 
-    plot.motifs.highlight(function(d, i) {
-      var data = [];
-      plot.motifs.nucleotides(d, i)
-        .datum(function(d, i) { data.push(d); return d; });
-      self.highlightLetters(data, true);
-    });
-
-    plot.motifs.normalize(function(d, i) {
-      self.clearHighlightLetters();
-    });
-
+    if (plot.motifs.highlight() === Object) {
+      plot.motifs.highlight(plot.motifs.defaultHighlight);
+      plot.motifs.normalize(plot.motifs.defaultNormalize);
+    }
   },
 
   drawStandard: function(type) {
@@ -398,11 +376,11 @@ View.prototype = {
   },
 
   xDomain: function() { return this.domain.x; },
-
   yDomain: function() { return this.domain.y; },
 
   xCoord: function() { return false; },
   yCoord: function() { return false; },
+
   update: function() { return false; },
   preprocess: function() { return false; },
 
@@ -499,21 +477,9 @@ View.prototype = {
 };
 
 Rna2D.View = View;
-View.defaultNucleotideHighlight = function(d, i) {
-  var highlightColor = plot.highlights.color()(d, i);
-  self.highlightLetters([d]);
-  plot.nucleotides.interactions(d, i).style('stroke', highlightColor);
-  return plot.nucleotides;
-};
-
-View.defaultNucleotideClear = function(d, i) {
-  self.clearHighlightLetters();
-  plot.nucleotides.interactions(d, i).style('stroke', null);
-  return plot.nucleotides;
-};
 
 function Views() { 
-  Components.call(this);
+  Components.call(this, 'views', {});
   this._namespace = Rna2D.views;
 }
 
@@ -791,6 +757,26 @@ Rna2D.components.interactions = function(plot) {
   });
 
   var interactions = new Interactions();
+
+  interactions.defaultHighlight = function(d, i) {
+    var highlightColor = plot.interactions.highlightColor()(d, i),
+    ntData = [];
+
+    d3.select(this).style('stroke', highlightColor);
+
+    plot.interactions.nucleotides(d, i)
+      .datum(function(d, i) { ntData.push(d); return d; });
+    plot.currentView().highlightLetters(ntData);
+
+    return plot.interactions;
+  };
+
+  interactions.defaultNormalize = function(d, i) {
+    d3.select(this).style('stroke', null);
+    plot.currentView().clearHighlightLetters();
+    return plot.interactions;
+  };
+
   Rna2D.withIdElement.call(interactions);
   Rna2D.withNTElements.call(interactions, plot);
   Rna2D.asToggable.call(interactions, plot);
@@ -1005,6 +991,17 @@ Rna2D.components.motifs = function(plot) {
 
   var motifs = new Motifs();
 
+  motifs.defaultHighlight = function(d, i) {
+    var data = [];
+    plot.motifs.nucleotides(d, i)
+      .datum(function(d, i) { data.push(d); return d; });
+    plot.currentView().highlightLetters(data, true);
+  };
+
+  motifs.defaultNormalize = function(d, i) {
+    plot.currentView().clearHighlightLetters();
+  };
+
   Rna2D.withIdElement.call(motifs);
   Rna2D.withNTElements.call(motifs, plot);
   Rna2D.asToggable.call(motifs, plot);
@@ -1038,13 +1035,15 @@ Rna2D.components.Nucleotides = function(plot) {
 
   var nts = new NTs();
 
-  nts.count = function() {
-    var count = 0,
-        getNTData = plot.chains.getNTData();
-    $.each(plot.chains(), function(_, chain) {
-      count += getNTData(chain).length;
-    });
-    return count;
+  nts.defaultHighlight = function(d, i) {
+    var highlightColor = plot.highlights.color()(d, i);
+    plot.currentView().highlightLetters([d]);
+    plot.nucleotides.interactions(d, i).style('stroke', highlightColor);
+  };
+
+  nts.defaultNormalize = function(d, i) {
+    plot.currentView().clearHighlightLetters();
+    plot.nucleotides.interactions(d, i).style('stroke', null);
   };
 
   // We do not mix this into the prototype becasue if we do so then the methods
@@ -1117,7 +1116,7 @@ Rna2D.views.airport = function(plot) {
 
   var Airport = inhert(Rna2D.View, 'airport', {
     gap: 1,
-    type: "circle",
+    type: "letter",
     radius: 4
   });
 

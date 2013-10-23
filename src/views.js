@@ -31,53 +31,22 @@ View.prototype = {
 
   generateHandlers: function() {
 
-    var self = this,
-        plot = this.plot;
+    var plot = this.plot;
 
     if (plot.nucleotides.highlight() === Object) {
-      plot.nucleotides.highlight(function(d, i) {
-        self.highlightLetters([d]);
-      });
-
-      plot.nucleotides.normalize(function(d, i) {
-        self.clearHighlightLetters();
-      });
+      plot.nucleotides.highlight(plot.nucleotides.defaultHighlight);
+      plot.nucleotides.normalize(plot.nucleotides.defaultNormalize);
     }
 
-    if (plot.nucleotides.highlight() === Object) {
-      plot.interactions.highlight(function(d, i) {
-        var highlightColor = plot.interactions.highlightColor()(d, i),
-        ntData = [];
-
-        d3.select(this).style('stroke', highlightColor);
-
-        plot.interactions.nucleotides(d, i)
-        .datum(function(d, i) { ntData.push(d); return d; });
-        self.highlightLetters(ntData);
-
-        return plot.interactions;
-      });
+    if (plot.interactions.highlight() === Object) {
+      plot.interactions.highlight(plot.interactions.defaultHighlight);
+      plot.interactions.normalize(plot.interactions.defaultNormalize);
     }
 
-    if (plot.nucleotides.highlight() === Object) {
-      plot.interactions.normalize(function(d, i) {
-        d3.select(this).style('stroke', null);
-        self.clearHighlightLetters();
-        return plot.interactions;
-      });
+    if (plot.motifs.highlight() === Object) {
+      plot.motifs.highlight(plot.motifs.defaultHighlight);
+      plot.motifs.normalize(plot.motifs.defaultNormalize);
     }
-
-    plot.motifs.highlight(function(d, i) {
-      var data = [];
-      plot.motifs.nucleotides(d, i)
-        .datum(function(d, i) { data.push(d); return d; });
-      self.highlightLetters(data, true);
-    });
-
-    plot.motifs.normalize(function(d, i) {
-      self.clearHighlightLetters();
-    });
-
   },
 
   drawStandard: function(type) {
@@ -97,11 +66,11 @@ View.prototype = {
   },
 
   xDomain: function() { return this.domain.x; },
-
   yDomain: function() { return this.domain.y; },
 
   xCoord: function() { return false; },
   yCoord: function() { return false; },
+
   update: function() { return false; },
   preprocess: function() { return false; },
 
@@ -198,21 +167,9 @@ View.prototype = {
 };
 
 Rna2D.View = View;
-View.defaultNucleotideHighlight = function(d, i) {
-  var highlightColor = plot.highlights.color()(d, i);
-  self.highlightLetters([d]);
-  plot.nucleotides.interactions(d, i).style('stroke', highlightColor);
-  return plot.nucleotides;
-};
-
-View.defaultNucleotideClear = function(d, i) {
-  self.clearHighlightLetters();
-  plot.nucleotides.interactions(d, i).style('stroke', null);
-  return plot.nucleotides;
-};
 
 function Views() { 
-  Components.call(this);
+  Components.call(this, 'views', {});
   this._namespace = Rna2D.views;
 }
 
