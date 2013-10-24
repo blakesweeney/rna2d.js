@@ -23,9 +23,14 @@ Rna2D.utils = (function() {
     var handlers = ['click', 'mouseover', 'mouseout'];
 
     if (obj.hasOwnProperty('mouseover') && obj.mouseover() === 'highlight') {
-      selection
-        .on(handlers.pop(), obj.normalize())
-        .on(handlers.pop(), obj.highlight());
+      $.each(['normalize', 'highlight'], function(i, name) {
+        var fn = obj[name](),
+            upper = name.charAt(0).toUpperCase() + name.slice(1);
+        if (fn === Object) {
+          fn = obj['default' + upper];
+        }
+        selection.on(handlers.pop(), fn);
+      });
     }
 
     $.each(handlers, function(i, handler) {

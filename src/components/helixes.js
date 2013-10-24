@@ -7,6 +7,8 @@ Rna2D.components.Helixes = function(plot) {
     click: Object,
     mouseover: Object,
     mouseout: Object,
+    highlight: Object,
+    normalize: Object,
     getNTs: function(d) { return d.nts; },
     getText: function(d) { return d.text; },
     getID: function(d) { return d.id; },
@@ -40,6 +42,17 @@ Rna2D.components.Helixes = function(plot) {
     plot.nucleotides.colorize();
 
     plot.nucleotides.color(ntColor);
+  };
+
+  helixes.defaultHighlight = function(d, i) {
+    var data = [];
+    plot.helixes.nucleotides(d, i)
+      .datum(function(d, i) { data.push(d); return d; });
+    plot.currentView().highlightLetters(data, true);
+  };
+
+  helixes.defaultNormalize = function(d, i) {
+    plot.currentView().clearHighlightLetters();
   };
 
   Rna2D.withIdElement.call(helixes);

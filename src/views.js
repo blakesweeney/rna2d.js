@@ -21,32 +21,11 @@ View.prototype = {
   },
 
   generate: function(){
-    this.generateHandlers();
     this.coordinates();
     this.connections();
     this.groups();
     this.helixes();
     this.update();
-  },
-
-  generateHandlers: function() {
-
-    var plot = this.plot;
-
-    if (plot.nucleotides.highlight() === Object) {
-      plot.nucleotides.highlight(plot.nucleotides.defaultHighlight);
-      plot.nucleotides.normalize(plot.nucleotides.defaultNormalize);
-    }
-
-    if (plot.interactions.highlight() === Object) {
-      plot.interactions.highlight(plot.interactions.defaultHighlight);
-      plot.interactions.normalize(plot.interactions.defaultNormalize);
-    }
-
-    if (plot.motifs.highlight() === Object) {
-      plot.motifs.highlight(plot.motifs.defaultHighlight);
-      plot.motifs.normalize(plot.motifs.defaultNormalize);
-    }
   },
 
   drawStandard: function(type) {

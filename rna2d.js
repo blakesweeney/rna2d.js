@@ -291,9 +291,14 @@ Rna2D.utils = (function() {
     var handlers = ['click', 'mouseover', 'mouseout'];
 
     if (obj.hasOwnProperty('mouseover') && obj.mouseover() === 'highlight') {
-      selection
-        .on(handlers.pop(), obj.normalize())
-        .on(handlers.pop(), obj.highlight());
+      $.each(['normalize', 'highlight'], function(i, name) {
+        var fn = obj[name](),
+            upper = name.charAt(0).toUpperCase() + name.slice(1);
+        if (fn === Object) {
+          fn = obj['default' + upper];
+        }
+        selection.on(handlers.pop(), fn);
+      });
     }
 
     $.each(handlers, function(i, handler) {
@@ -331,32 +336,11 @@ View.prototype = {
   },
 
   generate: function(){
-    this.generateHandlers();
     this.coordinates();
     this.connections();
     this.groups();
     this.helixes();
     this.update();
-  },
-
-  generateHandlers: function() {
-
-    var plot = this.plot;
-
-    if (plot.nucleotides.highlight() === Object) {
-      plot.nucleotides.highlight(plot.nucleotides.defaultHighlight);
-      plot.nucleotides.normalize(plot.nucleotides.defaultNormalize);
-    }
-
-    if (plot.interactions.highlight() === Object) {
-      plot.interactions.highlight(plot.interactions.defaultHighlight);
-      plot.interactions.normalize(plot.interactions.defaultNormalize);
-    }
-
-    if (plot.motifs.highlight() === Object) {
-      plot.motifs.highlight(plot.motifs.defaultHighlight);
-      plot.motifs.normalize(plot.motifs.defaultNormalize);
-    }
   },
 
   drawStandard: function(type) {
@@ -640,6 +624,8 @@ Rna2D.components.Helixes = function(plot) {
     click: Object,
     mouseover: Object,
     mouseout: Object,
+    highlight: Object,
+    normalize: Object,
     getNTs: function(d) { return d.nts; },
     getText: function(d) { return d.text; },
     getID: function(d) { return d.id; },
@@ -673,6 +659,17 @@ Rna2D.components.Helixes = function(plot) {
     plot.nucleotides.colorize();
 
     plot.nucleotides.color(ntColor);
+  };
+
+  helixes.defaultHighlight = function(d, i) {
+    var data = [];
+    plot.helixes.nucleotides(d, i)
+      .datum(function(d, i) { data.push(d); return d; });
+    plot.currentView().highlightLetters(data, true);
+  };
+
+  helixes.defaultNormalize = function(d, i) {
+    plot.currentView().clearHighlightLetters();
   };
 
   Rna2D.withIdElement.call(helixes);

@@ -60,6 +60,9 @@ $(document).ready(function() {
     .mouseover('highlight')
     .click(motifClick);
 
+  plot.helixes
+    .mouseover('highlight');
+
   $.get("data/2AW7/helices.json", function(data) {
     plot.helixes($.parseJSON(data));
   });
