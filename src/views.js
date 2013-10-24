@@ -84,7 +84,7 @@ View.prototype = {
   interactionValidator: function(o, i) { return o; },
   groupsValidator: function(o, i) { return o; },
 
-  coordinates: function() { 
+  coordinates: function() {
     var plot = this.plot,
         x = this.xCoord(),
         y = this.yCoord();
@@ -109,7 +109,7 @@ View.prototype = {
       });
   },
 
-  connections: function() { 
+  connections: function() {
     var plot = this.plot,
         sele = plot.vis.selectAll(plot.interactions['class']())
           .data(plot.interactions.valid(this.interactionValidator)).enter();
@@ -130,7 +130,7 @@ View.prototype = {
       .call(this.drawStandard(plot.motifs));
   },
 
-  helixes: function() { 
+  helixes: function() {
     var plot = this.plot,
         data = plot.helixes() || [];
 
@@ -168,7 +168,7 @@ View.prototype = {
 
 Rna2D.View = View;
 
-function Views() { 
+function Views() {
   Components.call(this, 'views', {});
   this._namespace = Rna2D.views;
 }
