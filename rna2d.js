@@ -337,8 +337,6 @@ View.prototype = {
     this.groups();
     this.helixes();
     this.update();
-
-    this.plot.helixes.colorByHelix();
   },
 
   generateHandlers: function() {
@@ -660,14 +658,12 @@ Rna2D.components.Helixes = function(plot) {
         helixColor = plot.helixes.color(),
         ntMap = {};
 
-    console.log(getNTID);
     $.each(plot.helixes(), function(i, helix) {
       $.each(getNTs(helix, i), function(j, nt) {
         ntMap[nt] = [helix, i];
       });
     });
 
-    console.log(ntMap);
     plot.nucleotides.color(function(d, i) {
       var data = ntMap[getNTID(d, i)];
       return (data ? helixColor.apply(this, data) : 'black');
