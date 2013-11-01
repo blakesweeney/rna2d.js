@@ -67,6 +67,8 @@ $(document).ready(function() {
     plot.helixes($.parseJSON(data));
   });
 
+  //plot.airport.type("circle");
+
   $("#rna-2d").rna2d({
     plot: plot,
     chains: {
@@ -105,6 +107,16 @@ $(document).ready(function() {
     $btn.button('toggle');
     if ($btn.hasClass('active')) {
       colorBySequence();
+    } else {
+      normalColor();
+    }
+  });
+
+  $("#helix-control").on('click', function(e) {
+    var $btn = $(e.target);
+    $btn.button('toggle');
+    if ($btn.hasClass('active')) {
+      plot.helixes.colorByHelix();
     } else {
       normalColor();
     }

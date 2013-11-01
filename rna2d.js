@@ -1476,13 +1476,33 @@ Rna2D.views.circular = function(plot) {
     return this;
   };
 
+  Circular.prototype.midpoint = function(nts) {
+    var midpoint = null,
+        prev = null,
+        indexes = [];
+    indexes = $.map(nts, function(nt, _) { return computed[nt].ntIndex; });
+    indexes.sort(function(a, b) { return a - b; });
+    prev = indexes[0];
+    $.each(indexes, function(j, index) {
+      if (midpoint === null && index - prev > 1) {
+        midpoint = Math.floor((j - 1) / 2);
+      }
+      prev = index;
+    });
+    if (midpoint === null) {
+      midpoint = Math.floor(nts.length / 2);
+    }
+    console.log(indexes, indexes[midpoint]);
+    return nts[midpoint];
+  };
+
   Circular.prototype.helixData = function(selection) {
     var getLabelID = plot.helixes.getID(),
         getNTs = plot.helixes.getNTs(),
         innerLabelRadius = view.radius()() + view.helixGap(),
         labelArcs = arcGenerator(innerLabelRadius, innerLabelRadius + 5),
         arcFor = function(data) {
-          var nt = getNTs(data)[0],
+          var nt = view.midpoint(getNTs(data)),
               info = computed[nt];
               // TODO: Fix above getting the correct nt and getting the centriod
               // position using nt data
@@ -1505,13 +1525,21 @@ Rna2D.views.circular = function(plot) {
         };
 
     return selection
-      .attr('transform', function(d, i) {
-        var arc = arcFor(d),
-            angle = arc.arc.startAngle()(arc.nt, arc.index);
-        return 'rotate(' + angle + ')';
+      //.attr('text-anchor', 'middle')
+      .attr('x', function(d, i) {
+        var x = positionOf(d, i).x,
+            arc = arcFor(d),
+            angle = Math.PI - arc.arc.startAngle()(arc.nt, arc.index),
+            shift = this.getBBox().width * Math.sin(angle);
+        return x + shift;
       })
-      .attr('x', function(d, i) { return positionOf(d, i).x; })
-      .attr('y', function(d, i) { return positionOf(d, i).y; });
+      .attr('y', function(d, i) { 
+        var y = positionOf(d, i).y,
+            arc = arcFor(d),
+            angle = arc.arc.startAngle()(arc.nt, arc.index),
+            shift = this.getBBox().height * Math.cos(angle);
+        return y - shift;
+      });
   };
 
   Circular.prototype.ticksData = function(selection) {
