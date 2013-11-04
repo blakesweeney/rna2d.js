@@ -122,6 +122,17 @@ $(document).ready(function() {
     }
   });
 
+  $("#dot-control").on('click', function(e) {
+    var $btn = $(e.target);
+    $btn.button('toggle');
+    if ($btn.hasClass('active')) {
+      plot.airport.type('circle');
+    } else {
+      plot.airport.type('letter');
+    }
+    plot();
+  });
+
   // TODO: Should do something to simplify this. Possibly make these functions
   // accessible outside the jquery plugin. Or I could add this control to the
   // plugin.
