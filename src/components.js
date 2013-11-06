@@ -135,6 +135,7 @@ Rna2D.withAttrs = function() {
   this._attrs = {};
   this.attr = function(key, value) {
     self._attrs[key] = value;
+    return self;
   };
 
   this.applyAttrs = function(selection) {
