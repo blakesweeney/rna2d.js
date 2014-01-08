@@ -72,7 +72,7 @@ Rna2D.views.airport = function(plot) {
     // involves the max number value. In this case we think that we have not
     // actually found the nts so we log this and use a box that cannot be
     // seen. This prevents bugs where we stop drawing boxes too early.
-    if (bottom === Number.MIN_VALUE || left === Number.MIN_VALUE || 
+    if (bottom === Number.MIN_VALUE || left === Number.MIN_VALUE ||
         right === Number.MAX_VALUE || top === Number.MAX_VALUE) {
       console.log("Unlikely bounding box found for " + current.id);
     }
@@ -130,10 +130,15 @@ Rna2D.views.airport = function(plot) {
   Airport.prototype.coordinateData = function(selection) {
     if (this.type() === "letter") {
       return this.drawLetters(selection);
-    } 
+    }
     if (this.type() === "circle") {
       return this.drawCircles(selection);
     }
+
+    //if (this.type() === "line") {
+      //return this.drawLines(selection);
+    //}
+
     console.log("Unknown type of drawing.");
     return selection;
   };
@@ -155,8 +160,17 @@ Rna2D.views.airport = function(plot) {
       .attr('fill', plot.nucleotides.color())
       .attr('r', this.radius());
   };
-  
 
+  Airport.prototype.drawLines = function(selection) {
+    var line = d3.svg.line()
+      .x(this.xCoord())
+      .y(this.yCoord());
+
+    return selection
+      .append("svg:path")
+        .attr("d", line(selection.data()))
+        .attr("fill", plot.nucleotides.color());
+  };
 
   Airport.prototype.connectionData = function(selection) {
     return selection
@@ -167,7 +181,7 @@ Rna2D.views.airport = function(plot) {
       .attr('x2', function(d) { return d.__line.x2; })
       .attr('y2', function(d) { return d.__line.y2; });
   };
-  
+
   Airport.prototype.groupData = function(selection) {
       var motifLine = d3.svg.line()
         .x(function(d) { return d.x; })
