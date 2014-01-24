@@ -147,6 +147,14 @@ Rna2D.asColorable = function() {
         options = $.extend({}, standard, given || {});
     return colorByNT(mapping, options);
   };
+
+  this.colorByAttribute = function(attribute, fn) {
+    var func = function(v) { return v; };
+    if (arguments.length === 2) {
+      func = arguments.fn;
+    }
+    return function(d, i) { return func(d[attribute]); };
+  };
 };
 
 Rna2D.withAttrs = function() {
