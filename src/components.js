@@ -77,12 +77,11 @@ Rna2D.withIdElement = function() {
 
 Rna2D.withNTElements = function(plot) {
   var self = this;
+
   this.ntElements = function() {
     var getNTs = self.getNTs(),
         encodeID = plot.nucleotides.encodeID();
-    return function(d, i) {
-      return $.map(getNTs(d, i), encodeID);
-    };
+    return function(d, i) { return $.map(getNTs(d, i), encodeID); };
   };
 
   this.nucleotides = function(d, i) {
@@ -124,14 +123,35 @@ Rna2D.asToggable = function(plot) {
 };
 
 Rna2D.asColorable = function() {
-  var self = this;
+  var self = this,
+
+  colorByNT = function(mapping, options) {
+    var getID = this.getID();
+    return function(d, i) {
+      return (mapping[getID(d, i)] ? options.match : options.mismatch);
+    };
+  };
+
   this.colorize = function() {
     return self.all().attr('fill', self.color());
+  };
+
+  this.colorExcept = function(mapping, given) {
+    var standard = { match: 'black', mismatch: 'red' },
+        options = $.extend({}, standard, given || {});
+    return colorByNT(mapping, options);
+  };
+
+  this.colorOnly = function(mapping, given) {
+    var standard = { match: 'red', mismatch: 'black' },
+        options = $.extend({}, standard, given || {});
+    return colorByNT(mapping, options);
   };
 };
 
 Rna2D.withAttrs = function() {
   var self = this;
+
   this._attrs = {};
   this.attr = function(key, value) {
     self._attrs[key] = value;
