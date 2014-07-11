@@ -12,13 +12,13 @@
   <![endif]-->
   <link href='static/css/main.css' rel='stylesheet'>
 
-  <script src='static/jmol/Jmol.js'></script>
   <script src='static/js/sizzle.js'></script>
   <script src='static/js/jquery.min.js'></script>
   <script src='static/js/jquery.jmolTools.js'></script>
   <script src='static/js/chosen.jquery.js'></script>
   <script src='static/js/d3.js'></script>
   <script src='static/js/bootstrap.min.js'></script>
+  <script src='static/jsmol/jsmol.js'></script>
 
   <script src='rna2d.js'></script>
   <script src='jquery.rna2d.js'></script>
@@ -220,11 +220,7 @@
         <strong>Error!</strong> Can only select 200 nts at a time
       </div>
       <div id='jmol' class='well'>
-        <script type="text/javascript">
-          jmolInitialize("./static/jmol");
-          jmolSetDocument(0);
-          jmolSetAppletColor("#ffffff");
-        </script>
+        <script src="static/js/jsmol-init.js"></script>
       </div>
       <div id="about-selection" class="well" style="display: none">
       </div>

@@ -941,7 +941,7 @@ Rna2D.components.jmolTools = function(plot) {
 
     // launch jmol if necessary
     if ($app.length === 0 ) {
-      $div.html(jmolApplet(this.windowSize(), "", 0));
+      // $div.html(jmolApplet(this.windowSize(), "", 0));
       this.windowBuild()($div);
       $div.show();
     }
