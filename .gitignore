@@ -1,3 +1,5 @@
 .DS_Store
 ex.js
 todo.mkd
+node_modules
+.jshintrc
