@@ -1,0 +1,26 @@
+{
+  "name": "rna2d",
+  "main": "rna2d.js",
+  "version": "0.1.0",
+  "homepage": "https://github.com/blakesweeney/rna2d.js",
+  "authors": [
+    "Blake Sweeney <bsweene@bgsu.edu>"
+  ],
+  "description": "A tool for drawing RNA secondary structures",
+  "moduleType": [
+    "node"
+  ],
+  "keywords": [
+    "rna",
+    "svg"
+  ],
+  "license": "BSD-2-Clause",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
