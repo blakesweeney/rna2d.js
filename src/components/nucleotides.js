@@ -1,48 +1,61 @@
-Rna2D.components.Nucleotides = function(plot) {
+/** @module components/nucleotides */
+'use strict';
 
-  var NTs = inhert(Rna2D.Component, 'nucleotides', {
-    'class': 'nucleotide',
-    classOf: function(d, i) { return [d.sequence]; },
-    color: 'black',
-    click: Object,
-    mouseover: null,
-    mouseout: null,
-    getID: function(d) { return d.id; },
-    getX: function(d) { return d.x; },
-    getY: function(d) { return d.y; },
-    encodeID: function(id) { return id; },
-    getSequence: function(d) { return d.sequence; },
-    getNumber: function(d) { return d.id.split('|')[4]; },
-    highlight: Object,
-    normalize: Object,
-    visible: function(d, i) { return true; }
-  });
+var mixins = require('../mixins.js'),
+    utils = require('../utils.js'),
+    Component = require('../component.js');
 
-  var nts = new NTs();
+var DEFAULTS = {
+  click: Object,
+  mouseover: null,
+  mouseout: null,
+  visible: function() { return true; },
+  highlight: Object,
+  normalize: Object,
+  highlightColor: function() { return 'red'; },
+  getID: function(d) { return d.id; },
+  color: 'black',
 
-  nts.defaultHighlight = function(d, i) {
-    var highlightColor = plot.highlights.color()(d, i);
-    plot.currentView().highlightLetters([d]);
-    plot.nucleotides.interactions(d, i).style('stroke', highlightColor);
-  };
-
-  nts.defaultNormalize = function(d, i) {
-    plot.currentView().clearHighlightLetters();
-    plot.nucleotides.interactions(d, i).style('stroke', null);
-  };
-
-  // We do not mix this into the prototype becasue if we do so then the methods
-  // will not be accessible outside of the prototype. We do not have access the
-  // the methods provided by the prototype outside of this function, this is a
-  // problem
-  Rna2D.withIdElement.call(nts);
-  Rna2D.asToggable.call(nts, plot);
-  Rna2D.withInteractions.call(nts, plot);
-  Rna2D.asColorable.call(nts);
-  Rna2D.withAttrs.call(nts);
-
-  nts.attach(plot);
-
-  return nts;
+  'class': 'nucleotide',
+  classOf: function(d) { return [d.sequence]; },
+  getX: function(d) { return d.x; },
+  getY: function(d) { return d.y; },
+  encodeID: function(id) { return id; },
+  getSequence: function(d) { return d.sequence; },
+  getNumber: function(d) { return d.id.split('|')[4]; },
 };
 
+/**
+ * Create a new NT Component. A nucleotide Component
+ *
+ * @constructor
+ */
+var NTs = utils.inhert(Component, 'nucleotides', DEFAULTS);
+
+mixins.withIdElement.call(NTs.prototype);
+mixins.asToggable.call(NTs.prototype);
+mixins.asColorable.call(NTs.prototype);
+mixins.withAttrs.call(NTs.prototype);
+mixins.hasData.call(NTs.prototype, null);
+mixins.withInteractions.call(NTs.prototype);
+
+/**
+ * This exports a function which generates a Nucleotide component. This is based
+ * off of the Nucleotide Component, but with mixins.
+ */
+module.exports = function() {
+  var self = new NTs();
+
+  self.defaultHighlight = function(d, i) {
+    var highlightColor = self.plot.highlights.color()(d, i);
+    self.plot._current_view.highlightLetters([d]);
+    self.plot.nucleotides.interactions(d, i).style('stroke', highlightColor);
+  };
+
+  self.defaultNormalize = function(d, i) {
+    self.plot._current_view.clearHighlightLetters();
+    self.plot.nucleotides.interactions(d, i).style('stroke', null);
+  };
+
+  return self;
+};

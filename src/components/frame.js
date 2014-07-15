@@ -1,19 +1,22 @@
-Rna2D.components.frame = function(plot) {
-  var Frame = inhert(Rna2D.Component, 'frame', { add: true, 'class': 'frame' });
+/** @module components/frame */
+'use strict';
 
-  Frame.prototype.draw = function() {
-    return plot.vis.append('svg:rect')
-      .classed(plot.frame['class'](), true)
-      .attr('x', -plot.margin().left)
-      .attr('y', -plot.margin().above)
-      .attr('width', plot.width() + plot.margin().left + plot.margin().right)
-      .attr('height', plot.height() + plot.margin().above + plot.margin().below)
-      .style('pointer-events', 'none');
-  };
+var utils = require('../utils.js'),
+    Component = require('../component.js');
 
-  var frame = new Frame();
-  frame.attach(plot);
+var Frame = utils.inhert(Component, 'frame', { add: true, 'class': 'frame' });
 
-  return frame;
+Frame.prototype.draw = function() {
+  var plot = this.plot;
+  return plot.vis.append('svg:rect')
+    .classed(plot.frame['class'](), true)
+    .attr('x', -plot.margin().left)
+    .attr('y', -plot.margin().above)
+    .attr('width', plot.width() + plot.margin().left + plot.margin().right)
+    .attr('height', plot.height() + plot.margin().above + plot.margin().below)
+    .attr('fill', 'none')
+    .attr('fill-opacity', 0)
+    .style('pointer-events', 'none');
 };
 
+module.exports = Frame;

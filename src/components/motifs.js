@@ -1,42 +1,50 @@
-Rna2D.components.motifs = function(plot) {
+/** @module components/motifs */
+'use strict';
 
-  var Motifs = inhert(Rna2D.Component, 'motifs', {
-    classOf: function(d) { return [d.id.split("_")[0]]; },
-    'class': 'motif',
-    highlightColor: function() { return 'red'; },
-    click: Object,
-    mouseover: null,
-    mouseout: null,
-    getID: function(d) { return d.id; },
-    encodeID: function(id) { return id; },
-    getNTs: function(d) { return d.nts; },
-    highlight: Object,
-    normalize: Object,
-    plotIfIncomplete: true,
-    visible: function(d, i) { return true; }
-  });
+var mixins = require('../mixins.js'),
+    utils = require('../utils.js'),
+    Component = require('../component.js');
 
+var DEFAULTS = {
+  click: Object,
+  mouseover: null,
+  mouseout: null,
+  visible: function() { return true; },
+  highlight: Object,
+  normalize: Object,
+  highlightColor: function() { return 'red'; },
+  getID: function(d) { return d.id; },
+  color: 'grey',
+
+  'class': 'motif',
+  classOf: function(d) { return [d.type]; },
+  encodeID: function(id) { return id; },
+  getNTs: function(d) { return d.nts; },
+  plotIfIncomplete: true,
+};
+
+var Motifs = utils.inhert(Component, 'motifs', DEFAULTS);
+
+mixins.withIdElement.call(Motifs.prototype);
+mixins.asToggable.call(Motifs.prototype);
+mixins.asColorable.call(Motifs.prototype);
+mixins.withNTElements.call(Motifs.prototype);
+mixins.withAttrs.call(Motifs.prototype);
+mixins.canValidate.call(Motifs.prototype);
+
+module.exports = function() {
   var motifs = new Motifs();
 
   motifs.defaultHighlight = function(d, i) {
     var data = [];
-    plot.motifs.nucleotides(d, i)
-      .datum(function(d, i) { data.push(d); return d; });
-    plot.currentView().highlightLetters(data, true);
+    motifs.nucleotides(d, i)
+      .datum(function(d) { data.push(d); return d; });
+    motifs.plot.currentView().highlightLetters(data, true);
   };
 
-  motifs.defaultNormalize = function(d, i) {
-    plot.currentView().clearHighlightLetters();
+  motifs.defaultNormalize = function() {
+    motifs.plot.currentView().clearHighlightLetters();
   };
-
-  Rna2D.withIdElement.call(motifs);
-  Rna2D.withNTElements.call(motifs, plot);
-  Rna2D.asToggable.call(motifs, plot);
-  Rna2D.asColorable.call(motifs);
-  Rna2D.canValidate.call(motifs, plot);
-  Rna2D.withAttrs.call(motifs);
-
-  motifs.attach(plot);
 
   return motifs;
 };
