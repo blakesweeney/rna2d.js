@@ -64,7 +64,7 @@ var Circular = function() {
     labelSize: 10
   });
 };
-Circular.prototype = Object.create(Component);
+Circular.prototype = Object.create(View);
 Circular.prototype.constructor = Circular;
 
 /**

@@ -16,7 +16,7 @@ var DEFAULTS = {
  * @constructor
  */
 function Airport() { View.call(this, 'airport', DEFAULTS); }
-Airport.prototype = Object.create(Component);
+Airport.prototype = Object.create(View);
 Airport.prototype.constructor = Airport;
 
 var intersectPoint = function(obj1, obj2) {
