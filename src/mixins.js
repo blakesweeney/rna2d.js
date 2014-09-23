@@ -92,18 +92,15 @@ exports.asColorable = function() {
   };
 
   this.colorByAttribute = function(attribute, fn) {
-    var func = function(v) { return v; };
-    if (fn) {
-      func = fn;
-    }
+    var func = fn || function(v) { return v; };
     return function(d) { return func(d[attribute]); };
   };
 };
 
-exports.withAttrs = function() {
+exports.withAttrs = function(defaults) {
   var self = this;
 
-  this._attrs = {};
+  this._attrs = defaults || {};
   this.attr = function(key, value) {
     self._attrs[key] = value;
     return self;
