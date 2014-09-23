@@ -5,55 +5,13 @@ var utils = require('../utils.js'),
     d3 = require('d3'),
     View = require('../view.js');
 
-// We use the total count in a couple places.
-var ntCount;
-
-// This is used to track some index values and the like
-var computed = {};
-
-// Used to compute the centroid of a nucleotide on the backbone.
-var ntCentroid;
-
-// Function to generate arcs for both the nucleotides and finding centriods
-// for interactions
-var arcGenerator;
-
-var buildArcGenerator = function(plot) {
-  var self = this;
-  return function(inner, outer) {
-  var chainCount = plot.chains.data().length,
-      angleSize = (2*Math.PI - self.arcGap() -
-                  (chainCount - 1) * self.chainBreakSize()) / ntCount,
-      offset = self.arcGap() / 2,
-      getNTData = plot.chains.getNTData();
-
-  return plot.chains().map(function(chain, chainIndex) {
-    var startAngle = (function(shift) {
-          return function(_, i) { return i * angleSize + shift; };
-        }(offset)),
-        endAngle = (function(shift) {
-          return function(_, i) { return (i + 1) * angleSize + shift; };
-        }(offset));
-
-    offset += (chainIndex + 1) * self.chainBreakSize() +
-      angleSize * getNTData(chain).length;
-
-    return d3.svg.arc()
-      .innerRadius(inner)
-      .outerRadius(outer)
-      .startAngle(startAngle)
-      .endAngle(endAngle);
-  });
-};
-};
-
 /**
  * Create a new Circular View.
  *
  * @constructor
  * @this {Circular}
  */
-var Circular = function() { 
+var Circular = function() {
   View.call(this, 'circular', {
     width: 4,
     arcGap: 0.2,
@@ -67,6 +25,36 @@ var Circular = function() {
 Circular.prototype = Object.create(View);
 Circular.prototype.constructor = Circular;
 
+Circular.prototype.buildArcGenerator = function(plot) {
+  var self = this;
+  return function(inner, outer) {
+    var chainCount = plot.chains.data().length,
+        angleSize = (2*Math.PI - self.arcGap() -
+                    (chainCount - 1) * self.chainBreakSize()) / self.ntCount,
+        offset = self.arcGap() / 2,
+        getNTData = plot.chains.getNTData();
+
+    return plot.chains().map(function(chain, chainIndex) {
+      var startAngle = (function(shift) {
+            return function(_, i) { return i * angleSize + shift; };
+          }(offset)),
+          endAngle = (function(shift) {
+            return function(_, i) { return (i + 1) * angleSize + shift; };
+          }(offset));
+
+      offset += (chainIndex + 1) * self.chainBreakSize() +
+        angleSize * getNTData(chain).length;
+
+      return d3.svg.arc()
+        .innerRadius(inner)
+        .outerRadius(outer)
+        .startAngle(startAngle)
+        .endAngle(endAngle);
+    });
+  };
+};
+
+
 /**
  * Executes a preprocessing step where we determine indices that will be
  * generally useful.
@@ -76,9 +64,10 @@ Circular.prototype.constructor = Circular;
 Circular.prototype.preprocess = function() {
   var globalIndex = 0,
       getNTData = this.plot.chains.getNTData(),
-      idOf = this.plot.nucleotides.getID();
+      idOf = this.plot.nucleotides.getID(),
+      computed = {};
 
-  arcGenerator = buildArcGenerator.call(this, this.plot);
+  this.arcGenerator = this.buildArcGenerator();
   this.domain =  { x: [0, this.plot.width()], y: [0, this.plot.height()] };
 
   this.plot.chains().forEach(function(chain, chainIndex) {
@@ -93,16 +82,19 @@ Circular.prototype.preprocess = function() {
     });
   });
 
-  ntCount = globalIndex;
+  this.computed = computed;
+  this.ntCount = globalIndex;
 };
 
 Circular.prototype.xCoord = function() {
-  var center = this.center()();
+  var center = this.center()(),
+      ntCentroid = this.ntCentroid;
   return function(d, i) { return center.x + ntCentroid(d, i)[0]; };
 };
 
 Circular.prototype.yCoord = function() {
-  var center = this.center()();
+  var center = this.center()(),
+      ntCentroid = this.ntCentroid;
   return function(d, i) { return center.y + ntCentroid(d, i)[1]; };
 };
 
@@ -117,14 +109,13 @@ Circular.prototype.coordinateData = function(selection) {
 
   var idOf = this.plot.nucleotides.getID(),
       radius = this.radius()(),
-      outerArcs = arcGenerator(radius - this.width(), radius),
+      computed = this.computed,
+      outerArcs = this.arcGenerator(radius - this.width(), radius),
       arcFor = function(d, i) {
         return outerArcs[computed[idOf(d, i)].chainIndex];
       };
 
-  ntCentroid = function(d, i) {
-    return arcFor(d, i).centroid(d, i);
-  };
+  this.ntCentroid = function(d, i) { return arcFor(d, i).centroid(d, i); };
 
   // Draw the arcs
   return selection
@@ -137,13 +128,15 @@ Circular.prototype.connectionData = function(selection) {
 
   // Arc generator for finding the centroid of the nucleotides on the inner
   // circle, which has the interaction endpoints.
-  var outerArcInnerRadius = this.radius()() - this.width(),
+  var computed = this.computed,
+      outerArcInnerRadius = this.radius()() - this.width(),
       innerArcInnerRadius = outerArcInnerRadius - this.interactionGap(),
-      innerArcs = arcGenerator(innerArcInnerRadius, outerArcInnerRadius),
+      innerArcs = this.arcGenerator(innerArcInnerRadius, outerArcInnerRadius),
       arcFor = function(id) { return innerArcs[computed[id].chainIndex]; },
       startAngleOf = function(id) {
         return arcFor(id).startAngle()(null, computed[id].ntIndex);
       },
+      ntCount = this.ntCount,
       centroidOf = function(id) {
         return arcFor(id).centroid(null, computed[id].ntIndex);
       };
@@ -200,6 +193,7 @@ Circular.prototype.groups = function() {
 Circular.prototype.midpoint = function(nts) {
   var midpoint = null,
       prev = null,
+      computed = this.computed,
       indexes = [];
   indexes = nts.map(function(nt) { return computed[nt].ntIndex; });
   indexes.sort(function(a, b) { return a - b; });
@@ -219,8 +213,9 @@ Circular.prototype.midpoint = function(nts) {
 
 Circular.prototype.helixData = function(selection) {
   var getNTs = this.plot.helixes.getNTs(),
+      computed = this.computed,
       innerLabelRadius = this.radius()() + this.helixGap(),
-      labelArcs = arcGenerator(innerLabelRadius, innerLabelRadius + 5),
+      labelArcs = this.arcGenerator(innerLabelRadius, innerLabelRadius + 5),
       arcFor = function(data) {
         var nt = this.midpoint(getNTs(data)),
             info = computed[nt];
@@ -286,9 +281,10 @@ Circular.prototype.ticksData = function() {
 };
 
 Circular.prototype.highlightLetterData = function(selection) {
-  var innerLabelRadius = this.radius()() + this.highlightGap(),
-      labelArcs = arcGenerator(innerLabelRadius,
-                               innerLabelRadius + this.labelSize()),
+  var computed = this.computed,
+      innerLabelRadius = this.radius()() + this.highlightGap(),
+      labelArcs = this.arcGenerator(innerLabelRadius,
+                                    innerLabelRadius + this.labelSize()),
       positionOf = function(data) {
         var center = this.center()(),
             info = computed[this.plot.nucleotides.getID()(data)],
@@ -307,11 +303,11 @@ Circular.prototype.highlightLetterData = function(selection) {
 
 module.exports = function() {
   var view = new Circular();
-  utils.accessor(view, 'radius', function() { 
-    return view.plot.width() / 2.5; 
+  utils.accessor(view, 'radius', function() {
+    return view.plot.width() / 2.5;
   });
-  utils.accessor(view, 'center', function() { 
-    return { x: view.plot.width() / 2, y: view.plot.height() / 2 }; 
+  utils.accessor(view, 'center', function() {
+    return { x: view.plot.width() / 2, y: view.plot.height() / 2 };
   });
   return view;
 };
