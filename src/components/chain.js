@@ -19,7 +19,6 @@ Chain.prototype = Object.create(Component);
 Chain.prototype.constructor = Chain;
 
 Chain.prototype.computeMapping = function() {
-  console.log(this);
   this._mapping = {};
 };
 
