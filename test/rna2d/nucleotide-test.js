@@ -12,7 +12,7 @@ var Nucleotide = useful.load('components/nucleotides'),
       sequence: 'A'
     };
 
-vows.describe('The nucleotides Component').addBatch({
+vows.describe('The Nucleotides Component').addBatch({
   'Has defaults': {
     topic: new Nucleotide(),
     'can get the sequence from a standard object': function(nt) {
