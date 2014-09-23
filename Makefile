@@ -3,24 +3,22 @@ OUTPUT=rna2d.js
 MIN=rna2d.min.js
 BROWSERIFY=./node_modules/.bin/browserify
 UGLIFY=./node_modules/.bin/uglifyjs
-LESS=$(wildcard static/less/*.less)
-CSS=static/css/main.css
 JS=$(wildcard src/*.js src/**/*.js)
 
-all: js css doc
+.PHONY: test
+
+all: test js doc
 
 js: $(OUTPUT) $(MIN)
 
 $(OUTPUT): $(JS)
-	$(BROWSERIFY) $(INPUT) > $@
+	$(BROWSERIFY) $(INPUT) --standalone Rna2D > $@
 
 $(MIN): $(OUTPUT)
 	$(UGLIFY) $^ > $@
 
-css: $(CSS)
-
-$(CSS): $(LESS)
-	lessc $^ > $@
-
 doc: $(OUTPUT)
 	./node_modules/.bin/jsdoc -d doc $(OUTPUT)
+
+test:
+	./node_modules/.bin/vows test/rna2d/* --spec
