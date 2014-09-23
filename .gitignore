@@ -4,3 +4,6 @@ todo.mkd
 node_modules
 .jshintrc
 doc
+GTAGS
+GRTAGS
+GPATH
