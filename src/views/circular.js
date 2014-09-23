@@ -3,7 +3,7 @@
 
 var utils = require('../utils.js'),
     d3 = require('d3'),
-    View = require('../view.js');
+    View = require('../view');
 
 /**
  * Create a new Circular View.
@@ -11,7 +11,7 @@ var utils = require('../utils.js'),
  * @constructor
  * @this {Circular}
  */
-var Circular = function() {
+function Circular() {
   View.call(this, 'circular', {
     width: 4,
     arcGap: 0.2,
@@ -21,7 +21,7 @@ var Circular = function() {
     highlightGap: 8,
     labelSize: 10
   });
-};
+}
 Circular.prototype = Object.create(View);
 Circular.prototype.constructor = Circular;
 

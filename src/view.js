@@ -14,10 +14,10 @@ var utils = require('./utils.js'),
  * @param {object} domain The optional domain. If not given a default one will
  * be added.
  */
-var View = function(name, config, domain) {
+function View(name, config, domain) {
   Component.call(this, name, config);
   this.domain = domain || { x: null, y: null };
-};
+}
 View.prototype = Object.create(Component);
 View.prototype.constructor = View;
 
@@ -150,4 +150,4 @@ View.prototype.clearHighlightLetters = function() {
 View.prototype.interactionValidator = function(o) { return o; };
 View.prototype.groupsValidator = function(o) { return o; };
 
-exports.View = View;
+module.exports = View;
