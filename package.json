@@ -23,7 +23,9 @@
   },
   "devDependencies": {
     "uglify-js": "~2.4.15 ",
-    "jsdom": "~0.5.7"
+    "jsdom": "~0.5.7",
+    "vows": "~0.7.0",
+    "chai": "~1.9.1"
   },
   "author": {
     "name": "Blake A. Sweeney",
