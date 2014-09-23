@@ -20,8 +20,8 @@ Airport.prototype = Object.create(View);
 Airport.prototype.constructor = Airport;
 
 var intersectPoint = function(obj1, obj2) {
-  var centerOf = function(bbox) { 
-        return { x: bbox.x + bbox.width/2, y: bbox.y + bbox.height/2 }; 
+  var centerOf = function(bbox) {
+        return { x: bbox.x + bbox.width/2, y: bbox.y + bbox.height/2 };
       },
       z = 2, // TODO: Scale this with font size
       c1 = centerOf(obj1.getBBox()),
