@@ -32,7 +32,8 @@
  */
 exports.generateAccessors = function(obj, state, callback) {
   Object.keys(state).forEach(function(key) {
-    exports.accessor(obj, key, state[key], callback[key]);
+    var fn = (callback ? callback[key] : null);
+    exports.accessor(obj, key, state[key], fn);
   });
 
   // Object.keys(state).forEach(function(key) {
@@ -63,7 +64,7 @@ exports.accessor = function(obj, key, initial, callback) {
         var old = value;
         value = x;
         if (callback) {
-          callback(old, x);
+          callback.call(obj, old, x);
         }
         return obj;
       };
@@ -100,20 +101,6 @@ exports.attachHandlers = function(selection, obj) {
 };
 
 /**
- * A simple function to inherit from a class.
- *
- */
-exports.inhert = function(Klass, name, options) {
-
-  function Type() { Klass.call(this, name, options); }
-
-  Type.prototype = new Klass(name, options);
-  Type.prototype.constructor = Type;
-
-  return Type;
-};
-
-/**
  * Return a function which attaches the standard handlers and sets standard
  * attributes of elements in a selection for a view. It also adds the attributes
  * that were set. The input is a component that is drawn, such as chains.
@@ -137,3 +124,8 @@ exports.generateStandardViewAttrs = function(type) {
         .call(type.applyAttrs);
     };
 };
+
+/**
+ * A function to return the value given to it. Useful in some cases.
+ */
+exports.identity = function(o) { return o; };
