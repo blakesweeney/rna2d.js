@@ -119,7 +119,7 @@ exports.canValidate = function() {
   this.valid = function(fn) {
     var seen = {},
         getID = self.getID(),
-        validator = function(o) { return o; };
+        validator = (self.validator ? self.validator()() : utils.identity);
 
     if (self.hasOwnProperty('validator')) {
       validator = self.validator()();
