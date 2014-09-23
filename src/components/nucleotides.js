@@ -14,8 +14,6 @@ var DEFAULTS = {
   normalize: Object,
   highlightColor: function() { return 'red'; },
   getID: function(d) { return d.id; },
-  color: 'black',
-
   'class': 'nucleotide',
   classOf: function(d) { return [d.sequence]; },
   getX: function(d) { return d.x; },
@@ -30,12 +28,14 @@ var DEFAULTS = {
  *
  * @constructor
  */
-var NTs = utils.inhert(Component, 'nucleotides', DEFAULTS);
+function NTs() { Component.call(this, 'nucleotides', DEFAULTS); }
+NTs.prototype = Object.create(Component);
+NTs.prototype.constructor = NTs;
 
 mixins.withIdElement.call(NTs.prototype);
 mixins.asToggable.call(NTs.prototype);
 mixins.asColorable.call(NTs.prototype);
-mixins.withAttrs.call(NTs.prototype);
+mixins.withAttrs.call(NTs.prototype, {color: 'black'});
 mixins.hasData.call(NTs.prototype, null);
 mixins.withInteractions.call(NTs.prototype);
 
@@ -44,6 +44,7 @@ mixins.withInteractions.call(NTs.prototype);
  * off of the Nucleotide Component, but with mixins.
  */
 module.exports = function() {
+
   var self = new NTs();
 
   self.defaultHighlight = function(d, i) {

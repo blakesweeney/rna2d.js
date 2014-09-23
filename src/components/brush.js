@@ -1,9 +1,14 @@
 /** @module components/brush */
 'use strict';
 
-var d3 = require('d3');
-var Component = require('../component.js');
-var utils = require('utils');
+var d3 = require('d3'),
+    Component = require('../component.js'),
+    DEFAULTS = {
+      enabled: true,
+      'class': 'brush',
+      update: Object,
+      clear: Object
+    };
 
 /**
  * Create a new Brush.
@@ -15,12 +20,9 @@ var utils = require('utils');
  * @property {function} update The callback for when the brush is updated.
  * @property {function} clear The callback for when the brush is cleared.
  */
-var Brush = utils.inhert(Component, 'brush', {
-  enabled: true,
-  'class': 'brush',
-  update: Object,
-  clear: Object
-});
+var Brush = function() { Component.call(this, 'brush', DEFAULTS); };
+Brush.prototype = Object.create(Component);
+Brush.prototype.constructor = Brush;
 
 /** 
  * Enable the brush. This adds a selection for the brush as needed.
@@ -103,8 +105,4 @@ Brush.prototype.draw = function() {
   return this;
 };
 
-module.exports = function(plot) {
-  var brush = new Brush();
-  brush.attach(plot);
-  return brush;
-};
+module.exports = Brush;

@@ -2,7 +2,6 @@
 'use strict';
 
 var d3 = require('d3'),
-    utils = require('../utils.js'),
     Component = require('../component.js');
 
 var DEFAULTS = {
@@ -16,7 +15,9 @@ var DEFAULTS = {
  *
  * @constructor
  */
-var Zoom = utils.inhert(Component, 'zoom', DEFAULTS);
+var Zoom = function() { Component.call(this, 'zoom', DEFAULTS); };
+Zoom.prototype = Object.create(Component);
+Zoom.prototype.constructor = Zoom;
 
 Zoom.prototype.draw = function() {
 

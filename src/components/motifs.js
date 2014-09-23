@@ -2,7 +2,6 @@
 'use strict';
 
 var mixins = require('../mixins.js'),
-    utils = require('../utils.js'),
     Component = require('../component.js');
 
 var DEFAULTS = {
@@ -15,7 +14,6 @@ var DEFAULTS = {
   highlightColor: function() { return 'red'; },
   getID: function(d) { return d.id; },
   color: 'grey',
-
   'class': 'motif',
   classOf: function(d) { return [d.type]; },
   encodeID: function(id) { return id; },
@@ -23,7 +21,9 @@ var DEFAULTS = {
   plotIfIncomplete: true,
 };
 
-var Motifs = utils.inhert(Component, 'motifs', DEFAULTS);
+var Motifs = function() { Component.call(this, 'motifs', DEFAULTS); };
+Motifs.prototype = Object.create(Component);
+Motifs.prototype.constructor = Motifs;
 
 mixins.withIdElement.call(Motifs.prototype);
 mixins.asToggable.call(Motifs.prototype);

@@ -2,7 +2,6 @@
 'use strict';
 
 var mixins = require('../mixins.js'),
-    utils = require('../utils.js'),
     Component = require('../component.js');
 
 var DEFAULTS = {
@@ -27,7 +26,9 @@ var DEFAULTS = {
   }
 };
 
-var Highlights = utils.inhert(Component, 'highlights', DEFAULTS);
+var Highlights = function() { Component.call(this, 'highlights', DEFAULTS); };
+Highlights.prototype = Object.create(Component);
+Highlights.prototype.constructor = Highlights;
 
 mixins.withIdElement.call(Highlights.prototype);
 mixins.asColorable.call(Highlights.prototype);

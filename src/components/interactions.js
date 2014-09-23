@@ -3,7 +3,6 @@
 
 var mixins = require('../mixins.js'),
     d3 = require('d3'),
-    utils = require('../utils.js'),
     Component = require('../component.js');
 
 var DEFAULTS = {
@@ -24,7 +23,9 @@ var DEFAULTS = {
   encodeID: function(id) { return id; },
 };
 
-var Interactions = utils.inhert(Component, 'interactions', DEFAULTS);
+function Interactions() { Component.call(this, 'interactions', DEFAULTS); };
+Interactions.prototype = Object.create(Component);
+Interactions.prototype.constructor = Interactions;
 
 mixins.withIdElement.call(Interactions.prototype);
 mixins.asToggable.call(Interactions.prototype);

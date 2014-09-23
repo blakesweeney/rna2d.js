@@ -2,16 +2,18 @@
 /* globals jmolScript */
 'use strict';
 
-var utils = require('../utils.js'),
-    Component = require('../component.js');
+var Component = require('../component.js'),
+    DEFAULTS = {
+      divID: 'jmol',
+      file: 'static/jmol/data/2AVY.pdb',
+      showOnStartup: true,
+      postSetup: Object,
+      render: false,
+    };
 
-var Jmol = utils.inhert(Component, 'jmol', {
-  divID: 'jmol',
-  file: 'static/jmol/data/2AVY.pdb',
-  showOnStartup: true,
-  postSetup: Object,
-  render: false,
-});
+function Jmol() { Component.call(this, 'zoom', DEFAULTS); }
+Jmol.prototype = Object.create(Component);
+Jmol.prototype.constructor = Jmol;
 
 Jmol.prototype.draw = function() {
   return (this.showOnStartup() ? this.setup() : true);

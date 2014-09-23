@@ -1,10 +1,15 @@
 /** @module components/frame */
 'use strict';
 
-var utils = require('../utils.js'),
-    Component = require('../component.js');
+var Component = require('../component.js'),
+    DEFAULTS = {
+      add: true,
+      'class': 'frame'
+    };
 
-var Frame = utils.inhert(Component, 'frame', { add: true, 'class': 'frame' });
+function Frame() { Component.call(this, 'frame', DEFAULTS); }
+Frame.prototype = Object.create(Component.prototype);
+Frame.prototype.constructor = Frame;
 
 Frame.prototype.draw = function() {
   var plot = this.plot;

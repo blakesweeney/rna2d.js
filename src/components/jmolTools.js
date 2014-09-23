@@ -3,25 +3,27 @@
 /* globals jmolScript, jmolApplet */
 'use strict';
 
-var utils = require('../utils.js'),
-    Component = require('../component.js');
+var Component = require('../component.js'),
+    DEFAULTS = {
+      divID: 'jmol',
+      appID: 'jmolApplet0',
+      tmpID: 'tempJmolToolsObj',
+      neighborhoodID: 'neighborhood',
+      numbersID: 'showNtNums',
+      stereoID: 'stero',
+      maxSize: 200,
+      overflow: Object,
+      windowSize: 400,
+      windowBuild: function($div) {
+        $div.append('<label><input type="checkbox" id="showNtNums">Numbers</label>')
+        .append('<input type="button" id="neighborhood" value="Show neighborhood">')
+        .append('<input type="button" id="stereo" value="Stereo">');
+      },
+    };
 
-var JmolTools = utils.inhert(Component, 'jmolTools', {
-  divID: 'jmol',
-  appID: 'jmolApplet0',
-  tmpID: 'tempJmolToolsObj',
-  neighborhoodID: 'neighborhood',
-  numbersID: 'showNtNums',
-  stereoID: 'stero',
-  maxSize: 200,
-  overflow: Object,
-  windowSize: 400,
-  windowBuild: function($div) {
-    $div.append('<label><input type="checkbox" id="showNtNums">Numbers</label>')
-    .append('<input type="button" id="neighborhood" value="Show neighborhood">')
-    .append('<input type="button" id="stereo" value="Stereo">');
-  },
-});
+function JmolTools() { Component.call(this, 'zoom', DEFAULTS); }
+JmolTools.prototype = Object.create(Component);
+JmolTools.prototype.constructor = JmolTools;
 
 JmolTools.prototype.setup = function() {
   var $app = $('#' + this.appID()),

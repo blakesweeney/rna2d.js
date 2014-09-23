@@ -2,7 +2,6 @@
 'use strict';
 
 var mixins = require('../mixins.js'),
-    utils = require('../utils.js'),
     Component = require('../component.js');
 
 var DEFAULTS = {
@@ -25,7 +24,9 @@ var DEFAULTS = {
   encodeID: function(id) { return id; },
 };
 
-var Helixes = utils.inhert(Component, 'helixes', DEFAULTS);
+function Helixes() { Component.call(this, 'zoom', DEFAULTS); }
+Helixes.prototype = Object.create(Component);
+Helixes.prototype.constructor = Helixes;
 
 mixins.withIdElement.call(Helixes.prototype);
 mixins.withNTElements.call(Helixes.prototype);
