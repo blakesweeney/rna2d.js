@@ -53,15 +53,19 @@ var buildArcGenerator = function(plot) {
  * @constructor
  * @this {Circular}
  */
-var Circular = utils.inhert(View, 'circular', {
-  width: 4,
-  arcGap: 0.2,
-  interactionGap: 3,
-  chainBreakSize: 0.1,
-  helixGap: 3,
-  highlightGap: 8,
-  labelSize: 10
-});
+var Circular = function() { 
+  View.call(this, 'circular', {
+    width: 4,
+    arcGap: 0.2,
+    interactionGap: 3,
+    chainBreakSize: 0.1,
+    helixGap: 3,
+    highlightGap: 8,
+    labelSize: 10
+  });
+};
+Circular.prototype = Object.create(Component);
+Circular.prototype.constructor = Circular;
 
 /**
  * Executes a preprocessing step where we determine indices that will be

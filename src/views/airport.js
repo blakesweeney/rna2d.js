@@ -2,8 +2,7 @@
 'use strict';
 
 var View = require('../view.js'),
-    d3 = require('d3'),
-    utils = require('../utils.js');
+    d3 = require('d3');
 
 var DEFAULTS = {
   gap: 1,
@@ -16,7 +15,9 @@ var DEFAULTS = {
 
  * @constructor
  */
-var Airport = utils.inhert(View, 'airport', DEFAULTS);
+function Airport() { View.call(this, 'airport', DEFAULTS); }
+Airport.prototype = Object.create(Component);
+Airport.prototype.constructor = Airport;
 
 var intersectPoint = function(obj1, obj2) {
   var centerOf = function(bbox) { 

@@ -1,7 +1,8 @@
 /** @module view */
 'use strict';
 
-var utils = require('./utils.js');
+var utils = require('./utils.js'),
+    Component = require('./component');
 
 /**
  * Creates a new View.
@@ -14,11 +15,11 @@ var utils = require('./utils.js');
  * be added.
  */
 var View = function(name, config, domain) {
-  this._name = name;
+  Component.call(this, name, config);
   this.domain = domain || { x: null, y: null };
-  utils.generateAccessors(this, config);
-  // TODO: Inhert from component
 };
+View.prototype = Object.create(Component);
+View.prototype.constructor = View;
 
 /**
  * Attach the view to a plot.
