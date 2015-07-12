@@ -1,62 +1,79 @@
 /** @module components/nucleotides */
 'use strict';
 
-var mixins = require('../mixins.js'),
-    utils = require('../utils.js'),
-    Component = require('../component.js');
-
-var DEFAULTS = {
-  click: Object,
-  mouseover: null,
-  mouseout: null,
-  visible: function() { return true; },
-  highlight: Object,
-  normalize: Object,
-  highlightColor: function() { return 'red'; },
-  getID: function(d) { return d.id; },
-  'class': 'nucleotide',
-  classOf: function(d) { return [d.sequence]; },
-  getX: function(d) { return d.x; },
-  getY: function(d) { return d.y; },
-  encodeID: function(id) { return id; },
-  getSequence: function(d) { return d.sequence; },
-  getNumber: function(d) { return d.id.split('|')[4]; },
-};
+import { DataComponent } from '../component.js';
 
 /**
- * Create a new NT Component. A nucleotide Component
+ * The Nucleotide class is meant to represent nucleotides for drawing in a 2D.
+ * This class controls the behavior and display of all nucleotides. There
+ * should only be one instance of this class for each 2D diagram. Individual
+ * nucleotides are represented by javascript objects, not instances of this
+ * class.
  *
- * @constructor
+ * This class will have several accessors which are used for getting data from
+ * the individual nucleotide objects for plotting. Each accessor is
+ * configurable and may be either a function which takes 2 arguments, the data
+ * and index of the nucleotide in question or a constant.
+ *
+ * The Nucleotide object will have accessors for:
+ *
+ * :click: The callback to trigger when a nucleotide is clicked. Default
+ * Object.
+ * :mouseover: The callback to trigger when the mouse is over a nucleotide.
+ * Default Object.
+ * :mouseout: The callabck to trigger when the mouse leaves a nucleotide.
+ * Default Object.
+ * :visible: A flag to indicate a nucleotide should be visible or not. Default
+ * true.
+ * :highlight: The callback to trigger for highlighting a nucleotide.
  */
-function NTs() { Component.call(this, 'nucleotides', DEFAULTS); }
-NTs.prototype = Object.create(Component);
-NTs.prototype.constructor = NTs;
+export default class Nucleotides extends DataComponent {
 
-mixins.withIdElement.call(NTs.prototype);
-mixins.asToggable.call(NTs.prototype);
-mixins.asColorable.call(NTs.prototype);
-mixins.withAttrs.call(NTs.prototype, {color: 'black'});
-mixins.hasData.call(NTs.prototype, null);
-mixins.withInteractions.call(NTs.prototype);
+  constructor(plot) {
+    super(plot, 'nucleotides', new Map([
+      ['click', Object],
+      ['mouseover', Object],
+      ['mouseout', Object],
+      ['visible', true],
+      ['highlight', Object],
+      ['normalize', Object],
+      ['highlightColor', 'red'],
+      ['getID', (d) =>  d.id],
+      ['class', 'nucleotide'],
+      ['classOf', (d) => [d.sequence]],
+      ['getX', (d) => d.x],
+      ['getY', (d) =>  d.y],
+      ['encodeID', (id) => id],
+      ['getSequence', (d) => d.sequence],
+      ['getNumber', (d) =>  d.id.split('|')[4]],
+    ]));
 
-/**
- * This exports a function which generates a Nucleotide component. This is based
- * off of the Nucleotide Component, but with mixins.
- */
-module.exports = function() {
+    this.addAccessor('normalize', (d, i) => {
+      this.plot._current_view.clearHighlightLetters();
+      this.plot.nucleotides.interactions(d, i).style('stroke', null);
+    });
 
-  var self = new NTs();
+    this.addAccessor('highlight', (d, i) => {
+      var highlightColor = this.plot.highlights.color()(d, i);
+      this.plot._current_view.highlightLetters([d]);
+      this.plot.nucleotides
+        .interactions(d, i)
+        .style('stroke', highlightColor);
+    });
 
-  self.defaultHighlight = function(d, i) {
-    var highlightColor = self.plot.highlights.color()(d, i);
-    self.plot._current_view.highlightLetters([d]);
-    self.plot.nucleotides.interactions(d, i).style('stroke', highlightColor);
-  };
+  }
 
-  self.defaultNormalize = function(d, i) {
-    self.plot._current_view.clearHighlightLetters();
-    self.plot.nucleotides.interactions(d, i).style('stroke', null);
-  };
-
-  return self;
-};
+  /**
+   * A method for getting all interactions that involve this nucleotide.
+   *
+   * The function takes two arguments, the data and index of the nucleotide in
+   * question and will return all interaction data in the plot which uses this
+   * nucleotide.
+   */
+  interactions(d, i) {
+    var id = this.getID()(d, i),
+        getNTs = this.plot.interactions.getNTs();
+    return this.plot.vis.selectAll('.' + this.plot.interactions['class']())
+      .filter((d) => getNTs(d).indexOf(id) !== -1);
+  }
+}

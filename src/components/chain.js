@@ -1,54 +1,50 @@
 /** @module components/chain */
 'use strict';
 
-var mixins = require('../mixins.js'),
-    utils = require('../utils.js'),
-    Component = require('../component.js');
+import { DataComponent } from '../component.js';
 
-var DEFAULTS = {
-  getID: function(d) { return d.id; },
-  'class': 'chain',
-  classOf: function() { return []; },
-  encodeID: function(id) { return id; },
-  getNTData: function(d) { return d.nts; },
-  visible: function() { return true; },
-};
+export default class Chain extends DataComponent {
+  constructor(plot) {
+    const defaults = new Map([
+      ['getID', (d) =>  d.id],
+      ['class', 'chain'],
+      ['classOf', () => []],
+      ['encodeID', (id) => id],
+      ['getNTData', (d) => d.nts],
+      ['visible', () => true]
+    ]);
+    super(plot, 'chains', defaults);
+    this._mapping = {};
+  }
+}
 
-function Chain() { Component.call(this, 'chains', DEFAULTS); }
-Chain.prototype = Object.create(Component);
-Chain.prototype.constructor = Chain;
+// mixins.withIdElement.call(Chain.prototype);
+// mixins.asToggable.call(Chain.prototype);
+// mixins.asColorable.call(Chain.prototype);
+// mixins.withAttrs.call(Chain.prototype);
+// mixins.hasData.call(Chain.prototype, null, Chain.prototype.computeMapping);
 
-Chain.prototype.computeMapping = function() {
-  this._mapping = {};
-};
+// module.exports = function() {
+//   var chain = new Chain();
 
-mixins.withIdElement.call(Chain.prototype);
-mixins.asToggable.call(Chain.prototype);
-mixins.asColorable.call(Chain.prototype);
-mixins.withAttrs.call(Chain.prototype);
-mixins.hasData.call(Chain.prototype, null, Chain.prototype.computeMapping);
+//   utils.accessor(chain, 'chainOf', function(d, i) {
+//     var ntsOf = chain.getNTData(),
+//         chainIndex = -1,
+//         compare = function(d, i, chain) { return ntsOf(chain)[i] === d; };
 
-module.exports = function() {
-  var chain = new Chain();
+//     if (typeof(d) === 'string') {
+//       var idOf = chain.plot.nucleotides.getID();
+//       compare = function(d, i, chain) { return idOf(ntsOf(chain)[i]) === d; };
+//     }
 
-  utils.accessor(chain, 'chainOf', function(d, i) {
-    var ntsOf = chain.getNTData(),
-        chainIndex = -1,
-        compare = function(d, i, chain) { return ntsOf(chain)[i] === d; };
+//     chain.data().forEach(function(chain, index) {
+//       if (compare(d, i, chain)) {
+//         chainIndex = index;
+//       }
+//     });
 
-    if (typeof(d) === 'string') {
-      var idOf = chain.plot.nucleotides.getID();
-      compare = function(d, i, chain) { return idOf(ntsOf(chain)[i]) === d; };
-    }
+//     return chainIndex;
+//   });
 
-    chain.data().forEach(function(chain, index) {
-      if (compare(d, i, chain)) {
-        chainIndex = index;
-      }
-    });
-
-    return chainIndex;
-  });
-
-  return chain;
-};
+//   return chain;
+// };

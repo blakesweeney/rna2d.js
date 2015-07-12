@@ -2,103 +2,95 @@
 /* globals jmolScript */
 'use strict';
 
-var Component = require('../component.js'),
-    DEFAULTS = {
+import { DataComponent } from '../components.js';
+
+export default class Jmol extends DataComponent {
+
+  constructor(plot) {
+    let defaults = {
       divID: 'jmol',
       file: 'static/jmol/data/2AVY.pdb',
       showOnStartup: true,
       postSetup: Object,
       render: false,
     };
+    super(plot, 'jmol', defaults);
+    this._loaded = false;
+  }
 
-function Jmol() { Component.call(this, 'zoom', DEFAULTS); }
-Jmol.prototype = Object.create(Component);
-Jmol.prototype.constructor = Jmol;
+  draw() { return (this.showOnStartup() ? this.setup() : true); }
 
-Jmol.prototype.draw = function() {
-  return (this.showOnStartup() ? this.setup() : true);
-};
+  setup() {
+    if (this._loaded) {
+      return true;
+    }
 
-Jmol.prototype.setup = function() {
-  if (this._loaded) {
+    jmolScript('load ' + this.file() + ';');
+    this._loaded = true;
+    this.postSetup()();
     return true;
   }
 
-  jmolScript('load ' + this.file() + ';');
-  this._loaded = true;
-  this.postSetup()();
-  return true;
-};
-
-Jmol.prototype.showNTs = function(ids) {
-  var commands = [],
+  showNTs(ids) {
+    var commands = [],
       ntSelect =  ids.map(function(d) { return d.number + ':' + d.chain; });
 
-  ntSelect = ntSelect.join(' or ');
-  commands.push('select ' + ntSelect + ';');
-  commands.push('show ' + ntSelect + ';');
+    ntSelect = ntSelect.join(' or ');
+    commands.push('select ' + ntSelect + ';');
+    commands.push('show ' + ntSelect + ';');
 
-  return this.run(commands);
-};
-
-Jmol.prototype.run = function(commands) {
-  this.setup();
-
-  if (typeof(commands) !== 'string') {
-    commands = commands.join('\n');
+    return this.run(commands);
   }
 
-  return jmolScript(commands);
-};
+  run(commands) {
+    this.setup();
 
-var showNTGroup = function(name) {
-  var self = this;
-  return function(d, i) {
-    var type = self.plot[name],
+    if (typeof(commands) !== 'string') {
+      commands = commands.join('\n');
+    }
+
+    return jmolScript(commands);
+  }
+
+  showNTGroup(name) {
+    return (d, i) => {
+      var type = this.plot[name],
         numberOf = self.plot.nucleotides.getNumber(),
         chainOf = self.plot.nucleotides.getChain(),
-      nts = type.nucleotides(d, i),
-      data = [];
+        nts = type.nucleotides(d, i),
+        data = [];
 
-    nts.datum(function(d) {
-      data.push({number: numberOf(d), chain: chainOf(d)});
-      return d;
-    });
+      nts.datum(function(d) {
+        data.push({number: numberOf(d), chain: chainOf(d)});
+        return d;
+      });
 
-    return self.showNTs(data);
+      return self.showNTs(data);
+    };
   };
-};
 
-Jmol.prototype.nucleotides = function() {
-  var self = this;
-  return function(d, i) {
-    var numberOf = self.plot.nucleotides.getNumber(),
+  nucleotides() {
+    var self = this;
+    return function(d, i) {
+      var numberOf = self.plot.nucleotides.getNumber(),
         chainOf = self.plot.nucleotides.getChain();
-    return self.showNTs([{number: numberOf(d, i), chain: chainOf(d, i)}]);
+      return self.showNTs([{number: numberOf(d, i), chain: chainOf(d, i)}]);
+    };
   };
-};
 
-Jmol.prototype.interactions = function() {
-  return showNTGroup.call(this, 'interactions');
-};
+  interactions() { return this.showNTGroup('interactions'); }
 
-Jmol.prototype.motifs = function() {
-  return showNTGroup.call(this, 'motifs');
-};
+  motifs() { return this.showNTGroup('motifs'); }
 
-Jmol.prototype.brush = function() {
-  var self = this;
-  return function(data) {
-    var numberOf = self.plot.nucleotides.getNumber(),
+  brush() {
+    var self = this;
+    return function(data) {
+      var numberOf = self.plot.nucleotides.getNumber(),
         chainOf = self.plot.nucleotides.getChain();
-    return self.showNTs(data.map(function(d) {
-      return {number: numberOf(d), chain: chainOf(d)};
-    }));
+      return self.showNTs(data.map(function(d) {
+        return {number: numberOf(d), chain: chainOf(d)};
+      }));
+    };
   };
-};
 
-module.exports = function() {
-  var jmol = new Jmol();
-  jmol._loaded = false;
-  return jmol;
-};
+}

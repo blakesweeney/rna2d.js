@@ -1,43 +1,77 @@
 /** @module view */
-'use strict';
 
-var utils = require('./utils.js'),
-    Component = require('./component');
+import utils from './utils.js';
+import { Component } from './component.js';
 
-/**
- * Creates a new View.
- *
- * @constructor
- * @this {View}
- * @param {string} name The name to give the view.
- * @param {object} config The config object.
- * @param {object} domain The optional domain. If not given a default one will
- * be added.
- */
-function View(name, config, domain) {
-  Component.call(this, name, config);
-  this.domain = domain || { x: null, y: null };
+export default class View extends Component {
+
+  /**
+   * Creates a new View.
+   *
+   * @constructor
+   * @this {View}
+   * @param {string} name The name to give the view.
+   * @param {object} config The config object.
+   * @param {object} domain The optional domain. If not given a default one will
+   * be added.
+   */
+  constructor(name, config, domain) {
+    super(name, config);
+    this.domain = domain || { x: null, y: null };
+  }
+
+  /**
+   * Return a function which attaches the standard handlers and sets standard
+   * attributes of elements in a selection for a view. This will set the id,
+   * class and visibility of the given element. It will then add all
+   * attrirbutes. It also attaches all event handlers.
+   *
+   *
+   * @param {Component} type A Component to generate the function for.
+   * @returns {function} A function to set attributes and handlers.
+   */
+  generateStandardViewAttrs(type) {
+    return function(selection) {
+      var klass = type['class'](),
+          classOf = type.classOf();
+
+      utils.attachHandlers(selection, type);
+
+      return selection
+        .attr('id', type.elementID())
+        .attr('class', function(d, i) {
+          return classOf(d, i).concat(klass).join(' ');
+        })
+        .attr('visibility', type.visibility())
+        .call(type.applyAttrs);
+    };
+  }
+
+  /**
+   * Attach the view to a plot.
+   *
+   * @this {View}
+   * @param {Plot} plot The plot to attach to.
+   */
+  attach(plot) {
+    this.plot = plot;
+
+    plot[this._name] = {};
+    Object.keys(this).forEach(function(prop) {
+      if (this.hasOwnProperty(prop) && prop[0] !== '_') {
+        plot[this._name][prop] = this[prop];
+      }
+    });
+  }
+
+  /**
+   * Return a function which computes the x coordinate for some data.
+   *
+   * @abstract
+   * @this {View}
+   */
+  xCoord() { return false; }
 }
-View.prototype = Object.create(Component);
-View.prototype.constructor = View;
-
-/**
- * Attach the view to a plot.
- *
- * @this {View}
- * @param {Plot} plot The plot to attach to.
- */
-View.prototype.attach = function(plot) {
-  // plot[this._name] = this;
-  this.plot = plot;
-
-  plot[this._name] = {};
-  Object.keys(this).forEach(function(prop) {
-    if (this.hasOwnProperty(prop) && prop[0] !== '_') {
-      plot[this._name][prop] = this[prop];
-    }
-  });
-};
 
 /**
  * Generate the view. This draws the coordinates, then connections, then groups,
@@ -52,19 +86,86 @@ View.prototype.generate = function() {
   this.helixes();
   this.update();
 };
-
-View.prototype.xCoord = function() { return false; };
+/**
+ * Return a function which computes the y coordinate for some data.
+ *
+ * @abstract
+ * @this {View}
+ */
 View.prototype.yCoord = function() { return false; };
 
+/**
+ *
+ *
+ * @abstract
+ * @this {View}
+ */
 View.prototype.update = function() { return false; };
+
+/**
+ * Function to call prior to drawing the view. This is a good place to compute
+ * things like the domain and extent of the data.
+ *
+ * @abstract
+ * @this {View}
+ */
 View.prototype.preprocess = function() { return false; };
 
+/**
+ * This function is used to add any chain specific data to the chain object.
+ * This is generally used for things like x and y coordinates, color, etc. The
+ * data which is common to all chain elements, such as id, class, event handlers
+ * and the like is added automatically. This need only compute and add the
+ * things specific to this view.
+ *
+ * @abstract
+ * @this {View}
+ */
 View.prototype.chainData = function(s) { return s; };
+
+/**
+ * This function is used to add any coordinate specific data to the chain
+ * object. This is generally used for things like x and y coordinates,
+ * color, etc. The data which is common to all coordinate elements, such as
+ * id, class, event handlers and the like is added automatically. This need
+ * only compute and add the things specific to this view.
+ *
+ * @abstract
+ * @this {View}
+ */
 View.prototype.coordinateData = function(s) { return s; };
+
+/**
+ *
+ *
+ * @abstract
+ * @this {View}
+ */
 View.prototype.connectionData = function(s) { return s; };
+
+/**
+ *
+ *
+ * @abstract
+ * @this {View}
+ */
 View.prototype.groupData = function(s) { return s; };
+
+/**
+ *
+ *
+ * @abstract
+ * @this {View}
+ */
 View.prototype.helixData = function(s) { return s; };
 
+/**
+ * This function is used to draw all chains. All chains are drawn under a single
+ * g object. Below that is a g object for each chain. The defaults specified in
+ * generateStandardAttrs
+ *
+ * @this {View}
+ */
 View.prototype.coordinates = function() {
   var plot = this.plot,
       x = this.xCoord(),
@@ -72,17 +173,15 @@ View.prototype.coordinates = function() {
 
   var sele = plot.vis.selectAll(plot.chains['class']())
     .append('g')
-    .attr('id', 'all-chains')
     .data(plot.chains()).enter()
       .append('g')
-      .attr('id', 'all-nts')
       .call(this.chainData)
-      .call(utils.generateStandardAttrs(plot.chains))
+      .call(this.generateStandardAttrs(plot.chains))
       .selectAll(plot.nucleotides['class']())
       .data(plot.chains.getNTData()).enter();
 
   return this.coordinateData(sele)
-    .call(utils.generateStandardAttrs(plot.nucleotides))
+    .call(this.generateStandardAttrs(plot.nucleotides))
     .datum(function(d, i) {
       d.__x = x(d, i);
       d.__y = y(d, i);
@@ -90,42 +189,60 @@ View.prototype.coordinates = function() {
     });
 };
 
+/**
+ *
+ *
+ * @this {View}
+ */
 View.prototype.connections = function() {
   var plot = this.plot,
       sele = plot.vis.selectAll(plot.interactions['class']())
         .data(plot.interactions.valid(this.interactionValidator)).enter();
 
   return this.connectionData(sele)
-    .call(utils.generateStandardAttrs(plot.interactions));
+    .call(this.generateStandardAttrs(plot.interactions));
 };
 
+/**
+ *
+ *
+ * @this {View}
+ */
 View.prototype.groups = function() {
   var plot = this.plot,
       sele = plot.vis.selectAll(plot.motifs['class']())
         .append('g')
-        .attr('id', 'all-motifs')
         .data(plot.motifs.valid(this.groupsValidator)).enter();
 
   this.groupData(sele)
     .attr('missing-nts', function(d) { return d.__missing.join(' '); })
-    .call(utils.generateStandardAttrs(plot.motifs));
+    .call(this.generateStandardAttrs(plot.motifs));
 };
 
+/**
+ * This draws the helixes. Each helix
+ *
+ * @this {View}
+ */
 View.prototype.helixes = function() {
   var plot = this.plot,
       data = plot.helixes() || [];
 
   plot.vis.selectAll(plot.helixes['class']())
     .append('g')
-    .attr('id', 'all-helixes')
     .data(data).enter()
       .append('svg:text')
       .text(plot.helixes.getText())
       .attr('fill', plot.helixes.color())
       .call(this.helixData)
-      .call(utils.generateStandardAttrs(plot.helixes));
+      .call(this.generateStandardAttrs(plot.helixes));
 };
 
+/**
+ *
+ *
+ * @this {View}
+ */
 View.prototype.highlightLetters = function(nts, lettersOnly) {
   var plot = this.plot,
       font_size = plot.highlights.size() / Math.sqrt(plot.zoom.currentScale());
@@ -139,15 +256,31 @@ View.prototype.highlightLetters = function(nts, lettersOnly) {
       .attr('fill', plot.highlights.color())
       .attr('stroke', plot.highlights.color())
       .call(this.highlightLetterData)
-      .call(utils.generateStandardAttrs(plot.highlights));
+      .call(this.generateStandardAttrs(plot.highlights));
 };
 
+/**
+ *
+ *
+ * @this {View}
+ */
 View.prototype.clearHighlightLetters = function() {
   this.plot.vis.selectAll('.' + this.plot.highlights['class']()).remove();
   return this;
 };
 
+/**
+ *
+ *
+ * @this {View}
+ */
 View.prototype.interactionValidator = function(o) { return o; };
+
+/**
+ *
+ *
+ * @this {View}
+ */
 View.prototype.groupsValidator = function(o) { return o; };
 
 module.exports = View;

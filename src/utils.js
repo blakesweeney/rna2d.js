@@ -35,23 +35,6 @@ exports.generateAccessors = function(obj, state, callback) {
     var fn = (callback ? callback[key] : null);
     exports.accessor(obj, key, state[key], fn);
   });
-
-  // Object.keys(state).forEach(function(key) {
-  //   var value = state[key];
-  //   obj[key] = (function() {
-  //     return function(x) {
-  //       if (!arguments.length) {
-  //         return state[key];
-  //       }
-  //       var old = state[key];
-  //       state[key] = x;
-  //       if (callback && callback[key]) {
-  //         callback[key](old, x);
-  //       }
-  //       return obj;
-  //     };
-  //   }());
-  // });
 };
 
 exports.accessor = function(obj, key, initial, callback) {
@@ -98,31 +81,6 @@ exports.attachHandlers = function(selection, obj) {
   });
 
   return selection;
-};
-
-/**
- * Return a function which attaches the standard handlers and sets standard
- * attributes of elements in a selection for a view. It also adds the attributes
- * that were set. The input is a component that is drawn, such as chains.
- *
- * @param {Component} type A Component to generate the function for.
- * @returns {function} A function to set attributes and handlers.
- */
-exports.generateStandardViewAttrs = function(type) {
-    return function(selection) {
-      var klass = type['class'](),
-          classOf = type.classOf();
-
-      exports.attachHandlers(selection, type);
-
-      return selection
-        .attr('id', type.elementID())
-        .attr('class', function(d, i) {
-          return classOf(d, i).concat(klass).join(' ');
-        })
-        .attr('visibility', type.visibility())
-        .call(type.applyAttrs);
-    };
 };
 
 /**

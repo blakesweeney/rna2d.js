@@ -1,19 +1,16 @@
 /**
- * @overview 
+ * @overview
  * Rna2D
  * @project Rna2D
  */
 
-require('es5-shim');
+import Plot from './plot.js';
+import views from './views.js';
+import components from './components.js';
 
-var Plot = require('./plot.js'),
-    views = require('./views.js'),
-    components = require('./components.js');
-
-module.exports = function(config) {
-  'use strict';
+export default function(config) {
   var plot = new Plot(config);
   return plot
     .registerAll(components)
     .registerAll(views);
-};
+}

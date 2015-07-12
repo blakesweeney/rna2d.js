@@ -1,50 +1,56 @@
 /** @module components/motifs */
 'use strict';
 
-var mixins = require('../mixins.js'),
-    Component = require('../component.js');
+import { DataComponent } from '../components.js';
 
-var DEFAULTS = {
-  click: Object,
-  mouseover: null,
-  mouseout: null,
-  visible: function() { return true; },
-  highlight: Object,
-  normalize: Object,
-  highlightColor: function() { return 'red'; },
-  getID: function(d) { return d.id; },
-  color: 'grey',
-  'class': 'motif',
-  classOf: function(d) { return [d.type]; },
-  encodeID: function(id) { return id; },
-  getNTs: function(d) { return d.nts; },
-  plotIfIncomplete: true,
-};
+export default class Motifs extends DataComponent {
 
-var Motifs = function() { Component.call(this, 'motifs', DEFAULTS); };
-Motifs.prototype = Object.create(Component);
-Motifs.prototype.constructor = Motifs;
+  constructor(plot) {
+    const defaults = new Map([
+      ['click', Object],
+      ['mouseover', Object],
+      ['mouseout', Object],
+      ['visible', true],
+      ['highlight', Object],
+      ['normalize', Object],
+      ['highlightColor', () => 'red'],
+      ['getID', (d) => d.id],
+      ['color', 'grey'],
+      [''class'', 'motif'],
+      ['classOf', (d) => [d.type]],
+      ['encodeID', (id) => id],
+      ['getNTs', (d) => d.nts],
+      ['plotIfIncomplete', true],
+      ['highlight', (d, i) => {
+        var data = [];
+        this.nucleotides(d, i)
+            .datum((d) => { data.push(d); return d; });
+        this.plot.currentView().highlightLetters(data, true);
+      }],
+      ['normalize', () => this.plot.currentView().clearHighlightLetters()]
+    ]);
 
-mixins.withIdElement.call(Motifs.prototype);
-mixins.asToggable.call(Motifs.prototype);
-mixins.asColorable.call(Motifs.prototype);
-mixins.withNTElements.call(Motifs.prototype);
-mixins.withAttrs.call(Motifs.prototype);
-mixins.canValidate.call(Motifs.prototype);
+    super(plot, 'motifs', defaults);
+  }
 
-module.exports = function() {
-  var motifs = new Motifs();
+  ntElements() {
+    var getNTs = this.getNTs(),
+        encodeID = this.plot.nucleotides.encodeID();
+    return (d, i) => getNTs(d, i).map(encodeID);
+  }
 
-  motifs.defaultHighlight = function(d, i) {
-    var data = [];
-    motifs.nucleotides(d, i)
-      .datum(function(d) { data.push(d); return d; });
-    motifs.plot.currentView().highlightLetters(data, true);
-  };
+  nucleotides(d, i) {
+    var nts = this.getNTs()(d, i),
+        idOf = this.plot.nucleotides.getID();
+    return this.plot.vis.selectAll('.' + this.plot.nucleotides['class']())
+      .filter((d, i) => nts.indexOf(idOf(d, i)) !== -1);
+  }
 
-  motifs.defaultNormalize = function() {
-    motifs.plot.currentView().clearHighlightLetters();
-  };
+  interactions(d, i) {
+    var id = this.getID()(d, i),
+        getNTs = this.plot.interactions.getNTs();
+    return this.plot.vis.selectAll('.' + this.plot.interactions['class']())
+      .filter((d) => getNTs(d).indexOf(id) !== -1);
+  }
 
-  return motifs;
-};
+}

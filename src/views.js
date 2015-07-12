@@ -1,11 +1,7 @@
 /** @module Views */
 
-/**
- * This is the constructor for the circular view.
- */
-exports.circular = require('./views/circular.js');
+import Circular from './views/circular.js';
+import Airport from './views/airport.js';
 
-/**
- * This is the constructor for the Aiport view.
- */
-exports.airport = require('./views/airport.js');
+export var circular = Circular;
+export var airport = Airport;
