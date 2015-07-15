@@ -1,37 +1,43 @@
 /** @module components/highlights */
 'use strict';
 
-var mixins = require('../mixins.js'),
-    Component = require('../component.js');
+import { DataComponent } from '../component.js';
 
-var DEFAULTS = {
-  'class': 'highlight',
-  classOf: function(d) { return [d.sequence]; },
-  color: function() { return 'red'; },
-  getID: function(d) { return 'letter-' + d.id; },
-  encodeID: function(id) { return id; },
-  size: 20,
-  visibility: 'visible',
-  text: function(lettersOnly) {
-    var plot = this.plot;
-    if (lettersOnly) {
-      return function(d, i) {
-        return plot.nucleotides.getSequence()(d, i);
-      };
-    }
-    return function(d, i) {
-      return plot.nucleotides.getSequence()(d, i) +
-        plot.nucleotides.getNumber()(d, i);
+export default class Highlights extends DataComponent {
+  constructor(object) {
+    super(object, 'highlighter', new Map([
+    ['class', 'highlight'],
+    ['classOf', (d) => [d.sequence]],
+    ['color', 'red'],
+    ['getID', (d) =>  'letter-' + d.id],
+    ['encodeID', (id) => id],
+    ['size', 20],
+    ['visible', true]
+    ]));
+
+    this.addAccessor('text', this.defaultText());
+  }
+
+  defaultText() {
+    return (d, i) => {
+      let sequence = this.plot.nucleotides.getSequence()(d, i);
+      if (this.lettersOnly()) {
+        return sequence;
+      }
+
+      return sequence + this.plot.nucleotides.getNumber()(d, i);
     };
   }
-};
 
-var Highlights = function() { Component.call(this, 'highlights', DEFAULTS); };
-Highlights.prototype = Object.create(Component);
-Highlights.prototype.constructor = Highlights;
+  render() {
+    return null;
+  }
 
-mixins.withIdElement.call(Highlights.prototype);
-mixins.asColorable.call(Highlights.prototype);
-mixins.withAttrs.call(Highlights.prototype);
+  nucleotides() {
+    return null;
+  }
 
-module.expots = Highlights;
+  interactions() {
+    return null;
+  }
+}
