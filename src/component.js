@@ -93,7 +93,9 @@ export class Component extends Accessible {
    * @this {Component}
    * @abstract
    */
-  draw() { return null; }
+  draw() {
+    return null;
+  }
 
   /**
    * Generate the component. This will check if we should draw it, using .draw,
@@ -118,6 +120,7 @@ export class Component extends Accessible {
       console.log('Could not generate component: ' + this._name);
       console.log(except);
     }
+
     return this;
   }
 }
@@ -135,13 +138,14 @@ export class DataComponent extends Component {
     if (!config.has('visible')) {
       config.set('visible', true);
     }
+
     super(plot, name, config);
     this._attrs = {};
   }
 
   elementID() {
-    var getID = this.getID(),
-        encodeID = this.encodeID();
+    const getID = this.getID();
+    const encodeID = this.encodeID();
     return (d, i) => encodeID(getID(d, i));
   }
 
@@ -150,16 +154,18 @@ export class DataComponent extends Component {
     return this;
   }
 
-  applyAttrs(selection) { selection.attr(this._attrs); }
+  applyAttrs(selection) {
+    selection.attr(this._attrs);
+  }
 
   all(klass) {
-    klass = (klass && klass !== 'all' ? klass : this['class']());
+    klass = (klass && klass !== 'all' ? klass : this.class());
     return this.plot.vis.selectAll('.' + klass);
   }
 
   visibility() {
-    var isVisible = this.visible();
-    return (d, i) =>  (isVisible(d, i) ? 'visible' : 'hidden');
+    const isVisible = this.visible();
+    return (d, i) => (isVisible(d, i) ? 'visible' : 'hidden');
   }
 
   updateVisibility() {
@@ -167,39 +173,40 @@ export class DataComponent extends Component {
   }
 
   colorByNT(mapping, options) {
-    var getID = this.getID();
+    const getID = this.getID();
     return (d, i) => (mapping[getID(d, i)] ? options.match : options.mismatch);
   }
 
-  colorize() {
-    return this.all().attr('fill', this.color());
+  colorize(coloring) {
+    return this.all().attr('fill', coloring || this.color());
   }
 
   colorExcept(mapping, given) {
-    var standard = { match: 'black', mismatch: 'red' },
-          options = Object.assign({}, standard, given || {});
+    const standard = { match: 'black', mismatch: 'red' };
+    const options = Object.assign({}, standard, given || {});
     this.colorByNT(mapping, options);
   }
 
   colorOnly(mapping, given) {
-    var standard = { match: 'red', mismatch: 'black' },
-        options = Object.assign({}, standard, given || {});
+    const standard = { match: 'red', mismatch: 'black' };
+    const options = Object.assign({}, standard, given || {});
     this.colorByNT(mapping, options);
   }
 
   colorByAttribute(attribute, fn) {
-    var func = fn;
+    let func = fn;
     if (fn === undefined) {
       func = (v) => v;
     }
+
     return (d) => func(d[attribute]);
   }
 
   valid() {
-    let seen = new Set(),
-      getID = this.getID(),
-      validator = (this.validator ? this.validator()() : (x) => x),
-      data = this.data;
+    const seen = new Set();
+    const getID = this.getID();
+    const validator = (this.validator ? this.validator()() : (x) => x);
+    const data = this.data;
 
     return function*() {
       for (var entry of data()) {
