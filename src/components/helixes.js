@@ -1,77 +1,71 @@
 /** @module components/motifs */
 'use strict';
 
-var mixins = require('../mixins.js'),
-    Component = require('../component.js');
+import { DataComponent } from '../component.js';
 
-var DEFAULTS = {
-  click: Object,
-  mouseover: Object,
-  mouseout: Object,
-  highlight: Object,
-  normalize: Object,
-  getID: function(d) { return d.id; },
-  color: function(d) { return d.color || 'black'; },
-  visible: function() { return true; },
-  highlightColor: function() { return 'red'; },
+export default class Helixes extends DataComponent {
+  constructor(plot) {
+    super(plot, 'helixes', new Map([
+      ['click', Object],
+      ['mouseover', Object],
+      ['mouseout', Object],
+      ['highlight', Object],
+      ['normalize', Object],
+      ['getID', (d) => d.id],
+      ['color', (d) => d.color || 'black'],
+      ['visible', () => true],
+      ['highlightColor', () => 'red'],
+      ['class', 'helix-label'],
+      ['classOf', () => []],
+      ['getNTs', (d) => d.nts],
+      ['getText', (d) => d.text],
+      ['getX', (d) => d.x],
+      ['getY', (d) => d.y],
+      ['encodeID', (id) => id]
+    ]));
+  }
 
-  'class': 'helix-label',
-  classOf: function() { return []; },
-  getNTs: function(d) { return d.nts; },
-  getText: function(d) { return d.text; },
-  getX: function(d) { return d.x; },
-  getY: function(d) { return d.y; },
-  encodeID: function(id) { return id; },
-};
+  colorByHelix() {
+    let ntColor = this.plot.nucleotides.color();
+    let getNTs = this.getNTs();
+    let getNTID = this.plot.nucleotides.getID();
+    let helixColor = this.color();
+    let ntMap = {};
 
-function Helixes() { Component.call(this, 'zoom', DEFAULTS); }
-Helixes.prototype = Object.create(Component);
-Helixes.prototype.constructor = Helixes;
-
-mixins.withIdElement.call(Helixes.prototype);
-mixins.withNTElements.call(Helixes.prototype);
-mixins.asToggable.call(Helixes.prototype);
-mixins.asColorable.call(Helixes.prototype);
-mixins.withAttrs.call(Helixes.prototype);
-
-Helixes.prototype.colorByHelix = function() {
-  var ntColor = this.plot.nucleotides.color(),
-      getNTs = this.getNTs(),
-      getNTID = this.plot.nucleotides.getID(),
-      helixColor = this.color(),
-      ntMap = {};
-
-  this.data().forEach(function(helix, i) {
-    getNTs(helix, i).forEach(function(nt) {
-      ntMap[nt] = [helix, i];
+    this.data().forEach(function(helix, i) {
+      getNTs(helix, i).forEach(function(nt) {
+        ntMap[nt] = [helix, i];
+      });
     });
-  });
 
-  this.plot.nucleotides.color(function(d, i) {
-    var data = ntMap[getNTID(d, i)];
-    return (data ? helixColor.apply(this, data) : 'black');
-  });
+    this.plot.nucleotides.color(function(d, i) {
+      var data = ntMap[getNTID(d, i)];
+      return (data ? helixColor.apply(this, data) : 'black');
+    });
 
-  this.colorize();
-  this.plot.nucleotides.colorize();
-  this.plot.nucleotides.color(ntColor);
+    this.colorize();
+    this.plot.nucleotides
+      .colorize()
+      .color(ntColor);
 
-  return this;
-};
+    return this;
+  }
 
-module.exports = function() {
-  var helixes = new Helixes();
-
-  helixes.defaultHighlight = function(d, i) {
+  defaultHighlight(d, i) {
     var data = [];
-    helixes.nucleotides(d, i)
-      .datum(function(d) { data.push(d); return d; });
-    helixes.plot.currentView().highlightLetters(data, true);
-  };
+    this.nucleotides(d, i)
+      .datum((d) => {
+        data.push(d);
+        return d;
+      });
 
-  helixes.defaultNormalize = function() {
-    helixes.plot.currentView().clearHighlightLetters();
-  };
+    this.plot.currentView().highlightLetters(data, true);
+    return this;
+  }
 
-  return helixes;
-};
+  defaultNormalize() {
+    this.plot.currentView().clearHighlightLetters();
+    return this;
+  }
+
+}
