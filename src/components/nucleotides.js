@@ -45,17 +45,17 @@ export default class Nucleotides extends DataComponent {
       ['getY', (d) =>  d.y],
       ['encodeID', (id) => id],
       ['getSequence', (d) => d.sequence],
-      ['getNumber', (d) =>  d.id.split('|')[4]],
+      ['getNumber', (d) =>  d.id.split('|')[4]]
     ]));
 
     this.addAccessor('normalize', (d, i) => {
-      this.plot._current_view.clearHighlightLetters();
+      this.plot.currentView().clearHighlightLetters();
       this.plot.nucleotides.interactions(d, i).style('stroke', null);
     });
 
     this.addAccessor('highlight', (d, i) => {
       var highlightColor = this.plot.highlights.color()(d, i);
-      this.plot._current_view.highlightLetters([d]);
+      this.plot.currentView().highlightLetters([d]);
       this.plot.nucleotides
         .interactions(d, i)
         .style('stroke', highlightColor);
@@ -71,9 +71,9 @@ export default class Nucleotides extends DataComponent {
    * nucleotide.
    */
   interactions(d, i) {
-    var id = this.getID()(d, i),
-        getNTs = this.plot.interactions.getNTs();
-    return this.plot.vis.selectAll('.' + this.plot.interactions['class']())
+    let id = this.getID()(d, i);
+    let getNTs = this.plot.interactions.getNTs();
+    return this.plot.vis.selectAll('.' + this.plot.interactions.class())
       .filter((d) => getNTs(d).indexOf(id) !== -1);
   }
 }

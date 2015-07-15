@@ -7,18 +7,19 @@ import { DataComponent } from '../components.js';
 export default class Jmol extends DataComponent {
 
   constructor(plot) {
-    let defaults = {
-      divID: 'jmol',
-      file: 'static/jmol/data/2AVY.pdb',
-      showOnStartup: true,
-      postSetup: Object,
-      render: false,
-    };
-    super(plot, 'jmol', defaults);
+    super(plot, 'jmol', new Map([
+      ['divID', 'jmol'],
+      ['file', 'static/jmol/data/2AVY.pdb'],
+      ['showOnStartup', true],
+      ['postSetup', Object],
+      ['render', false]
+    ]));
     this._loaded = false;
   }
 
-  draw() { return (this.showOnStartup() ? this.setup() : true); }
+  draw() {
+    return (this.showOnStartup() ? this.setup() : true);
+  }
 
   setup() {
     if (this._loaded) {
@@ -32,8 +33,8 @@ export default class Jmol extends DataComponent {
   }
 
   showNTs(ids) {
-    var commands = [],
-      ntSelect =  ids.map(function(d) { return d.number + ':' + d.chain; });
+    let commands = [];
+    let ntSelect =  ids.map(function(d) { return d.number + ':' + d.chain; });
 
     ntSelect = ntSelect.join(' or ');
     commands.push('select ' + ntSelect + ';');
@@ -45,7 +46,7 @@ export default class Jmol extends DataComponent {
   run(commands) {
     this.setup();
 
-    if (typeof(commands) !== 'string') {
+    if (typeof commands !== 'string') {
       commands = commands.join('\n');
     }
 
@@ -54,43 +55,45 @@ export default class Jmol extends DataComponent {
 
   showNTGroup(name) {
     return (d, i) => {
-      var type = this.plot[name],
-        numberOf = self.plot.nucleotides.getNumber(),
-        chainOf = self.plot.nucleotides.getChain(),
-        nts = type.nucleotides(d, i),
-        data = [];
+      let type = this.plot[name];
+      let numberOf = this.plot.nucleotides.getNumber();
+      let chainOf = this.plot.nucleotides.getChain();
+      let nts = type.nucleotides(d, i);
+      let data = [];
 
       nts.datum(function(d) {
         data.push({number: numberOf(d), chain: chainOf(d)});
         return d;
       });
 
-      return self.showNTs(data);
+      return this.showNTs(data);
     };
-  };
+  }
 
   nucleotides() {
-    var self = this;
-    return function(d, i) {
-      var numberOf = self.plot.nucleotides.getNumber(),
-        chainOf = self.plot.nucleotides.getChain();
-      return self.showNTs([{number: numberOf(d, i), chain: chainOf(d, i)}]);
+    return (d, i) => {
+      let numberOf = this.plot.nucleotides.getNumber();
+      let chainOf = this.plot.nucleotides.getChain();
+      return this.showNTs([{number: numberOf(d, i), chain: chainOf(d, i)}]);
     };
-  };
+  }
 
-  interactions() { return this.showNTGroup('interactions'); }
+  interactions() {
+    return this.showNTGroup('interactions');
+  }
 
-  motifs() { return this.showNTGroup('motifs'); }
+  motifs() {
+    return this.showNTGroup('motifs');
+  }
 
   brush() {
-    var self = this;
-    return function(data) {
-      var numberOf = self.plot.nucleotides.getNumber(),
-        chainOf = self.plot.nucleotides.getChain();
-      return self.showNTs(data.map(function(d) {
+    return (data) => {
+      let numberOf = this.plot.nucleotides.getNumber();
+      let chainOf = this.plot.nucleotides.getChain();
+      return this.showNTs(data.map(function(d) {
         return {number: numberOf(d), chain: chainOf(d)};
       }));
     };
-  };
+  }
 
 }
