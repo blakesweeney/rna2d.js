@@ -11,10 +11,12 @@ const standard = {
 };
 
 describe('The Nucleotides Component', function() {
+  let plot;
   let nt;
 
   beforeEach(function() {
-    nt = new Nucleotide();
+    plot = {};
+    nt = new Nucleotide(plot);
   });
 
   describe('the defaults', function() {
@@ -42,7 +44,7 @@ describe('The Nucleotides Component', function() {
 
   describe('altering the defaults', function() {
     it('can set the sequence accessor', function() {
-      nt.getSequence(function() { return 'bob'; });
+      nt.getSequence(() => 'bob');
       assert.equal(nt.getSequence()(standard), 'bob');
     });
   });
