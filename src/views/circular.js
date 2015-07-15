@@ -1,10 +1,8 @@
 /** @module views/circular */
 'use strict';
 
-var utils = require('../utils.js');
-
-import View from "../view.js";
-import d3 from "d3";
+import View from '../view.js';
+import d3 from 'd3';
 
 export default class Circular extends View {
 
@@ -15,41 +13,39 @@ export default class Circular extends View {
    * @this {Circular}
    */
   constructor(plot) {
-    const defaults = new Map([
+    super(plot, 'circular', new Map([
       ['width', 4],
       ['arcGap', 0.2],
       ['interactionGap', 3],
       ['chainBreakSize', 0.1],
       ['helixGap', 3],
       ['highlightGap', 8],
-      ['labelSize', 10],
-    ]);
+      ['labelSize', 10]
+    ]));
 
-    super(plot, 'circular', defaults);
-    this.addAccessor('center', function() {
-      return  [this.plot.width() / 2, this.plot.height() /2];
-    });
-    this.addAccessor('radius', () => plot.plot.width() / 2.5);
+    this.addAccessor('center',
+                     () => [this.plot.width() / 2, this.plot.height() / 2]);
+    this.addAccessor('radius', () => this.plot.width() / 2.5);
   }
 
   buildArcGenerator(plot) {
-    var self = this;
-    return function(inner, outer) {
-      var chainCount = plot.chains.data().length,
-          angleSize = (2*Math.PI - self.arcGap() -
-                      (chainCount - 1) * self.chainBreakSize()) / self.ntCount,
-          offset = self.arcGap() / 2,
-          getNTData = plot.chains.getNTData();
+    return (inner, outer) => {
+      var chainCount = this.plot.chains.data().length;
+      let angleSize = (2 * Math.PI - this.arcGap() -
+                       (chainCount - 1) * this.chainBreakSize()) / this.ntCount;
+      let offset = this.arcGap() / 2;
+      let getNTData = plot.chains.getNTData();
 
       return plot.chains().map(function(chain, chainIndex) {
-        var startAngle = (function(shift) {
-              return function(_, i) { return i * angleSize + shift; };
-            }(offset)),
-            endAngle = (function(shift) {
-              return function(_, i) { return (i + 1) * angleSize + shift; };
-            }(offset));
+        let startAngle = ((shift) => {
+          return (_, i) => i * angleSize + shift;
+        })(offset);
 
-        offset += (chainIndex + 1) * self.chainBreakSize() +
+        let endAngle = ((shift) => {
+          return (_, i) => (i + 1) * angleSize + shift;
+        })(offset);
+
+        offset += (chainIndex + 1) * this.chainBreakSize() +
           angleSize * getNTData(chain).length;
 
         return d3.svg.arc()
@@ -59,8 +55,7 @@ export default class Circular extends View {
           .endAngle(endAngle);
       });
     };
-  };
-
+  }
 
   /**
    * Executes a preprocessing step where we determine indices that will be
@@ -69,10 +64,10 @@ export default class Circular extends View {
    * @this {Circular}
    */
   preprocess() {
-    var globalIndex = 0,
-        getNTData = this.plot.chains.getNTData(),
-        idOf = this.plot.nucleotides.getID(),
-        computed = {};
+    let globalIndex = 0;
+    let getNTData = this.plot.chains.getNTData();
+    let idOf = this.plot.nucleotides.getID();
+    let computed = {};
 
     this.arcGenerator = this.buildArcGenerator();
     this.domain =  { x: [0, this.plot.width()], y: [0, this.plot.height()] };
@@ -91,98 +86,90 @@ export default class Circular extends View {
 
     this.computed = computed;
     this.ntCount = globalIndex;
-  };
+  }
 
   xCoord() {
-    var center = this.center()(),
-        ntCentroid = this.ntCentroid;
-    return function(d, i) { return center.x + ntCentroid(d, i)[0]; };
-  };
+    let center = this.center()();
+    return (d, i) => center.x + this.ntCentroid(d, i)[0];
+  }
 
   yCoord() {
-    var center = this.center()(),
-        ntCentroid = this.ntCentroid;
-    return function(d, i) { return center.y + ntCentroid(d, i)[1]; };
-  };
+    let center = this.center()();
+    return (d, i) => center.y + this.ntCentroid(d, i)[1];
+  }
 
   chainData(selection) {
     var center = this.center()();
     return selection.attr('transform', `translate(${center.x},${center.y})`);
-  };
+  }
 
   // Function to draw the arcs.
   coordinateData(selection) {
 
-    var idOf = this.plot.nucleotides.getID(),
-        radius = this.radius()(),
-        computed = this.computed,
-        outerArcs = this.arcGenerator(radius - this.width(), radius),
-        arcFor = function(d, i) {
-          return outerArcs[computed[idOf(d, i)].chainIndex];
-        };
+    let idOf = this.plot.nucleotides.getID();
+    let radius = this.radius()();
+    let computed = this.computed;
+    let outerArcs = this.arcGenerator(radius - this.width(), radius);
+    let arcFor = (d, i) => outerArcs[computed[idOf(d, i)].chainIndex];
 
-    this.ntCentroid = function(d, i) { return arcFor(d, i).centroid(d, i); };
+    this.ntCentroid = (d, i) => arcFor(d, i).centroid(d, i);
 
     // Draw the arcs
     return selection
       .append('svg:path')
       .attr('d', function(d, i) { return arcFor(d, i)(d, i); })
       .attr('fill', this.plot.nucleotides.color());
-  };
+  }
 
   connectionData(selection) {
 
     // Arc generator for finding the centroid of the nucleotides on the inner
     // circle, which has the interaction endpoints.
-    var computed = this.computed,
-        outerArcInnerRadius = this.radius()() - this.width(),
-        innerArcInnerRadius = outerArcInnerRadius - this.interactionGap(),
-        innerArcs = this.arcGenerator(innerArcInnerRadius, outerArcInnerRadius),
-        arcFor = function(id) { return innerArcs[computed[id].chainIndex]; },
-        startAngleOf = function(id) {
-          return arcFor(id).startAngle()(null, computed[id].ntIndex);
-        },
-        ntCount = this.ntCount,
-        centroidOf = function(id) {
-          return arcFor(id).centroid(null, computed[id].ntIndex);
-        };
+    let computed = this.computed;
+    let outerArcInnerRadius = this.radius()() - this.width();
+    let innerArcInnerRadius = outerArcInnerRadius - this.interactionGap();
+    let innerArcs = this.arcGenerator(innerArcInnerRadius, outerArcInnerRadius);
+    let arcFor = (id) => innerArcs[computed[id].chainIndex];
+    let startAngleOf = (id) => arcFor(id).startAngle()(0, computed[id].ntIndex);
+    let ntCount = this.ntCount;
+    let centroidOf = (id) => arcFor(id).centroid(null, computed[id].ntIndex);
 
     // Figure out the centroid position of the nucleotide with the given id in
     // the innerArc.
-    var centriodPosition = function(ntID) {
-      var center = this.center()(),
-          centroid = centroidOf(ntID);
+    var centriodPosition = (ntID) => {
+      const center = this.center()();
+      const centroid = centroidOf(ntID);
       return { x: center.x + centroid[0], y: center.y + centroid[1] };
     };
 
     // A function to sort nucleotide ids based upon their index amoung all
     // nucleotides. This is used to draw arcs correctly.
-    var sortFunc = function(nt1, nt2) {
-      var i1 = computed[nt1].globalIndex,
-          i2 = computed[nt2].globalIndex;
-      return (Math.abs(i1 - i2) > ntCount/2) ? (i2 - i1) : (i1 - i2);
-    };
+    function sortFunc(nt1, nt2) {
+      let i1 = computed[nt1].globalIndex;
+      let i2 = computed[nt2].globalIndex;
+      return (Math.abs(i1 - i2) > ntCount / 2) ? (i2 - i1) : (i1 - i2);
+    }
 
     var curve = function(d, i) {
 
-      // The idea is to sort the nts such that we are always drawing from lower to
-      // higher nts, unless we are drawing from one half to the other half, in
-      // which case we flip the order. This lets us always use the sweep and arc
-      // flags of 0,0. The code is kinda gross but it works.
-      var nts = this.plot.interactions.getNTs()(d, i).sort(sortFunc),
-          from = centriodPosition(nts[0]),
-          to = centriodPosition(nts[1]),
-          angleDiff = startAngleOf(nts[0]) - startAngleOf(nts[1]),
-          radius = Math.abs(innerArcInnerRadius * Math.tan(angleDiff/2));
+      // The idea is to sort the nts such that we are always drawing from lower
+      // to higher nts, unless we are drawing from one half to the other half,
+      // in which case we flip the order. This lets us always use the sweep and
+      // arc flags of 0,0. The code is kinda gross but it works.
+      let nts = this.plot.interactions.getNTs()(d, i).sort(sortFunc);
+      let from = centriodPosition(nts[0]);
+      let to = centriodPosition(nts[1]);
+      let angleDiff = startAngleOf(nts[0]) - startAngleOf(nts[1]);
+      let radius = Math.abs(innerArcInnerRadius * Math.tan(angleDiff / 2));
 
+      // In order this defines an arc using
       // Start point
-      return 'M '  + from.x + ' ' + from.y +
-        // Both radi are the same for a circle
-        ' A ' + radius + ',' + radius +
-        // Rotation and arc flags are always 0
-        ' 0 0,0 ' +
-        // End point
-        to.x + ',' + to.y;
+      // Both radi are the same for a circle
+      // Rotation and arc flags are always 0
+      // End point
+      return `M ${from.x} ${from.y}` +
+        `A ${radius},${radius} 0 0,0` +
+        `${to.x}, ${to.y}`;
     };
 
     return selection
@@ -190,95 +177,100 @@ export default class Circular extends View {
       .attr('d', curve)
       .attr('fill', 'none')
       .attr('stroke', this.plot.interactions.color());
-  };
+  }
 
-  groups() { return this; };
+  groups() {
+    return this;
+  }
 
   midpoint(nts) {
-    var midpoint = null,
-        prev = null,
-        computed = this.computed,
-        indexes = [];
-    indexes = nts.map(function(nt) { return computed[nt].ntIndex; });
-    indexes.sort(function(a, b) { return a - b; });
+    let midpoint = null;
+    let prev = null;
+    let computed = this.computed;
+    let indexes = nts.map((nt) => computed[nt].ntIndex);
+
+    indexes.sort((a, b) => a - b);
     prev = indexes[0];
-    indexes.forEach(function(index, j) {
+    indexes.forEach((index, j) => {
       if (midpoint === null && index - prev > 1) {
         midpoint = Math.floor((j - 1) / 2);
       }
+
       prev = index;
     });
+
     if (midpoint === null) {
       midpoint = Math.floor(nts.length / 2);
     }
-    console.log(indexes, indexes[midpoint]);
+
     return nts[midpoint];
-  };
+  }
 
   helixData(selection) {
-    var getNTs = this.plot.helixes.getNTs(),
-        computed = this.computed,
-        innerLabelRadius = this.radius()() + this.helixGap(),
-        labelArcs = this.arcGenerator(innerLabelRadius, innerLabelRadius + 5),
-        arcFor = function(data) {
-          var nt = this.midpoint(getNTs(data)),
-              info = computed[nt];
-              // TODO: Fix above getting the correct nt and getting the centriod
-              // position using nt data
+    let getNTs = this.plot.helixes.getNTs();
+    let computed = this.computed;
+    let innerLabelRadius = this.radius()() + this.helixGap();
+    let labelArcs = this.arcGenerator(innerLabelRadius, innerLabelRadius + 5);
 
-              return {
-                'arc': labelArcs[info.chainIndex],
-                'nt': nt,
-                'index': info.ntIndex
-              };
-        },
-        positionOf = function(data) {
-          var arc = arcFor(data, 'centroid'),
-              centriodPosition = arc.arc.centroid(arc.nt, arc.index),
-              center = this.center()();
+    let arcFor = function(data) {
+      let nt = this.midpoint(getNTs(data));
+      let info = computed[nt];
 
-          return {
-            x: center.x + centriodPosition[0],
-            y: center.y + centriodPosition[1]
-          };
-        };
+      // TODO: Fix above getting the correct nt and getting the centriod
+      // position using nt data
+
+      return {
+        arc: labelArcs[info.chainIndex],
+        nt: nt,
+        index: info.ntIndex
+      };
+    };
+
+    let positionOf = function(data) {
+      const arc = arcFor(data, 'centroid');
+      const centriodPosition = arc.arc.centroid(arc.nt, arc.index);
+      const center = this.center()();
+
+      return {
+        x: center.x + centriodPosition[0],
+        y: center.y + centriodPosition[1]
+      };
+    };
 
     return selection
-      //.attr('text-anchor', 'middle')
-      .attr('x', function(d, i) {
-        var x = positionOf(d, i).x,
-            arc = arcFor(d),
-            angle = Math.PI - arc.arc.startAngle()(arc.nt, arc.index),
-            shift = this.getBBox().width * Math.sin(angle);
+      .attr('x', (d, i) => {
+        const x = positionOf(d, i).x;
+        const arc = arcFor(d);
+        const angle = Math.PI - arc.arc.startAngle()(arc.nt, arc.index);
+        const shift = this.getBBox().width * Math.sin(angle);
         return x + shift;
       })
-      .attr('y', function(d, i) {
-        var y = positionOf(d, i).y,
-            arc = arcFor(d),
-            angle = arc.arc.startAngle()(arc.nt, arc.index),
-            shift = this.getBBox().height * Math.cos(angle);
+
+      .attr('y', (d, i) => {
+        const y = positionOf(d, i).y;
+        const arc = arcFor(d);
+        const angle = arc.arc.startAngle()(arc.nt, arc.index);
+        const shift = this.getBBox().height * Math.cos(angle);
         return y - shift;
       });
-  };
+  }
 
   highlightLetterData(selection) {
-    var computed = this.computed,
-        innerLabelRadius = this.radius()() + this.highlightGap(),
-        labelArcs = this.arcGenerator(innerLabelRadius,
-                                      innerLabelRadius + this.labelSize()),
-        positionOf = function(data) {
-          var center = this.center()(),
-              info = computed[this.plot.nucleotides.getID()(data)],
-              arc = labelArcs[info.chainIndex],
-              centriodPos = arc.centroid(data, info.ntIndex);
-          return {
-            x: center.x + centriodPos[0],
-            y: center.y + centriodPos[1]
-          };
-        };
+    let computed = this.computed;
+    let innerLabelRadius = this.radius()() + this.highlightGap();
+    let labelArcs = this.arcGenerator(innerLabelRadius,
+                                      innerLabelRadius + this.labelSize());
+    let positionOf = (data) => {
+      let center = this.center()();
+      let info = computed[this.plot.nucleotides.getID()(data)];
+      let arc = labelArcs[info.chainIndex];
+      let centriodPos = arc.centroid(data, info.ntIndex);
+
+      return { x: center.x + centriodPos[0], y: center.y + centriodPos[1] };
+    };
 
     return selection
       .attr('x', (d) => positionOf(d).x)
       .attr('y', (d) => positionOf(d).y);
-  };
+  }
 }
