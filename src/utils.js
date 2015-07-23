@@ -28,3 +28,7 @@ export function attachHandlers(selection, obj) {
 
   return selection;
 }
+
+export function functor(value) {
+  return (typeof value === 'function' ? value : () => value);
+}

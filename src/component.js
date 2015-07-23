@@ -1,5 +1,7 @@
 /** @module component */
 
+import { functor } from './utils';
+
 /**
  * A base class for things that should have accessible properties. Each
  * property may have an assigned callback. This callback will receive the old
@@ -192,7 +194,7 @@ export class DataComponent extends Component {
   }
 
   visibility() {
-    const isVisible = this.visible();
+    const isVisible = functor(this.visible());
     return (d, i) => (isVisible(d, i) ? 'visible' : 'hidden');
   }
 

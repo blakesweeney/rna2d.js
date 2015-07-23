@@ -1,7 +1,6 @@
-'use strict';
-
 import { assert } from 'chai';
 
+import Plot from '../../src/plot.js';
 import Circular from '../../src/views/circular.js';
 
 describe('The Circular View', function() {
@@ -9,7 +8,7 @@ describe('The Circular View', function() {
   let view;
 
   beforeEach(function() {
-    plot = {};
+    plot = new Plot({});
     view = new Circular(plot);
   });
 
@@ -41,7 +40,13 @@ describe('The Circular View', function() {
       assert.equal(view.center(), 20);
     });
 
-    it('defaults to the center of the plot');
+    it('defaults to the center of the plot', () => {
+      plot
+        .width(100)
+        .height(200);
+
+      assert.deepEqual([50, 100], view.center()());
+    });
   });
 
   describe('computing the radius', function() {
@@ -50,6 +55,9 @@ describe('The Circular View', function() {
       assert.equal(view.radius(), 20);
     });
 
-    it('defaults to 1/3 of the plot');
+    it('defaults to 2/5 of the plot width', () => {
+      plot.width(500);
+      assert.equal(2 / 5 * 500, view.radius()());
+    });
   });
 });

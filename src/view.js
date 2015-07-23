@@ -1,6 +1,5 @@
 /** @module view */
 
-import Utils from './utils.js';
 import { Component } from './component.js';
 
 export default class View extends Component {
@@ -32,16 +31,12 @@ export default class View extends Component {
    */
   generateStandardViewAttrs(type) {
     return function(selection) {
-      const klass = type.class();
       const classOf = type.classOf();
-
-      // Utils.attachHandlers(selection, type);
 
       return selection
         .attr('id', type.elementID())
-        .attr('class', function(d, i) {
-          return classOf(d, i).concat(klass).join(' ');
-        })
+        .attr('class', (d, i) => classOf(d, i).join(' '))
+        .classed(type.class(), true)
         .attr('visibility', type.visibility())
         .on('click', type.click())
         .on('mouseover', type.highlight())
@@ -66,12 +61,11 @@ export default class View extends Component {
    *
    * @this {View}
    */
-  generate() {
-    this.coordinates();
-    this.connections();
-    this.groups();
-    this.helixes();
-    this.update();
+  generate(selection) {
+    this.coordinates(selection);
+    this.connections(selection);
+    this.groups(selection);
+    this.helixes(selection);
   }
 
   /**
@@ -81,16 +75,6 @@ export default class View extends Component {
    * @this {View}
    */
   yCoord() {
-    return false;
-  }
-
-  /**
-   *
-   *
-   * @abstract
-   * @this {View}
-   */
-  update() {
     return false;
   }
 
@@ -169,16 +153,16 @@ export default class View extends Component {
    *
    * @this {View}
    */
-  coordinates() {
+  coordinates(selection) {
     const plot = this.plot;
     const x = this.xCoord();
     const y = this.yCoord();
 
-    var sele = plot.vis.selectAll(plot.chains.class())
+    const sele = selection.selectAll(plot.chains.class())
       .append('g')
       .data(plot.chains.data()).enter()
         .append('g')
-        .call((selection) => this.chainData(selection))
+        .call((s) => this.chainData(s))
         .call(this.generateStandardViewAttrs(plot.chains))
         .selectAll(plot.nucleotides.class())
         .data(plot.chains.getNTData()).enter();
@@ -193,13 +177,13 @@ export default class View extends Component {
   }
 
   /**
-   *
+   * Draw all interactions in this view.
    *
    * @this {View}
    */
-  connections() {
+  connections(selection) {
     const plot = this.plot;
-    const sele = plot.vis.selectAll(plot.interactions.class())
+    const sele = selection.selectAll(plot.interactions.class())
       .data(plot.interactions.valid(this.interactionValidator)).enter();
 
     return this.connectionData(sele)
@@ -211,9 +195,9 @@ export default class View extends Component {
    *
    * @this {View}
    */
-  groups() {
+  groups(selection) {
     const plot = this.plot;
-    const sele = plot.vis.selectAll(plot.motifs.class())
+    const sele = selection.selectAll(plot.motifs.class())
       .append('g')
       .data(plot.motifs.valid(this.groupsValidator)).enter();
 
@@ -227,17 +211,17 @@ export default class View extends Component {
    *
    * @this {View}
    */
-  helixes() {
+  helixes(selection) {
     const plot = this.plot;
     const data = plot.helixes.data() || [];
 
-    plot.vis.selectAll(plot.helixes.class())
+    selection.selectAll(plot.helixes.class())
       .append('g')
       .data(data).enter()
         .append('svg:text')
         .text(plot.helixes.getText())
         .attr('fill', plot.helixes.color())
-        .call((selection) => this.helixData(selection))
+        .call((s) => this.helixData(s))
         .call(this.generateStandardViewAttrs(plot.helixes));
   }
 

@@ -112,7 +112,7 @@ export default class Airport extends View {
       { x: left, y: top },
       { x: left, y: bottom },
       { x: right, y: bottom },
-      { x: right, y: top }
+      { x: right, y: top },
     ];
 
     return current;
@@ -120,34 +120,38 @@ export default class Airport extends View {
 
   preprocess() {
     // Compute the max and min of x and y coords for the scales.
-    let xMax = 0;
-    let yMax = 0;
-    let getNTData = this.plot.chains.getNTData();
-    let getX = this.plot.nucleotides.getX();
-    let getY = this.plot.nucleotides.getY();
+    let xMax = Number.MIN_VALUE;
+    let yMax = Number.MIN_VALUE;
+    let xMin = Number.MAX_VALUE;
+    let yMin = Number.MAX_VALUE;
+    const getNTData = this.plot.chains.getNTData();
+    const getX = this.plot.nucleotides.getX();
+    const getY = this.plot.nucleotides.getY();
 
     this.plot.chains.data().forEach(function(chain, i) {
       getNTData(chain, i).forEach(function(nt) {
-        let x = getX(nt);
-        let y = getY(nt);
+        const x = getX(nt);
+        const y = getY(nt);
 
-        if (x > xMax)  xMax = x;
-        if (y > yMax)  yMax = y;
+        if (x > xMax) xMax = x;
+        if (y > yMax) yMax = y;
+        if (x < xMin) xMin = x;
+        if (y < yMin) yMin = y;
       });
     });
 
-    this.domain = { x: [0, xMax], y: [0, yMax] };
+    this.domain = { x: [xMin, xMax], y: [yMin, yMax] };
   }
 
   xCoord() {
-    let scale = this.plot.xScale();
-    let getX = this.plot.nucleotides.getX();
+    const scale = this.plot.xScale();
+    const getX = this.plot.nucleotides.getX();
     return (d, i) => scale(getX(d, i));
   }
 
   yCoord() {
-    let scale = this.plot.yScale();
-    let getY = this.plot.nucleotides.getY();
+    const scale = this.plot.yScale();
+    const getY = this.plot.nucleotides.getY();
     return (d, i) => scale(getY(d, i));
   }
 
@@ -173,22 +177,31 @@ export default class Airport extends View {
   }
 
   drawCircleLetter(selection) {
-    selection
-      .append('svg:circle')
-      .attr('cx', this.xCoord())
-      .attr('cy', this.yCoord())
-      .attr('fill', this.plot.nucleotides.color())
-      .attr('opacity', 0.7)
-      .attr('r', this.radius());
+    const g = selection.append('g');
 
-    selection
-      .append('svg:text')
-      .attr('x', this.xCoord())
-      .attr('y', this.yCoord())
-      .attr('fill', 'black')
-      .text(this.plot.nucleotides.getSequence());
+    this.drawCircles(g)
+      .attr('opacity', 0.7);
 
-    return selection;
+    this.drawLetters(g);
+
+    return g;
+
+    // selection
+    //   .append('svg:circle')
+    //   .attr('cx', this.xCoord())
+    //   .attr('cy', this.yCoord())
+    //   .attr('fill', this.plot.nucleotides.color())
+    //   .attr('opacity', 0.7)
+    //   .attr('r', this.radius());
+
+    // selection
+    //   .append('svg:text')
+    //   .attr('x', this.xCoord())
+    //   .attr('y', this.yCoord())
+    //   .attr('fill', 'black')
+    //   .text(this.plot.nucleotides.getSequence());
+
+    // return selection;
   }
 
   drawLetters(selection) {

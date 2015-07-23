@@ -1,10 +1,11 @@
-import Plot from '../src/plot.js';
 import d3 from 'd3';
+import jsdom from 'jsdom';
+
+import Plot from '../src/plot.js';
 import { assert } from 'chai';
-import { jsdom } from 'jsdom';
 import Views from '../src/views';
 import Nucleotides from '../src/components/nucleotides';
-import Components from '../src/components.js';
+import Components from '../src/components';
 
 describe('Plot', () => {
   let plot;
@@ -29,6 +30,13 @@ describe('Plot', () => {
 
     it('has a default circular view', () => {
       assert.equal('circular', plot.view());
+    });
+
+    describe('With a configuration', () => {
+      it('will use given configuration', () => {
+        plot = new Plot({width: 1000});
+        assert.equal(1000, plot.width());
+      });
     });
   });
 
@@ -127,18 +135,35 @@ describe('Plot', () => {
 
   describe('plotting', () => {
     let doc;
+    let svg;
+
     beforeEach(() => {
-      doc = jsdom("<html><body><div id='app'></div></body></html>");
-      plot.registerAll(Views).registerAll(Components);
+      doc = jsdom.jsdom('<!DOCTYPE html><body></body></html>');
+      plot
+        .registerAll(Views)
+        .registerAll(Components)
+        .selection(d3.select(doc.body));
+      plot.draw();
+      svg = d3.select(doc.body).select('svg');
     });
 
     it('can attach to the correct element', () => {
-      plot.selection(doc.getElementById('app'));
-      plot.draw();
-      assert.equal(1, d3.select('#app').length);
+      assert.ok(svg.classed('rna2d'));
     });
-    it('has the required width');
-    it('has the required height');
+
+    it('has the required width', () => {
+      assert.equal(500, svg.attr('width'));
+    });
+
+    it('has the required height', () => {
+      assert.equal(1000, svg.attr('height'));
+    });
+
+    it('sets the scales', () => {
+      assert.ok(plot.xScale());
+      assert.ok(plot.yScale());
+    });
+
     it('generates the view');
   });
 });

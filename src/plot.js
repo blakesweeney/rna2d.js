@@ -29,6 +29,7 @@ const DEFAULTS = {
   selection: null,
   xScale: null,
   yScale: null,
+  'class': 'rna2d',
 };
 
 export default class Plot extends Accessible {
@@ -58,10 +59,17 @@ export default class Plot extends Accessible {
 
     // Setup the drawing area
     const margin = this.margin();
-    const selection = d3.select(this.selection());
+    let selection = this.selection();
+    if (typeof selection === 'string') {
+      selection = d3.select(selection);
+    }
 
-    selection.select('svg').remove();
+    selection
+      .select('svg')
+      .remove();
+
     const top = selection.append('svg')
+      .classed(this.class(), true)
       .attr('width', this.width())
       .attr('height', this.height());
 
@@ -79,7 +87,7 @@ export default class Plot extends Accessible {
     // Generate the components - brush, frame, zoom, etc
     this._components.forEach((component) => component.generate());
 
-    view.generate();
+    view.generate(this.vis);
     return this;
   }
 
