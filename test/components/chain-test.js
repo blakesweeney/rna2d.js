@@ -1,16 +1,17 @@
 'use strict';
 
-import { DataComponent } from '../../../src/component.js';
-import Chain from '../../../src/components/chain.js';
+import { DataComponent } from '../../src/component.js';
+import Chain from '../../src/components/chain.js';
 import { assert } from 'chai';
 
-let standard = {
-  data: [{'id': 'A'}, {'id': 'B'}]
+const standard = {
+  data: [{'id': 'A'}, {'id': 'B'}],
 };
 
-describe('The Chain Component', function() {
+describe('Chain View', function() {
   let plot;
   let chain = null;
+
   beforeEach(function() {
     plot = {};
     chain = new Chain(plot);
@@ -23,7 +24,7 @@ describe('The Chain Component', function() {
   });
 
   describe('setting the data', function() {
-    it ('computes a mapping object', function() {
+    it('computes a mapping object', function() {
       chain.data(standard.data);
       assert.equal(chain._mapping, {'A': 0, 'B': 1});
     });

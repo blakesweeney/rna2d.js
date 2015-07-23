@@ -2,13 +2,15 @@
 
 import { assert } from 'chai';
 
-import Circular from '../../../src/views/circular.js';
+import Circular from '../../src/views/circular.js';
 
 describe('The Circular View', function() {
+  let plot;
   let view;
 
   beforeEach(function() {
-    view = new Circular();
+    plot = {};
+    view = new Circular(plot);
   });
 
   describe('Basic accessors', function() {

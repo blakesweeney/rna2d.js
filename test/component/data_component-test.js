@@ -1,6 +1,6 @@
 'use strict';
 
-import { DataComponent } from '../../../src/component.js';
+import { DataComponent } from '../../src/component.js';
 import { assert } from 'chai';
 
 describe('DataComponent', function() {
@@ -38,5 +38,4 @@ describe('DataComponent', function() {
       assert.equal(comp, comp.plot.generic);
     });
   });
-
 });

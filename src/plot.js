@@ -1,6 +1,7 @@
 /** @module plot */
 'use strict';
 
+import { Accessible } from './component.js';
 var d3 = require('d3');
 
 /**
@@ -19,25 +20,29 @@ var d3 = require('d3');
  * @property {function} xScale      - Function to compute the x scale
  * @property {function} yScale      - Function to compute the y scale
  */
-let DEFAULTS = {
-    labels: [],
-    margin: { left: 10, right: 10, above: 10, below: 10 },
-    view: 'circular',
-    width:  500,
-    height: 1000,
-    selection: null,
-    xScale: null,
-    yScale: null
+const DEFAULTS = {
+  labels: [],
+  margin: { left: 10, right: 10, above: 10, below: 10 },
+  view: 'circular',
+  width: 500,
+  height: 1000,
+  selection: null,
+  xScale: null,
+  yScale: null,
 };
 
 export default class Plot extends Accessible {
 
   constructor(config) {
+    const conf = new Map();
+    Object.keys(DEFAULTS).forEach((key) => {
+      conf.set(key, config[key] || DEFAULTS[key]);
+    });
+    super(conf);
     this.vis = null;
     this._components = [];
     this._views = {};
-    this._current_view = null;
-    super(config);
+    this._currentView = null;
   }
 
   /**
@@ -46,42 +51,51 @@ export default class Plot extends Accessible {
    * order, so if there should be no dependencies between them.
    */
   draw() {
+    const view = this.currentView();
+    if (!view) {
+      throw new Error('Could not find view');
+    }
+
     // Setup the drawing area
-    var margin = this.margin(),
-        selection = d3.select(this.selection());
+    const margin = this.margin();
+    const selection = d3.select(this.selection());
 
     selection.select('svg').remove();
-    var top = selection.append('svg')
-      .attr('width', this.width() + margin.left + margin.right)
-      .attr('height', this.height() + margin.above + margin.below);
+    const top = selection.append('svg')
+      .attr('width', this.width())
+      .attr('height', this.height());
 
     this.vis = top.append('g')
       .attr('transform', 'translate(' + margin.left + ',' + margin.above + ')');
 
-    if (!this._views.hasOwnProperty(this.view())) {
-      throw new Error('Unknown View');
-    }
-
     // Generate the view
-    var view = new this._views[this.view()](),
-      scale = function(domain, max) {
-      return d3.scale.linear().domain(domain).range([0, max]);
-    };
-
-    view.plot = this;
-    this._current_view = view;
     view.preprocess();
 
     // Setup the scales
-    this.xScale(scale(view.domain.x, this.width() - margin.right));
-    this.yScale(scale(view.domain.y, this.height() - margin.above));
+    const scales = this.scales();
+    this.xScale(scales.x);
+    this.yScale(scales.y);
 
     // Generate the components - brush, frame, zoom, etc
-    this._components.forEach(function(component) { component.generate(); });
+    this._components.forEach((component) => component.generate());
 
     view.generate();
     return this;
-  };
+  }
+
+  scales() {
+    const view = this.currentView();
+    const margin = this.margin();
+    const scale = (d, m) => d3.scale.linear().domain(d).range([0, m]);
+    return {
+      x: scale(view.domain.x, this.width() - (margin.right + margin.left)),
+      y: scale(view.domain.y, this.height() - (margin.above + margin.above)),
+    };
+  }
+
+  currentView() {
+    return this[this.view()];
+  }
 
   /**
    * Register a Component or View. If the
@@ -89,11 +103,11 @@ export default class Plot extends Accessible {
    * @this {Plot}
    * @returns {Plot} Returns the plot itself.
    */
-  register(obj) {
-    obj.plot = this;
+  register(Klass) {
+    const obj = new Klass(this);
     this[obj._name] = obj;
     return this;
-  };
+  }
 
   /**
    * Register all Components or Views.
@@ -101,12 +115,9 @@ export default class Plot extends Accessible {
    * @this {Plot}
    * @returns {Plot} Returns the plot itself.
    */
-  registerAll(mapping) {
-    var self = this;
-    Object.keys(mapping).forEach(function(key) {
-      self.register(mapping[key]);
-    });
+  registerAll(iterable) {
+    iterable.forEach((v) => this.register(v));
     return this;
-  };
+  }
 
 }

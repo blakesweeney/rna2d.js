@@ -13,10 +13,8 @@
     "url": "https://github.com/blakesweeney/rna2d.js"
   },
   "scripts": {
-    "build": "./node_modules/.bin/browserify ./src/main.js -t babelify --standalone Rna2D --outfile rna2d.js",
-    "min": "./node_modules/.bin/uglifyjs rna2d.js > rna2d.min.js",
-    "test": "./node_modules/.bin/mocha --compilers js:babel/register test/rna2d/*",
-    "rel": "npm run build && npm run min"
+    "build": "gulp build",
+    "test": "gulp test"
   },
   "bugs": "https://github.com/blakesweeney/rna2d.js/issues",
   "dependencies": {
@@ -28,14 +26,31 @@
   "devDependencies": {
     "babel": "^5.6.14",
     "babelify": "^6.1.2",
+    "browserify": "^11.0.0",
     "chai": "~1.9.1",
+    "del": "^1.2.0",
+    "gulp": "^3.9.0",
+    "gulp-babel": "^5.1.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-eslint": "^0.15.0",
+    "gulp-if": "^1.2.5",
+    "gulp-mocha": "^2.1.3",
+    "gulp-sourcemaps": "^1.5.2",
+    "gulp-util": "^3.0.6",
     "jscs": "^1.13.1",
     "jsdom": "3",
     "mocha": "^2.2.5",
-    "uglify-js": "~2.4.15 "
+    "require-dir": "^0.3.0",
+    "uglify-js": "~2.4.15 ",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
   },
   "author": {
     "name": "Blake A. Sweeney",
     "email": "bsween@bgsu.edu"
-  }
+  },
+  "directories": {
+      "lib": "src"
+  },
+  "private": true
 }

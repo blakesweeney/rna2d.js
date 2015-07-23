@@ -3,7 +3,7 @@
 
 import { DataComponent } from '../component.js';
 
-export default class Chain extends DataComponent {
+export default class Chains extends DataComponent {
   constructor(plot) {
     super(plot, 'chains', new Map([
       ['getID', (d) =>  d.id],
@@ -11,12 +11,15 @@ export default class Chain extends DataComponent {
       ['classOf', () => []],
       ['encodeID', (id) => id],
       ['getNTData', (d) => d.nts],
-      ['visible', () => true]
+      ['visible', () => true],
+      ['click', Object],
+      ['highlight', Object],
+      ['normalize', Object],
     ]));
     this._mapping = {};
   }
 
-  chainOf(d, i) {
+  chainOf() {
     return null;
   }
 }

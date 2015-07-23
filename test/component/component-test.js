@@ -1,6 +1,6 @@
 'use strict';
 
-import { Component } from '../../../src/component.js';
+import { Component } from '../../src/component.js';
 import { assert } from 'chai';
 
 describe('Component', function() {
@@ -8,6 +8,7 @@ describe('Component', function() {
   let comp = null;
 
   beforeEach(function() {
+    plot = {};
     comp = new Component(plot, 'generic', new Map([['bob', 1]]));
   });
 
@@ -31,5 +32,4 @@ describe('Component', function() {
     assert.equal(plot, comp.plot);
     assert.equal(comp, comp.plot.generic);
   });
-
 });

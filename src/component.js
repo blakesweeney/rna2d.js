@@ -33,6 +33,36 @@ export class Accessible {
     this._config.set(key, current);
   }
 
+/**
+ * A function to generate accessor functions in an object. An accessor function
+ * is one that if given no arguments returns the current value, if given one
+ * argument it sets the value to the given one. The initial state of the
+ * accessors, as well as the accessors to set are set in the state parameter.
+ * Its keys will be used to as the names of the functions to add and the values
+ * will be the initial state. If there is a property in the callback object with
+ * a matching name it will be called with two arguments, the old and new values,
+ * when setting the value.
+ *
+ * @example
+ * <caption>Using this function</caption>
+ * var obj = {};
+ * generateAccessors(obj, {'a': 1, 'bob': true});
+ * obj.a(); // => 1
+ * obj.bob(false); // Sets bob to false
+ * obj.bob(); // => false
+ *
+ * @example
+ * <caption>Usage of accessor functions.</caption>
+ * // Sets the value of bar to 2
+ * obj.bar(2);
+ *
+ * // Returns 2
+ * obj.bar();
+ * @param {object} obj The object to add the accessor properties to.
+ * @param {object} state The initial state object.
+ * @param {object} callback The callback object.
+ */
+
   /**
    * Create a new accessor for this object.
    *
@@ -49,7 +79,7 @@ export class Accessible {
         return this._config.get(key)[0];
       }
 
-      let [old, func] = this._config.get(key);
+      const [old, func] = this._config.get(key);
       this._config.set(key, [x, func]);
       func(old, x);
       return this;
@@ -75,7 +105,7 @@ export class Component extends Accessible {
    * config will be given an accessor in this component.
    */
   constructor(plot, name, config) {
-    let accessors = new Map(config.entries());
+    const accessors = new Map(config.entries());
     if (!accessors.has('render')) {
       accessors.set('render', true);
     }
@@ -83,8 +113,6 @@ export class Component extends Accessible {
     super(accessors);
     this.plot = plot;
     this._name = name;
-
-    plot[this._name] = this;
   }
 
   /**
@@ -133,7 +161,7 @@ export class Component extends Accessible {
  */
 export class DataComponent extends Component {
   constructor(plot, name, given) {
-    let config = new Map(given.entries());
+    const config = new Map(given.entries());
     config.set('data', []);
     if (!config.has('visible')) {
       config.set('visible', true);
@@ -158,8 +186,8 @@ export class DataComponent extends Component {
     selection.attr(this._attrs);
   }
 
-  all(klass) {
-    klass = (klass && klass !== 'all' ? klass : this.class());
+  all(given) {
+    const klass = (given && given !== 'all' ? given : this.class());
     return this.plot.vis.selectAll('.' + klass);
   }
 
@@ -202,21 +230,19 @@ export class DataComponent extends Component {
     return (d) => func(d[attribute]);
   }
 
-  valid() {
+  valid(func) {
     const seen = new Set();
-    const getID = this.getID();
-    const validator = (this.validator ? this.validator()() : (x) => x);
-    const data = this.data;
+    const getId = this.getID();
 
-    return function*() {
-      for (var entry of data()) {
-        var id = getID(entry);
-        if (seen.has(id) || !validator(entry)) {
-          continue;
+    return this
+      .data()
+      .filter((d, i) => {
+        const id = getId(d, i);
+        if (!seen.has(id) && func(d, i)) {
+          seen.add(id);
+          return true;
         }
-
-        yield entry;
-      }
-    };
+        return false;
+      });
   }
 }

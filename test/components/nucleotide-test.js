@@ -1,7 +1,7 @@
 'use strict';
 
 import { assert } from 'chai';
-import Nucleotide from '../../../src/components/nucleotides.js';
+import Nucleotide from '../../src/components/nucleotides.js';
 
 const standard = {
   id: '3V2F|1|A|A|6',

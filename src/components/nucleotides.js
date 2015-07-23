@@ -1,5 +1,4 @@
 /** @module components/nucleotides */
-'use strict';
 
 import { DataComponent } from '../component.js';
 
@@ -45,7 +44,8 @@ export default class Nucleotides extends DataComponent {
       ['getY', (d) =>  d.y],
       ['encodeID', (id) => id],
       ['getSequence', (d) => d.sequence],
-      ['getNumber', (d) =>  d.id.split('|')[4]]
+      ['getNumber', (d) =>  d.id.split('|')[4]],
+      ['color', 'black'],
     ]));
 
     this.addAccessor('normalize', (d, i) => {
@@ -54,13 +54,12 @@ export default class Nucleotides extends DataComponent {
     });
 
     this.addAccessor('highlight', (d, i) => {
-      var highlightColor = this.plot.highlights.color()(d, i);
+      const highlightColor = this.plot.highlights.color()(d, i);
       this.plot.currentView().highlightLetters([d]);
       this.plot.nucleotides
         .interactions(d, i)
         .style('stroke', highlightColor);
     });
-
   }
 
   /**
@@ -70,9 +69,9 @@ export default class Nucleotides extends DataComponent {
    * question and will return all interaction data in the plot which uses this
    * nucleotide.
    */
-  interactions(d, i) {
-    let id = this.getID()(d, i);
-    let getNTs = this.plot.interactions.getNTs();
+  interactions(inter, index) {
+    const id = this.getID()(inter, index);
+    const getNTs = this.plot.interactions.getNTs();
     return this.plot.vis.selectAll('.' + this.plot.interactions.class())
       .filter((d) => getNTs(d).indexOf(id) !== -1);
   }

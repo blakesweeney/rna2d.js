@@ -1,7 +1,7 @@
 'use strict';
 
 import { assert } from 'chai';
-import Interactions from '../../../src/components/interactions.js';
+import Interactions from '../../src/components/interactions.js';
 
 describe('Interactions', function() {
   let plot;

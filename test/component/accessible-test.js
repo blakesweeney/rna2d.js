@@ -1,6 +1,6 @@
 'use strict';
 
-import { Accessible } from '../../../src/component.js';
+import { Accessible } from '../../src/component.js';
 import { assert } from 'chai';
 
 describe('Accessible', function() {
